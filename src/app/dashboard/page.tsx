@@ -95,8 +95,8 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-4">
               <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground hidden sm:flex">
-                <Link href="/events/nearby">
-                  <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
+                 <Link href="/explore">
+                  <Search className="mr-2 h-4 w-4" /> Explore Events
                 </Link>
               </Button>
                <Sheet>
@@ -119,8 +119,8 @@ export default function DashboardPage() {
                             <Input placeholder="Search events or friends..." className="pl-10" />
                         </div>
                         <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
-                          <Link href="/events/nearby">
-                            <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
+                           <Link href="/explore">
+                            <Search className="mr-2 h-4 w-4" /> Explore Events
                           </Link>
                         </Button>
                     </div>
