@@ -134,13 +134,21 @@ export default function DashboardPage() {
                             <User className="mr-2 h-5 w-5" /> My Profile
                           </Link>
                         </Button>
-                        {isVerifiedHost && (
-                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
-                           <Link href="/host/dashboard">
-                            <LayoutDashboard className="mr-2 h-5 w-5" /> Host Dashboard
-                          </Link>
-                        </Button>
+                        
+                        {isVerifiedHost ? (
+                          <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                            <Link href="/host/dashboard">
+                              <LayoutDashboard className="mr-2 h-5 w-5" /> Host Dashboard
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                            <Link href="/host/apply-verification">
+                              <LayoutDashboard className="mr-2 h-5 w-5" /> Als Host bewerben
+                            </Link>
+                          </Button>
                         )}
+                        
                         {isAdmin && (
                             <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                                <Link href="/admin">
@@ -215,5 +223,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
