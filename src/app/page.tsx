@@ -16,8 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
 import { PartyPopper, CalendarDays, Users, Wand2, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useRef, useState } from 'react';
+import { useForm, UseFormSetValue } from 'react-hook-form';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +39,7 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 function SignInForm() {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, setValue } = useForm();
   const { toast } = useToast();
 
   const onSubmit = async (data: any) => {
@@ -68,7 +68,7 @@ function SignInForm() {
       console.error(error);
     }
   };
-
+  
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
@@ -113,9 +113,13 @@ function SignInForm() {
   );
 }
 
-function SignUpForm() {
+interface SignUpFormProps {
+  onEmailInUse: (email: string) => void;
+}
+
+function SignUpForm({ onEmailInUse }: SignUpFormProps) {
   const { signUp, signInWithGoogle, signInWithApple } = useAuth();
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, getValues } = useForm();
   const { toast } = useToast();
 
   const onSubmit = async (data: any) => {
@@ -128,6 +132,7 @@ function SignUpForm() {
                 title: "Sign-up failed.",
                 description: "This email is already in use. Please sign in instead.",
             });
+            onEmailInUse(getValues('email'));
         } else {
             toast({
                 variant: "destructive",
@@ -188,7 +193,9 @@ export default function LandingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const signupCardRef = useRef<HTMLDivElement>(null);
-
+  const [activeTab, setActiveTab] = useState('signin');
+  const signInFormMethods = useForm();
+  
   useEffect(() => {
     if (user) {
       router.push('/dashboard');
@@ -202,6 +209,17 @@ export default function LandingPage() {
   const scrollToSignup = () => {
     signupCardRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+  
+  const handleEmailInUse = (email: string) => {
+    setActiveTab('signin');
+    // We need to use a reference to the form's setValue function
+    // A better approach would be to lift the form state up or use a context
+    // For now, we'll try to get the form instance and call setValue.
+    // This is a bit of a hack, ideally the form state is managed higher up.
+    // A cleaner way is to pass the whole form object or just setValue down.
+    // Let's pass setValue down from a useForm instance in the parent.
+    signInFormMethods.setValue('email', email);
+  }
 
 
   return (
@@ -277,7 +295,7 @@ export default function LandingPage() {
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
-                    <Tabs defaultValue="signin">
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
                         <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="signin">Sign In</TabsTrigger>
                         <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -289,7 +307,7 @@ export default function LandingPage() {
                         </TabsContent>
                         <TabsContent value="signup">
                             <CardContent className="p-4">
-                                <SignUpForm />
+                                <SignUpForm onEmailInUse={handleEmailInUse} />
                             </CardContent>
                         </TabsContent>
                     </Tabs>
