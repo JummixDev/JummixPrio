@@ -111,18 +111,20 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     async function fetchUserProfile() {
-        if (!username || !loggedInUser) return;
+        if (!username || authLoading) return;
 
         setLoading(true);
         try {
             const isMe = username === 'me';
-            let userToQuery = username;
-            if (isMe) {
-                userToQuery = loggedInUser.uid;
+            let userToQuery = isMe ? loggedInUser?.uid : username;
+
+            if (!userToQuery) {
+                setProfileUser(null);
+                setLoading(false);
+                return;
             }
             
             const usersRef = collection(db, "users");
-            // Query by username for non-"me" profiles, or by UID for "me"
             const q = isMe 
                 ? query(usersRef, where("uid", "==", userToQuery), limit(1))
                 : query(usersRef, where("username", "==", userToQuery), limit(1));
@@ -138,8 +140,8 @@ export default function UserProfilePage() {
                     username: userData.username || userData.email.split('@')[0],
                     banner: 'https://placehold.co/1000x300.png',
                     bannerHint: 'abstract tech pattern',
-                    followers: userData.followers || 1250,
-                    friends: userData.friends || 212,
+                    followers: userData.followers || 0,
+                    friendsCount: userData.friendsCount || 0,
                 });
             } else {
                  setProfileUser(null);
@@ -152,9 +154,7 @@ export default function UserProfilePage() {
         }
     }
 
-    if (!authLoading) {
-      fetchUserProfile();
-    }
+    fetchUserProfile();
   }, [username, loggedInUser, authLoading]);
 
   if (loading || authLoading) {
@@ -217,8 +217,8 @@ export default function UserProfilePage() {
                         <h2 className="text-3xl font-bold font-headline">{profileUser.displayName}</h2>
                         <p className="text-muted-foreground">@{profileUser.username}</p>
                         <div className="flex justify-center sm:justify-start gap-4 mt-2 text-sm">
-                            <Link href={`/profile/${profileUser.username}/friends`} className="hover:underline"><span className="font-semibold">{profileUser.friends}</span> Friends</Link>
-                            <Link href={`/profile/${profileUser.username}/friends`} className="hover:underline"><span className="font-semibold">{profileUser.followers}</span> Followers</Link>
+                            <Link href={`/friends`} className="hover:underline"><span className="font-semibold">{profileUser.friendsCount}</span> Friends</Link>
+                            <Link href={`/friends`} className="hover:underline"><span className="font-semibold">{profileUser.followers}</span> Followers</Link>
                         </div>
                     </div>
                      <div className="flex gap-2 flex-shrink-0">
