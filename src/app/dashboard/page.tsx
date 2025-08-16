@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/jummix/Footer";
 import { Separator } from "@/components/ui/separator";
 
+// Mock data for upcoming events - will be replaced by backend data
 const events = [
   {
     id: "summer-music-fest",
@@ -47,27 +48,8 @@ const events = [
       { name: "Alex", avatar: "https://placehold.co/40x40.png", hint: "person portrait" },
     ],
   },
-  {
-    id: "downtown-art-walk",
-    name: "Downtown Art Walk",
-    date: "July 25, 2024",
-    location: "Arts District",
-    image: "https://placehold.co/400x200.png",
-    hint: "art gallery",
-    friendsAttending: [],
-  },
-  {
-    id: "community-charity-gala",
-    name: "Community Charity Gala",
-    date: "October 12, 2024",
-    location: "The Grand Ballroom",
-    image: "https://placehold.co/400x200.png",
-    hint: "formal event",
-    friendsAttending: [
-      { name: "Carlos", avatar: "https://placehold.co/40x40.png", hint: "man portrait" },
-    ],
-  },
 ];
+
 
 export default function DashboardPage() {
   const { user, loading, signOut } = useAuth();
@@ -234,7 +216,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    

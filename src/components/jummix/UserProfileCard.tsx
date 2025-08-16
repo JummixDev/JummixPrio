@@ -13,33 +13,14 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export function UserProfileCard() {
-  const { user, signOut, loading: authLoading } = useAuth();
+  const { user, signOut, loading: authLoading, userData } = useAuth();
   const router = useRouter();
-  const [userData, setUserData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchUserData() {
-      if (user) {
-        setLoading(true);
-        const userDocRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists()) {
-          setUserData(docSnap.data());
-        }
-        setLoading(false);
-      }
-    }
-    if (!authLoading) {
-      fetchUserData();
-    }
-  }, [user, authLoading]);
 
   const handleSettingsClick = () => {
     router.push('/settings');
   }
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center p-12">
@@ -49,16 +30,21 @@ export function UserProfileCard() {
     );
   }
 
+  if (!user) {
+    return null; // Or some other placeholder for a non-logged-in state
+  }
+  
   const profileLink = `/profile/me`;
   const displayName = userData?.displayName || user?.displayName || user?.email?.split('@')[0] || 'User';
-  const username = userData?.username || user?.email?.split('@')[0] || 'username';
+  const username = user?.email?.split('@')[0] || 'username';
+  const photoURL = userData?.photoURL || user?.photoURL;
 
   return (
     <Card>
         <CardHeader className="flex flex-col items-center text-center pb-4">
             <Link href={profileLink}>
                 <Avatar className="w-24 h-24 mb-4 border-4 border-background ring-2 ring-primary">
-                <AvatarImage src={userData?.photoURL || user?.photoURL || 'https://placehold.co/128x128.png'} alt={displayName} data-ai-hint="person portrait" />
+                <AvatarImage src={photoURL || 'https://placehold.co/128x128.png'} alt={displayName} data-ai-hint="person portrait" />
                 <AvatarFallback>{displayName.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
             </Link>

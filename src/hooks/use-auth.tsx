@@ -21,11 +21,12 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, getDoc } from "firebase/firestore"; 
+import { doc, setDoc, getDoc, onSnapshot } from "firebase/firestore"; 
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
+  userData: any | null;
   loading: boolean;
   signUp: (email: string, pass: string) => Promise<any>;
   signIn: (email: string, pass: string) => Promise<any>;
@@ -40,17 +41,37 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
+      if (!user) {
+          setUserData(null);
+          setLoading(false);
+      }
     });
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      const userDocRef = doc(db, "users", user.uid);
+      const unsubscribe = onSnapshot(userDocRef, (doc) => {
+        if (doc.exists()) {
+          setUserData(doc.data());
+        } else {
+          // If the doc doesn't exist for some reason, create it.
+          createUserDocument(user);
+        }
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    }
+  }, [user]);
 
   const createUserDocument = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
@@ -66,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         bio: '',
         isVerifiedHost: false,
         interests: [],
-      });
+      }, { merge: true });
     }
   };
 
@@ -112,12 +133,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await updateProfile(auth.currentUser, profileData);
     // Also update the user's document in Firestore
     await setDoc(doc(db, "users", auth.currentUser.uid), profileData, { merge: true });
-    // Manually update the user state to reflect changes immediately
-    setUser(auth.currentUser);
   }
 
   const value = {
     user,
+    userData,
     loading,
     signUp,
     signIn,
