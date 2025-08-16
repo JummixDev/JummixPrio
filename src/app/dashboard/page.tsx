@@ -1,3 +1,6 @@
+
+'use client';
+
 import { UserProfileCard } from "@/components/jummix/UserProfileCard";
 import { Badges } from "@/components/jummix/Badges";
 import { EventReels } from "@/components/jummix/EventReels";
@@ -6,8 +9,12 @@ import { EventCard } from "@/components/jummix/EventCard";
 import { Leaderboard } from "@/components/jummix/Leaderboard";
 import { AIRecommender } from "@/components/jummix/AIRecommender";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search } from "lucide-react";
+import { MapPin, Search, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const events = [
   {
@@ -55,6 +62,19 @@ const events = [
 ];
 
 export default function DashboardPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return <div>Loading...</div>; // Or a proper loading skeleton
+  }
+
   return (
     <div className="bg-background min-h-screen font-body">
       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
@@ -67,9 +87,11 @@ export default function DashboardPage() {
                 <Input placeholder="Search events or friends..." className="pl-10" />
               </div>
             </div>
-            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
-              <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground hidden sm:flex">
+                <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
+              </Button>
+            </div>
           </div>
         </div>
       </header>
