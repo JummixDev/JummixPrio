@@ -91,6 +91,33 @@ export default function DashboardPage() {
               <Button className="bg-accent hover:bg-accent/90 text-accent-foreground hidden sm:flex">
                 <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
               </Button>
+               <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                  <div className="flex flex-col h-full">
+                    <div className="p-6">
+                        <h2 className="text-lg font-semibold font-headline">Menu</h2>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input placeholder="Search events or friends..." className="pl-10" />
+                        </div>
+                        <Button className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
+                            <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
+                        </Button>
+                    </div>
+                    <div className="mt-auto p-6">
+                        <UserProfileCard />
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
@@ -99,7 +126,7 @@ export default function DashboardPage() {
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start">
+          <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start hidden lg:block">
             <UserProfileCard />
             <Badges />
           </aside>
