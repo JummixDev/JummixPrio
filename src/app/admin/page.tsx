@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BarChart, Users, ShieldAlert, CheckCircle, ArrowLeft, MoreHorizontal, FileText, BadgeHelp, Check, X } from 'lucide-react';
+import { BarChart, Users, ShieldAlert, CheckCircle, ArrowLeft, MoreHorizontal, FileText, BadgeHelp, Check, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -271,20 +271,20 @@ export default function AdminPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const [activeSection, setActiveSection] = useState('stats');
-    const [isAdmin, setIsAdmin] = useState(false);
-
+    const [isAuthorized, setIsAuthorized] = useState(false);
 
     useEffect(() => {
+        // Wait until loading is false before we check for user and their role.
         if (!loading) {
             if (!user) {
-                // Not logged in, redirect to home
+                // Not logged in, redirect to home.
                 router.push('/');
             } else if (user.email !== ADMIN_EMAIL) {
-                // Logged in but not an admin, show access denied
-                setIsAdmin(false);
+                // Logged in but not an admin, deny access.
+                setIsAuthorized(false);
             } else {
-                 // It's an admin!
-                setIsAdmin(true);
+                 // It's the admin! Authorize access.
+                setIsAuthorized(true);
             }
         }
     }, [user, loading, router]);
@@ -296,11 +296,17 @@ export default function AdminPage() {
         { id: 'verifications', label: 'Verifications', icon: CheckCircle },
     ]
 
+    // Show a loading state while we verify auth.
     if (loading) {
-        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+        );
     }
-
-    if (!isAdmin) {
+    
+    // Once loading is complete, show either the dashboard or access denied.
+    if (!isAuthorized) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <ShieldAlert className="w-16 h-16 mb-4 text-destructive" />

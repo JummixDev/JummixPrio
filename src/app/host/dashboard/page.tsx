@@ -343,21 +343,36 @@ function AccessDenied() {
 
 
 export default function HostDashboardPage() {
-    const { user, loading, userData } = useAuth();
+    const { user, userData, loading } = useAuth();
     const router = useRouter();
+    const [isAuthorized, setIsAuthorized] = useState(false);
     
-    const isAdmin = user?.email === 'service@jummix.com';
-    const isVerifiedHost = userData?.isVerifiedHost || isAdmin;
-
-
     useEffect(() => {
-        if (!loading && !user) {
-            router.push('/');
+        // Wait until loading is false and we have user data.
+        if (!loading) {
+            if (!user) {
+                // Not logged in, redirect to home.
+                router.push('/');
+            } else {
+                // Check for admin or verified host status once we have userData.
+                const isAdmin = user.email === 'service@jummix.com';
+                const isVerifiedHost = userData?.isVerifiedHost || false;
+                if (isAdmin || isVerifiedHost) {
+                    setIsAuthorized(true);
+                } else {
+                    setIsAuthorized(false);
+                }
+            }
         }
-    }, [user, loading, router]);
+    }, [user, userData, loading, router]);
     
-    if (loading || !user) {
-        return <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+    // Show a loading state while we verify auth.
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+        );
     }
     
     return (
@@ -373,7 +388,7 @@ export default function HostDashboardPage() {
                 </div>
             </header>
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                {isVerifiedHost ? (
+                {isAuthorized ? (
                     <Tabs defaultValue="overview">
                         <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
                             <TabsTrigger value="overview"><BarChart className="mr-2 hidden md:block"/>Overview</TabsTrigger>
@@ -395,5 +410,3 @@ export default function HostDashboardPage() {
         </div>
     )
 }
-
-    
