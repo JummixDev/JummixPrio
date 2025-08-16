@@ -37,11 +37,43 @@ const pastEvents = [
         location: "Arts District",
         image: "https://placehold.co/400x200.png",
         hint: "art gallery",
-        price: 0,
-        isFree: true,
         friendsAttending: [],
     }
 ]
+
+const likedEvents = [
+    {
+        id: "tech-innovators-summit",
+        name: "Tech Innovators Summit",
+        date: "2024-09-05",
+        location: "Convention Center",
+        image: "https://placehold.co/400x200.png",
+        hint: "conference speaker",
+        friendsAttending: [],
+    }
+];
+
+const savedEvents = [
+     {
+        id: "summer-music-fest",
+        name: "Summer Music Fest",
+        date: "2024-08-15",
+        location: "Lakeside Park",
+        image: "https://placehold.co/400x200.png",
+        hint: "concert crowd",
+        friendsAttending: [],
+      },
+      {
+        id: "downtown-art-walk",
+        name: "Downtown Art Walk",
+        date: "2024-07-25",
+        location: "Arts District",
+        image: "https://placehold.co/400x200.png",
+        hint: "art gallery",
+        friendsAttending: [],
+    }
+];
+
 
 export default function MyEventsPage() {
   return (
@@ -58,10 +90,11 @@ export default function MyEventsPage() {
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
         <Tabs defaultValue="upcoming">
-            <TabsList className="mb-6 grid w-full grid-cols-3 sm:w-auto sm:grid-cols-3">
+            <TabsList className="mb-6 grid w-full grid-cols-2 sm:w-auto sm:grid-cols-4">
                 <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
                 <TabsTrigger value="past">Past</TabsTrigger>
                 <TabsTrigger value="liked">Liked</TabsTrigger>
+                <TabsTrigger value="saved">Saved</TabsTrigger>
             </TabsList>
 
             <TabsContent value="upcoming">
@@ -79,9 +112,30 @@ export default function MyEventsPage() {
                 </div>
             </TabsContent>
              <TabsContent value="liked">
-                <div className="text-center text-muted-foreground py-16">
-                    <p>You haven't liked any events yet.</p>
-                </div>
+                {likedEvents.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {likedEvents.map((event, index) => (
+                            <EventCard key={index} event={event} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center text-muted-foreground py-16">
+                        <p>You haven't liked any events yet.</p>
+                    </div>
+                )}
+            </TabsContent>
+            <TabsContent value="saved">
+                {savedEvents.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {savedEvents.map((event, index) => (
+                            <EventCard key={index} event={event} />
+                        ))}
+                    </div>
+                ) : (
+                     <div className="text-center text-muted-foreground py-16">
+                        <p>You haven't saved any events yet.</p>
+                    </div>
+                )}
             </TabsContent>
         </Tabs>
       </main>
