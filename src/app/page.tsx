@@ -125,10 +125,7 @@ export default function LandingPage() {
     <div className="bg-background text-foreground font-body">
       <header className="absolute top-0 left-0 right-0 z-10 p-4">
         <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-2">
-                <PartyPopper className="h-8 w-8 text-primary" />
-                <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
-            </div>
+            <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
             <Button onClick={scrollToSignup}>Sign In</Button>
         </div>
       </header>
@@ -219,10 +216,7 @@ export default function LandingPage() {
       <footer className="bg-card border-t">
           <div className="container mx-auto py-8 px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
             <div className="mb-4 md:mb-0">
-                <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                    <PartyPopper className="h-6 w-6 text-primary" />
-                    <h1 className="text-xl font-bold font-headline text-primary">Jummix</h1>
-                </div>
+                <h1 className="text-xl font-bold font-headline text-primary mb-2">Jummix</h1>
                 <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Jummix Inc. All rights reserved.</p>
             </div>
             <div className="flex gap-4">
@@ -235,5 +229,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
