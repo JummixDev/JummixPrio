@@ -314,9 +314,9 @@ export default function LandingPage() {
                     <Link href="/imprint" className="text-muted-foreground hover:text-primary transition-colors">Imprint</Link>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="icon"><Twitter className="h-5 w-5" /></Button>
-                    <Button variant="ghost" size="icon"><Instagram className="h-5 w-5" /></Button>
-                    <Button variant="ghost" size="icon"><Facebook className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon" asChild><Link href="https://twitter.com" target="_blank"><Twitter className="h-5 w-5" /></Link></Button>
+                    <Button variant="ghost" size="icon" asChild><Link href="https://instagram.com" target="_blank"><Instagram className="h-5 w-5" /></Link></Button>
+                    <Button variant="ghost" size="icon" asChild><Link href="https://facebook.com" target="_blank"><Facebook className="h-5 w-5" /></Link></Button>
                 </div>
             </div>
           </div>

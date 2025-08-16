@@ -6,9 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogOut, Settings } from "lucide-react";
 import { Button } from "../ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 export function UserProfileCard() {
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleEditProfile = () => {
+    toast({
+        title: "Feature Coming Soon!",
+        description: "We're working hard to bring this feature to you.",
+    });
+  }
   
   return (
     <Card>
@@ -35,7 +44,7 @@ export function UserProfileCard() {
           Lover of live music, outdoor adventures, and spontaneous weekend trips.
         </p>
         <div className="space-y-2">
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={handleEditProfile}>
                 <Settings className="mr-2 h-4 w-4" /> Edit Profile
             </Button>
             <Button variant="ghost" className="w-full" onClick={signOut}>

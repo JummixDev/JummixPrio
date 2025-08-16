@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 const events = [
   {
@@ -65,6 +66,7 @@ const events = [
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -74,6 +76,13 @@ export default function DashboardPage() {
 
   if (loading || !user) {
     return <div>Loading...</div>; // Or a proper loading skeleton
+  }
+
+  const handleFeatureClick = () => {
+    toast({
+        title: "Feature Coming Soon!",
+        description: "We're working hard to bring this feature to you.",
+    });
   }
 
   return (
@@ -91,7 +100,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground hidden sm:flex">
+              <Button onClick={handleFeatureClick} className="bg-accent hover:bg-accent/90 text-accent-foreground hidden sm:flex">
                 <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
               </Button>
                <Sheet>
@@ -104,14 +113,16 @@ export default function DashboardPage() {
                 <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                   <div className="flex flex-col h-full">
                     <div className="p-6">
-                        <h2 className="text-lg font-semibold font-headline">Menu</h2>
+                        <Link href="/">
+                            <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
+                        </Link>
                     </div>
                     <div className="p-6 space-y-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <Input placeholder="Search events or friends..." className="pl-10" />
                         </div>
-                        <Button className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
+                        <Button onClick={handleFeatureClick} className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
                             <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
                         </Button>
                     </div>
