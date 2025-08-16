@@ -9,7 +9,7 @@ import { EventCard } from "@/components/jummix/EventCard";
 import { Leaderboard } from "@/components/jummix/Leaderboard";
 import { AIRecommender } from "@/components/jummix/AIRecommender";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield } from "lucide-react";
+import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -141,11 +141,6 @@ export default function DashboardPage() {
                           </Link>
                         </Button>
                         )}
-                        <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
-                           <Link href="/settings">
-                            <Settings className="mr-2 h-5 w-5" /> Settings
-                          </Link>
-                        </Button>
                         {isAdmin && (
                             <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                                <Link href="/admin">
@@ -153,6 +148,27 @@ export default function DashboardPage() {
                               </Link>
                             </Button>
                         )}
+                        <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                           <Link href="/settings">
+                            <Settings className="mr-2 h-5 w-5" /> Settings
+                          </Link>
+                        </Button>
+                        <Separator />
+                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                           <Link href="/about">
+                            <Info className="mr-2 h-5 w-5" /> Über uns
+                          </Link>
+                        </Button>
+                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                           <Link href="/contact">
+                            <Mail className="mr-2 h-5 w-5" /> Kontakt
+                          </Link>
+                        </Button>
+                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                           <Link href="/faq">
+                            <HelpCircle className="mr-2 h-5 w-5" /> FAQ
+                          </Link>
+                        </Button>
                     </nav>
                   </div>
                     <div className="mt-auto p-6 border-t">
