@@ -53,20 +53,18 @@ const events = [
 
 
 export default function DashboardPage() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, userData } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  // In a real app, this would come from the user's profile/claims
-  const [isVerifiedHost, setIsVerifiedHost] = useState(false);
-  const isAdmin = user?.email === 'admin@jummix.com';
+  
+  const isAdmin = user?.email === 'service@jummix.com';
+  // A user is a host if their data says so, OR if they are the master admin
+  const isVerifiedHost = userData?.isVerifiedHost || isAdmin;
+
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/');
-    }
-    // Simulate fetching host status.
-    if (user && user.email === 'carlos.ray@example.com') {
-      setIsVerifiedHost(true);
     }
   }, [user, loading, router]);
 

@@ -345,17 +345,16 @@ function AccessDenied() {
 export default function HostDashboardPage() {
     const { user, loading, userData } = useAuth();
     const router = useRouter();
-    const [isVerifiedHost, setIsVerifiedHost] = useState(false);
+    
+    const isAdmin = user?.email === 'service@jummix.com';
+    const isVerifiedHost = userData?.isVerifiedHost || isAdmin;
+
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/');
         }
-        if (userData) {
-             setIsVerifiedHost(userData.isVerifiedHost);
-        }
-
-    }, [user, loading, router, userData]);
+    }, [user, loading, router]);
     
     if (loading || !user) {
         return <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;

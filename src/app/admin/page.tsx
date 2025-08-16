@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-const ADMIN_EMAIL = 'admin@jummix.com';
+const ADMIN_EMAIL = 'service@jummix.com';
 
 const mockUsers = [
     { id: 'user-1', name: 'Carlos Ray', email: 'carlos.ray@example.com', events: 42, status: 'Active', isHost: true },
