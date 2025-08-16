@@ -21,9 +21,18 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, onSnapshot, updateDoc } from "firebase/firestore"; 
+import { doc, setDoc, getDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"; 
 import { useRouter } from 'next/navigation';
+import { uploadFile } from '@/services/storage';
 
+
+interface UserProfileData {
+  displayName?: string;
+  photoURL?: string;
+  bio?: string;
+  bannerURL?: string;
+  interests?: string[];
+}
 interface AuthContextType {
   user: User | null;
   userData: any | null;
@@ -34,7 +43,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
-  updateUserProfile: (profileData: { displayName?: string, photoURL?: string, bio?: string }) => Promise<void>;
+  updateUserProfile: (profileData: UserProfileData) => Promise<void>;
+  updateUserProfileImage: (file: File, type: 'profile' | 'banner') => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,12 +80,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username: username,
         displayName: user.displayName || username,
         photoURL: user.photoURL || '',
+        bannerURL: '',
         bio: 'Welcome to Jummix! Edit your bio in the settings.',
         isVerifiedHost: false, // Default value for new users
         interests: [],
         followers: 0,
         friendsCount: 0,
         eventsCount: 0,
+        createdAt: serverTimestamp()
       };
       await setDoc(userDocRef, newUserData);
       setUserData(newUserData); // Immediately set user data in state
@@ -136,29 +148,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/');
   };
 
-  const updateUserProfile = async (profileData: { displayName?: string, photoURL?: string, bio?: string }) => {
+  const updateUserProfile = async (profileData: UserProfileData) => {
     if (!auth.currentUser) {
         throw new Error("No user is signed in to update profile.");
     }
-    
-    const { bio, ...authProfileData } = profileData;
+
+    const { bio, bannerURL, interests, ...authProfileData } = profileData;
 
     // Update Firebase Auth profile (displayName, photoURL)
     if (Object.keys(authProfileData).length > 0) {
       await updateProfile(auth.currentUser, authProfileData);
     }
     
-    // Update user's document in Firestore (bio and other custom fields)
+    // Update user's document in Firestore
     const userDocRef = doc(db, "users", auth.currentUser.uid);
-    
-    // Create a clean object to update, excluding undefined values
     const dataToUpdate: { [key: string]: any } = {};
-    if (profileData.displayName) dataToUpdate.displayName = profileData.displayName;
-    if (profileData.photoURL) dataToUpdate.photoURL = profileData.photoURL;
-    if (bio) dataToUpdate.bio = bio;
-
-    await updateDoc(userDocRef, dataToUpdate);
+    if (profileData.displayName !== undefined) dataToUpdate.displayName = profileData.displayName;
+    if (profileData.photoURL !== undefined) dataToUpdate.photoURL = profileData.photoURL;
+    if (bio !== undefined) dataToUpdate.bio = bio;
+    if (bannerURL !== undefined) dataToUpdate.bannerURL = bannerURL;
+    if (interests !== undefined) dataToUpdate.interests = interests;
+    
+    if (Object.keys(dataToUpdate).length > 0) {
+        await updateDoc(userDocRef, dataToUpdate);
+    }
   }
+  
+  const updateUserProfileImage = async (file: File, type: 'profile' | 'banner'): Promise<string> => {
+    if (!auth.currentUser) {
+        throw new Error("No user is signed in to update profile.");
+    }
+    const filePath = `${type}s/${auth.currentUser.uid}/${file.name}`;
+    const downloadURL = await uploadFile(file, filePath);
+
+    if (type === 'profile') {
+        await updateUserProfile({ photoURL: downloadURL });
+    } else if (type === 'banner') {
+        await updateUserProfile({ bannerURL: downloadURL });
+    }
+
+    return downloadURL;
+  };
 
   const value = {
     user,
@@ -171,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithApple,
     sendPasswordReset,
     updateUserProfile,
+    updateUserProfileImage
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

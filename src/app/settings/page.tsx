@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 function ProfileSettings() {
@@ -111,10 +113,36 @@ function ProfileSettings() {
 }
 
 function PhotoSettings() {
-    const handleUploadClick = (photoType: string) => {
-        alert(`In a real app, this would open a file dialog to upload a new ${photoType}.`);
-    }
+    const { userData, updateUserProfileImage } = useAuth();
+    const { toast } = useToast();
+    const [isUploading, setIsUploading] = useState<'profile' | 'banner' | null>(null);
 
+    const profileInputRef = useRef<HTMLInputElement>(null);
+    const bannerInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'banner') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(type);
+        try {
+            await updateUserProfileImage(file, type);
+            toast({
+                title: `${type.charAt(0).toUpperCase() + type.slice(1)} Image Updated`,
+                description: "Your new image has been saved."
+            });
+        } catch (error) {
+            console.error(error);
+            toast({
+                variant: 'destructive',
+                title: 'Upload Failed',
+                description: 'Could not upload your image. Please try again.'
+            });
+        } finally {
+            setIsUploading(null);
+        }
+    };
+    
     return (
         <Card>
             <CardHeader>
@@ -125,28 +153,55 @@ function PhotoSettings() {
                 <div>
                     <Label>Profile Picture</Label>
                     <div className="flex items-center gap-4 mt-2">
-                       {/* Placeholder for Avatar */}
-                        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center">
-                            <ImageIcon className="w-10 h-10 text-muted-foreground" />
-                        </div>
-                        <Button variant="outline" onClick={() => handleUploadClick('profile picture')}>Upload New</Button>
+                        <Avatar className="w-20 h-20">
+                            <AvatarImage src={userData?.photoURL} alt="Profile picture" />
+                            <AvatarFallback>
+                                <ImageIcon className="w-10 h-10 text-muted-foreground" />
+                            </AvatarFallback>
+                        </Avatar>
+                        <input
+                            type="file"
+                            ref={profileInputRef}
+                            onChange={(e) => handleFileChange(e, 'profile')}
+                            className="hidden"
+                            accept="image/png, image/jpeg, image/gif"
+                        />
+                        <Button variant="outline" onClick={() => profileInputRef.current?.click()} disabled={isUploading === 'profile'}>
+                            {isUploading === 'profile' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                            Upload New
+                        </Button>
                     </div>
                 </div>
                  <div>
                     <Label>Banner Image</Label>
-                    <div className="flex items-center gap-4 mt-2">
-                         {/* Placeholder for Banner */}
-                        <div className="w-48 h-20 bg-muted rounded-md flex items-center justify-center">
-                             <ImageIcon className="w-10 h-10 text-muted-foreground" />
+                    <div className="flex items-end gap-4 mt-2">
+                        <div className="w-48 h-24 bg-muted rounded-md relative overflow-hidden">
+                            {userData?.bannerURL ? (
+                                <Image src={userData.bannerURL} alt="Banner image" layout="fill" objectFit="cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <ImageIcon className="w-10 h-10 text-muted-foreground" />
+                                </div>
+                            )}
                         </div>
-                        <Button variant="outline" onClick={() => handleUploadClick('banner image')}>Upload New</Button>
+                        <input
+                            type="file"
+                            ref={bannerInputRef}
+                            onChange={(e) => handleFileChange(e, 'banner')}
+                            className="hidden"
+                            accept="image/png, image/jpeg, image/gif"
+                        />
+                        <Button variant="outline" onClick={() => bannerInputRef.current?.click()} disabled={isUploading === 'banner'}>
+                           {isUploading === 'banner' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                           Upload New
+                        </Button>
                     </div>
                 </div>
                 <Separator />
                  <div>
                     <h3 className="font-semibold mb-2">Photo Gallery</h3>
                     <p className="text-sm text-muted-foreground mb-4">Manage photos displayed on your profile's gallery tab.</p>
-                    <Button onClick={() => handleUploadClick('gallery photo')}><ImageIcon className="mr-2" /> Manage Gallery</Button>
+                    <Button onClick={() => alert("Gallery management coming soon!")}><ImageIcon className="mr-2" /> Manage Gallery</Button>
                 </div>
             </CardContent>
         </Card>

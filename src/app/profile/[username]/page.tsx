@@ -138,7 +138,7 @@ export default function UserProfilePage() {
                     ...userData,
                     id: userDoc.id,
                     username: userData.username || userData.email.split('@')[0],
-                    banner: 'https://placehold.co/1000x300.png',
+                    bannerURL: userData.bannerURL || 'https://placehold.co/1000x300.png',
                     bannerHint: 'abstract tech pattern',
                     followers: userData.followers || 0,
                     friendsCount: userData.friendsCount || 0,
@@ -202,8 +202,8 @@ export default function UserProfilePage() {
       <main className="flex-grow">
         <div className="container max-w-5xl mx-auto">
             {/* Banner */}
-            <div className="h-48 md:h-64 relative rounded-b-lg overflow-hidden">
-                <Image src={profileUser.banner} alt={`${profileUser.displayName}'s banner`} layout='fill' objectFit='cover' data-ai-hint={profileUser.bannerHint}/>
+            <div className="h-48 md:h-64 relative rounded-b-lg overflow-hidden bg-muted">
+                <Image src={profileUser.bannerURL} alt={`${profileUser.displayName}'s banner`} layout='fill' objectFit='cover' data-ai-hint={profileUser.bannerHint}/>
             </div>
 
             {/* Profile Header */}
