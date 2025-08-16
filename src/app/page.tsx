@@ -38,7 +38,6 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 function SignInForm() {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
   const { register, handleSubmit } = useForm();
-  const router = useRouter();
 
   const onSubmit = async (data: any) => {
     try {
@@ -52,23 +51,7 @@ function SignInForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
-        </div>
-
-        <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-                </span>
-            </div>
-        </div>
-
-        <div className="space-y-2">
+         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
@@ -90,6 +73,22 @@ function SignInForm() {
         <Button type="submit" className="w-full">
           Sign In
         </Button>
+
+        <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+                </span>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
+        </div>
       </div>
     </form>
   );
@@ -111,21 +110,6 @@ function SignUpForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
-              <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
-          </div>
-
-          <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                  </span>
-              </div>
-          </div>
         <div className="space-y-2">
           <Label htmlFor="signup-email">Email</Label>
           <Input
@@ -148,6 +132,20 @@ function SignUpForm() {
         <Button type="submit" className="w-full">
           Sign Up
         </Button>
+        <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+                </span>
+            </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
+        </div>
       </div>
     </form>
   );
@@ -289,3 +287,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
