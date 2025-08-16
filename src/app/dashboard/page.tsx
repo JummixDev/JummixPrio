@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { Footer } from "@/components/jummix/Footer";
 
 const events = [
   {
@@ -86,7 +87,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="bg-background min-h-screen font-body">
+    <div className="bg-background min-h-screen font-body flex flex-col">
       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -137,7 +138,7 @@ export default function DashboardPage() {
         </div>
       </header>
       
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start hidden lg:block">
@@ -165,6 +166,7 @@ export default function DashboardPage() {
 
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

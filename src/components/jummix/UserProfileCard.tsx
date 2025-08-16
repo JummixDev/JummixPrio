@@ -6,17 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogOut, Settings } from "lucide-react";
 import { Button } from "../ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export function UserProfileCard() {
   const { user, signOut } = useAuth();
-  const { toast } = useToast();
+  const router = useRouter();
 
   const handleEditProfile = () => {
-    toast({
-        title: "Feature Coming Soon!",
-        description: "We're working hard to bring this feature to you.",
-    });
+    router.push('/profile/edit');
   }
   
   return (
