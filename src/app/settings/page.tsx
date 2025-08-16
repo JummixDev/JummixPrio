@@ -168,11 +168,13 @@ function PrivacySettings() {
 }
 
 function NotificationSettings() {
+    const { toast } = useToast();
     const [notifications, setNotifications] = useState({
         friendRequest: { email: false, push: true },
         eventReminders: { email: true, push: true },
         newMessages: { email: false, push: true },
     });
+    const [globalPushEnabled, setGlobalPushEnabled] = useState(true);
 
     const handleToggle = (
         category: keyof typeof notifications, 
@@ -187,6 +189,33 @@ function NotificationSettings() {
         }));
     };
 
+    const handleGlobalPushToggle = async (checked: boolean) => {
+        if (checked) {
+            // This simulates the browser's permission dialog
+            // In a real app, you would use the Push API: `Notification.requestPermission()`
+            const permission = await new Promise<NotificationPermission>((resolve) => {
+                // This is a fake dialog for demonstration purposes
+                if (window.confirm("Jummix would like to show notifications. Allow?")) {
+                    resolve("granted");
+                } else {
+                    resolve("denied");
+                }
+            });
+
+            if (permission === 'granted') {
+                setGlobalPushEnabled(true);
+                toast({ title: "Push Notifications Enabled", description: "You will now receive push notifications." });
+            } else {
+                setGlobalPushEnabled(false);
+                toast({ variant: "destructive", title: "Push Notifications Denied", description: "You have blocked push notifications." });
+            }
+        } else {
+            setGlobalPushEnabled(false);
+            toast({ title: "Push Notifications Disabled", description: "You will no longer receive push notifications." });
+        }
+    };
+
+
     const notificationItems = [
         { id: 'friendRequest', title: 'New Friend Request', description: 'When someone sends you a friend request.' },
         { id: 'eventReminders', title: 'Event Reminders', description: 'For events you have RSVP\'d to.' },
@@ -199,31 +228,41 @@ function NotificationSettings() {
                 <CardTitle>Notifications</CardTitle>
                 <CardDescription>Choose how and when you want to be notified.</CardDescription>
             </CardHeader>
-            <CardContent className="divide-y">
-                {notificationItems.map(item => (
-                     <div key={item.id} className="py-4 flex items-start justify-between">
-                        <div>
-                            <Label>{item.title}</Label>
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="flex items-center gap-2" title="Email Notifications">
-                                <Mail className="w-4 h-4" />
-                                <Switch 
-                                    checked={notifications[item.id].email} 
-                                    onCheckedChange={() => handleToggle(item.id, 'email')}
-                                />
-                            </div>
-                            <div className="flex items-center gap-2" title="Push Notifications">
-                                <Bell className="w-4 h-4" />
-                                <Switch 
-                                    checked={notifications[item.id].push} 
-                                    onCheckedChange={() => handleToggle(item.id, 'push')}
-                                />
-                            </div>
-                        </div>
+            <CardContent className="space-y-4">
+                 <div className="flex items-center justify-between p-4 border rounded-lg bg-secondary/50">
+                    <div>
+                        <Label htmlFor="global-push-switch" className="text-base">Enable Push Notifications</Label>
+                        <p className="text-sm text-muted-foreground">Receive push notifications on this device.</p>
                     </div>
-                ))}
+                     <Switch id="global-push-switch" checked={globalPushEnabled} onCheckedChange={handleGlobalPushToggle} />
+                </div>
+                <div className={cn("divide-y transition-opacity", !globalPushEnabled && "opacity-50 pointer-events-none")}>
+                    {notificationItems.map(item => (
+                         <div key={item.id} className="py-4 flex items-start justify-between">
+                            <div>
+                                <Label>{item.title}</Label>
+                                <p className="text-sm text-muted-foreground">{item.description}</p>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="flex items-center gap-2" title="Email Notifications">
+                                    <Mail className="w-4 h-4" />
+                                    <Switch 
+                                        checked={notifications[item.id].email} 
+                                        onCheckedChange={() => handleToggle(item.id, 'email')}
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2" title="Push Notifications">
+                                    <Bell className="w-4 h-4" />
+                                    <Switch 
+                                        checked={notifications[item.id].push} 
+                                        onCheckedChange={() => handleToggle(item.id, 'push')}
+                                        disabled={!globalPushEnabled}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </CardContent>
         </Card>
     )
