@@ -19,6 +19,7 @@ import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import Link from 'next/link';
+import { auth } from '@/lib/firebase';
 
 function SignInForm() {
   const { signIn } = useAuth();
@@ -26,7 +27,7 @@ function SignInForm() {
 
   const onSubmit = async (data: any) => {
     try {
-      await signIn(data.email, data.password);
+      await signIn(auth, data.email, data.password);
     } catch (error) {
       console.error(error);
       // You can add user-facing error handling here
@@ -64,7 +65,7 @@ function SignUpForm() {
 
   const onSubmit = async (data: any) => {
     try {
-      await signUp(data.email, data.password);
+      await signUp(auth, data.email, data.password);
     } catch (error) {
       console.error(error);
       // You can add user-facing error handling here
@@ -182,7 +183,7 @@ export default function LandingPage() {
             <div className="container mx-auto" ref={signupCardRef}>
                 <Card className="w-full max-w-sm mx-auto shadow-2xl">
                     <CardHeader className="text-center">
-                    <PartyPopper className="mx-auto h-12 w-12 text-primary" />
+                    <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
                     <CardTitle className="text-2xl font-headline mt-4">
                         Join the Fun!
                     </CardTitle>
