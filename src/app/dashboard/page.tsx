@@ -72,7 +72,7 @@ export default function DashboardPage() {
     return <div>Loading...</div>; // Or a proper loading skeleton
   }
 
-  const userProfileLink = `/profile/${user?.email?.split('@')[0] || 'me'}`;
+  const userProfileLink = `/profile/me`;
 
   return (
     <div className="bg-background min-h-screen font-body flex flex-col">
