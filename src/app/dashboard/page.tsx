@@ -21,6 +21,7 @@ import { Footer } from "@/components/jummix/Footer";
 
 const events = [
   {
+    id: "summer-music-fest",
     name: "Summer Music Fest",
     date: "August 15-17, 2024",
     location: "Lakeside Park",
@@ -32,6 +33,7 @@ const events = [
     ],
   },
   {
+    id: "tech-innovators-summit",
     name: "Tech Innovators Summit",
     date: "September 5, 2024",
     location: "Convention Center",
@@ -45,6 +47,7 @@ const events = [
     ],
   },
   {
+    id: "downtown-art-walk",
     name: "Downtown Art Walk",
     date: "July 25, 2024",
     location: "Arts District",
@@ -53,6 +56,7 @@ const events = [
     friendsAttending: [],
   },
   {
+    id: "community-charity-gala",
     name: "Community Charity Gala",
     date: "October 12, 2024",
     location: "The Grand Ballroom",

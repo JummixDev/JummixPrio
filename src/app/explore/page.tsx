@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 const exploreEvents = [
   {
+    id: "summer-music-fest",
     name: "Summer Music Fest",
     date: "August 15-17, 2024",
     location: "Lakeside Park",
@@ -33,6 +34,7 @@ const exploreEvents = [
     ],
   },
   {
+    id: "tech-innovators-summit",
     name: "Tech Innovators Summit",
     date: "September 5, 2024",
     location: "Convention Center",
@@ -43,6 +45,7 @@ const exploreEvents = [
     ],
   },
   {
+    id: "downtown-art-walk",
     name: "Downtown Art Walk",
     date: "July 25, 2024",
     location: "Arts District",
@@ -51,6 +54,7 @@ const exploreEvents = [
     friendsAttending: [],
   },
    {
+    id: "live-jazz-night",
     name: "Live Jazz Night",
     date: "Every Friday",
     location: "The Blue Note Cafe",
@@ -61,6 +65,7 @@ const exploreEvents = [
     ],
   },
   {
+    id: "farmers-market",
     name: "Farmer's Market",
     date: "This Saturday",
     location: "City Square",
@@ -71,6 +76,7 @@ const exploreEvents = [
     ],
   },
   {
+    id: "outdoor-yoga",
     name: "Outdoor Yoga Session",
     date: "This Sunday Morning",
     location: "Lakeside Park",
