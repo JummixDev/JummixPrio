@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/jummix/Footer";
@@ -111,12 +111,17 @@ export default function DashboardPage() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                    <SheetHeader className="p-6 text-left">
+                        <SheetTitle>
+                            <Link href="/">
+                                <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
+                            </Link>
+                        </SheetTitle>
+                        <SheetDescription>
+                            Your social event hub.
+                        </SheetDescription>
+                    </SheetHeader>
                   <div className="flex flex-col h-full">
-                    <div className="p-6">
-                        <Link href="/">
-                            <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
-                        </Link>
-                    </div>
                     <div className="p-6 space-y-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
