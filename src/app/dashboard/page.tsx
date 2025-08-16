@@ -9,7 +9,7 @@ import { EventCard } from "@/components/jummix/EventCard";
 import { Leaderboard } from "@/components/jummix/Leaderboard";
 import { AIRecommender } from "@/components/jummix/AIRecommender";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail } from "lucide-react";
+import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -70,7 +70,7 @@ const events = [
 ];
 
 export default function DashboardPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   // In a real app, this would come from the user's profile/claims
@@ -122,13 +122,13 @@ export default function DashboardPage() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0 flex flex-col">
-                    <SheetHeader className="p-6 pb-4">
+                    <SheetHeader className="p-6 pb-4 border-b">
                         <SheetTitle className="text-2xl font-bold font-headline text-primary">
                            Jummix Menu
                         </SheetTitle>
                     </SheetHeader>
                   <div className="flex-grow overflow-y-auto">
-                    <nav className="p-6 pt-0 space-y-2">
+                    <nav className="p-4 space-y-1">
                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                            <Link href={userProfileLink}>
                             <User className="mr-2 h-5 w-5" /> My Profile
@@ -171,8 +171,10 @@ export default function DashboardPage() {
                         </Button>
                     </nav>
                   </div>
-                    <div className="p-6 border-t">
-                        <UserProfileCard />
+                    <div className="p-4 border-t">
+                        <Button variant="ghost" className="w-full justify-start text-base py-6" onClick={signOut}>
+                            <LogOut className="mr-2 h-5 w-5" /> Sign Out
+                        </Button>
                     </div>
                 </SheetContent>
               </Sheet>
@@ -213,3 +215,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
