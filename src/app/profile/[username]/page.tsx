@@ -5,10 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, Cake, VenetianMask, MapPin, Users, Award } from 'lucide-react';
+import { ArrowLeft, Cake, VenetianMask, MapPin, Users, Award, Rss, CalendarCheck, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { Footer } from '@/components/jummix/Footer';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EventCard } from '@/components/jummix/EventCard';
+import Image from 'next/image';
 
 const mockUsers: { [key: string]: any } = {
   carlosray: {
@@ -78,6 +81,34 @@ const mockUsers: { [key: string]: any } = {
   },
 };
 
+const mockAttendedEvents = [
+    {
+        id: "summer-music-fest",
+        name: "Summer Music Fest",
+        date: "2024-08-15",
+        location: "Lakeside Park",
+        image: "https://placehold.co/400x200.png",
+        hint: "concert crowd",
+        friendsAttending: [],
+    },
+    {
+        id: "tech-innovators-summit",
+        name: "Tech Innovators Summit",
+        date: "2024-09-05",
+        location: "Convention Center",
+        image: "https://placehold.co/400x200.png",
+        hint: "conference speaker",
+        friendsAttending: [],
+    }
+]
+
+const mockGallery = [
+    { src: "https://placehold.co/600x400.png", hint: "user photo" },
+    { src: "https://placehold.co/600x400.png", hint: "user selfie" },
+    { src: "https://placehold.co/600x400.png", hint: "travel picture" },
+    { src: "https://placehold.co/600x400.png", hint: "event photo" },
+]
+
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
@@ -113,61 +144,66 @@ export default function UserProfilePage() {
     <div className="bg-background min-h-screen flex flex-col">
        <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
-              <Button variant="ghost" size="icon" asChild>
-                  <Link href="/dashboard">
-                      <ArrowLeft />
-                  </Link>
+              <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                  <ArrowLeft />
               </Button>
               <h1 className="text-xl font-bold ml-4">{user.name}'s Profile</h1>
           </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
-        <Card className="max-w-4xl mx-auto">
+        <Card className="max-w-4xl mx-auto overflow-hidden">
             <CardHeader className="bg-secondary/50 p-8 flex flex-col md:flex-row items-center gap-8">
                 <Avatar className="w-32 h-32 border-4 border-background ring-4 ring-primary">
                     <AvatarImage src={user.avatar} alt={user.name} data-ai-hint={user.hint} />
                     <AvatarFallback>{user.name.substring(0,2).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <div className="text-center md:text-left">
+                <div className="text-center md:text-left flex-grow">
                     <CardTitle className="text-4xl font-headline">{user.name}</CardTitle>
                     <CardDescription className="text-lg">@{user.username}</CardDescription>
+                    <p className="text-sm mt-4 max-w-prose">{user.bio}</p>
                     <div className="flex justify-center md:justify-start gap-4 mt-4">
                         <Button onClick={handleFollow}>Follow</Button>
                         <Button onClick={handleMessage} variant="outline">Message</Button>
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="p-8">
-                <p className="text-center md:text-left mb-8">{user.bio}</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-sm">
-                    <div className="flex items-center gap-3">
-                        <Cake className="w-5 h-5 text-primary" /> <span>{user.age} years old</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <VenetianMask className="w-5 h-5 text-primary" /> <span>{user.gender}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5 text-primary" /> <span>{user.location}</span>
-                    </div>
-                     <div className="flex items-center gap-3">
-                        <Award className="w-5 h-5 text-primary" /> <span>{user.eventsAttended} events attended</span>
-                    </div>
-                     <div className="flex items-center gap-3">
-                        <Users className="w-5 h-5 text-primary" /> <span>{user.friendsCount} friends</span>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 className="text-lg font-bold font-headline mb-4">Interests</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {user.interests.map((interest: string) => (
-                             <div key={interest} className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-sm font-medium">
-                                {interest}
+            <CardContent className="p-0">
+                <Tabs defaultValue="attended" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3 rounded-none">
+                        <TabsTrigger value="hosted" className="rounded-none"><Rss className="mr-2"/> Hosted</TabsTrigger>
+                        <TabsTrigger value="attended" className="rounded-none"><CalendarCheck className="mr-2"/> Attended</TabsTrigger>
+                        <TabsTrigger value="gallery" className="rounded-none"><Camera className="mr-2"/> Gallery</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="hosted" className="p-6">
+                         <div className="text-center text-muted-foreground py-8">
+                            <p>{user.name} hasn't hosted any events yet.</p>
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="attended" className="p-6 bg-secondary/30">
+                        <h3 className="text-lg font-bold font-headline mb-4">Events Attended by {user.name}</h3>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           {mockAttendedEvents.map(event => (
+                                <EventCard key={event.id} event={event} />
+                           ))}
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="gallery" className="p-6">
+                        <h3 className="text-lg font-bold font-headline mb-4">Photo Gallery</h3>
+                        {mockGallery.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {mockGallery.map((photo, index) => (
+                                    <div key={index} className="aspect-square relative rounded-lg overflow-hidden">
+                                        <Image src={photo.src} alt={`Gallery photo ${index + 1}`} layout='fill' objectFit='cover' data-ai-hint={photo.hint} />
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                </div>
+                        ) : (
+                             <div className="text-center text-muted-foreground py-8">
+                                <p>{user.name} hasn't added any photos yet.</p>
+                            </div>
+                        )}
+                    </TabsContent>
+                </Tabs>
             </CardContent>
         </Card>
       </main>

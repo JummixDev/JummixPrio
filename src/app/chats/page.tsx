@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, Paperclip, Send, Camera } from 'lucide-react';
+import { ArrowLeft, Search, Paperclip, Send, Camera, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -21,24 +21,34 @@ const mockConversations = [
     { id: 5, name: 'Alex Doe', lastMessage: 'You sent a photo.', time: '5d', avatar: 'https://placehold.co/40x40.png', hint: 'person portrait' },
 ];
 
-const mockMessages = {
-    1: [
+const mockMessages: { [key: string]: any[] } = {
+    '1': [
         { sender: 'Jenna Smith', text: 'Hey! Are you excited for the music fest?', time: '15m', me: false },
         { sender: 'Me', text: 'Absolutely! Can\'t wait. The lineup looks incredible.', time: '14m', me: true },
         { sender: 'Jenna Smith', text: 'I know, right? We should meet up by the main stage.', time: '12m', me: false },
         { sender: 'Me', text: 'Sounds like a plan! I\'ll text you when I get there.', time: '11m', me: true },
         { sender: 'Jenna Smith', text: 'See you there!', time: '10m', me: false },
     ],
-    2: [
+    '2': [
         { sender: 'Alex Doe', text: 'Who is everyone most excited to see?', time: '3h', me: false },
         { sender: 'Aisha Khan', text: 'The lineup is amazing!', time: '2h', me: false },
-    ]
-}
+    ],
+    '3': [
+        { sender: 'Carlos Ray', text: 'Let\'s connect after the summit.', time: '1d', me: false },
+    ],
+};
 
 
 export default function ChatsPage() {
-    const [selectedConversation, setSelectedConversation] = useState(mockConversations[0]);
-    const messages = (mockMessages as any)[selectedConversation.id] || [];
+    const [selectedConversation, setSelectedConversation] = useState<any>(null);
+    
+    // Set a default selected conversation on initial render
+    useState(() => {
+        setSelectedConversation(mockConversations[0]);
+        return null;
+    });
+
+    const messages = selectedConversation ? (mockMessages as any)[selectedConversation.id] || [] : [];
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
@@ -73,7 +83,7 @@ export default function ChatsPage() {
                             {mockConversations.map(convo => (
                                 <div key={convo.id}
                                     onClick={() => setSelectedConversation(convo)}
-                                    className={`flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50 ${selectedConversation.id === convo.id ? 'bg-muted' : ''}`}>
+                                    className={`flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50 ${selectedConversation?.id === convo.id ? 'bg-muted' : ''}`}>
                                     <Avatar className="w-12 h-12 relative">
                                         <AvatarImage src={convo.avatar} alt={convo.name} data-ai-hint={convo.hint} />
                                         <AvatarFallback>{convo.name.substring(0,2)}</AvatarFallback>
