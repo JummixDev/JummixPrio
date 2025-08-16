@@ -14,9 +14,9 @@ const mockUser = {
   username: 'alexdoe',
   avatar: 'https://placehold.co/128x128.png',
   hint: 'person portrait',
-  bio: 'Lover of live music, outdoor adventures, and spontaneous weekend trips.',
-  events: 28,
-  friends: 152,
+  bio: 'A mystery wrapped in an enigma. Shows up at the coolest events, knows everyone, but says little. What will they do next?',
+  events: 2,
+  friends: 2,
 }
 
 export function UserProfileCard() {
@@ -28,19 +28,22 @@ export function UserProfileCard() {
   }
   
   const profileLink = `/profile/${user?.email?.split('@')[0] || 'me'}`;
+  const displayName = user?.displayName || mockUser.name;
+  const username = user?.email?.split('@')[0] || mockUser.username;
+
 
   return (
     <Card>
         <CardHeader className="flex flex-col items-center text-center pb-4">
             <Link href={profileLink}>
                 <Avatar className="w-24 h-24 mb-4 border-4 border-background ring-2 ring-primary">
-                <AvatarImage src={user?.photoURL || mockUser.avatar} alt={user?.displayName || mockUser.name} data-ai-hint={mockUser.hint} />
-                <AvatarFallback>{mockUser.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={user?.photoURL || mockUser.avatar} alt={displayName} data-ai-hint={mockUser.hint} />
+                <AvatarFallback>{displayName.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
             </Link>
-            <CardTitle className="font-headline">{user?.displayName || mockUser.name}</CardTitle>
+            <CardTitle className="font-headline">{displayName}</CardTitle>
             <Link href={profileLink}>
-                <p className="text-muted-foreground hover:underline">@{user?.email?.split('@')[0] || mockUser.username}</p>
+                <p className="text-muted-foreground hover:underline">@{username}</p>
             </Link>
         </CardHeader>
       <CardContent className="text-center">

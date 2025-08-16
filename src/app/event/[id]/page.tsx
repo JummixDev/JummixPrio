@@ -20,12 +20,13 @@ const mockEvents: { [key: string]: any } = {
     organizer: {
       name: "SF Music Events",
       avatar: "https://placehold.co/40x40.png",
-      hint: "company logo"
+      hint: "company logo",
+      username: "carlosray"
     },
     attendees: [
-      { name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait" },
-      { name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses" },
-      { name: "Alex", avatar: "https://placehold.co/40x40.png", hint: "person portrait" },
+      { name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait", username: "jennasmith" },
+      { name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses", username: "davidlee" },
+      { name: "Alex", avatar: "https://placehold.co/40x40.png", hint: "person portrait", username: "alexdoe" },
     ],
     gallery: [
         { src: "https://placehold.co/600x400.png", hint: "festival stage" },
@@ -47,11 +48,12 @@ const mockEvents: { [key: string]: any } = {
     organizer: {
       name: "TechCon Inc.",
       avatar: "https://placehold.co/40x40.png",
-      hint: "tech logo"
+      hint: "tech logo",
+      username: "carlosray"
     },
     attendees: [
-      { name: "Carlos", avatar: "https://placehold.co/40x40.png", hint: "man portrait" },
-      { name: "Aisha", avatar: "https://placehold.co/40x40.png", hint: "woman face" },
+      { name: "Carlos", avatar: "https://placehold.co/40x40.png", hint: "man portrait", username: "carlosray" },
+      { name: "Aisha", avatar: "https://placehold.co/40x40.png", hint: "woman face", username: "aishakhan" },
     ],
     gallery: [
         { src: "https://placehold.co/600x400.png", hint: "keynote speaker" },
@@ -68,7 +70,7 @@ const mockEvents: { [key: string]: any } = {
     image: "https://placehold.co/1200x600.png",
     hint: "art gallery",
     description: "Explore the vibrant art scene of the downtown Arts District. Visit local galleries, meet artists, and enjoy live music and street performances. A perfect evening for art lovers.",
-    organizer: { name: "City Arts Council", avatar: "https://placehold.co/40x40.png", hint: "city seal" },
+    organizer: { name: "City Arts Council", avatar: "https://placehold.co/40x40.png", hint: "city seal", username: "carlosray" },
     attendees: [],
     gallery: [],
   },
@@ -82,8 +84,8 @@ const mockEvents: { [key: string]: any } = {
     image: "https://placehold.co/1200x600.png",
     hint: "jazz club",
     description: "Experience the soulful sounds of live jazz in an intimate setting. Our house band plays a mix of classics and modern jazz. Full bar and dinner menu available.",
-    organizer: { name: "The Blue Note Cafe", avatar: "https://placehold.co/40x40.png", hint: "cafe logo" },
-    attendees: [{ name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses" }],
+    organizer: { name: "The Blue Note Cafe", avatar: "https://placehold.co/40x40.png", hint: "cafe logo", username: "carlosray" },
+    attendees: [{ name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses", username: "davidlee" }],
     gallery: [],
   },
   "farmers-market": {
@@ -96,8 +98,8 @@ const mockEvents: { [key: string]: any } = {
     image: "https://placehold.co/1200x600.png",
     hint: "market stall",
     description: "Get your fresh, local produce, artisanal goods, and delicious baked treats at the City Square Farmer's Market. Support local farmers and businesses!",
-    organizer: { name: "City of Springfield", avatar: "https://placehold.co/40x40.png", hint: "city hall" },
-    attendees: [{ name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait" }],
+    organizer: { name: "City of Springfield", avatar: "https://placehold.co/40x40.png", hint: "city hall", username: "carlosray" },
+    attendees: [{ name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait", username: "jennasmith" }],
     gallery: [],
   },
   "outdoor-yoga": {
@@ -110,7 +112,7 @@ const mockEvents: { [key: string]: any } = {
     image: "https://placehold.co/1200x600.png",
     hint: "yoga park",
     description: "Start your Sunday with a refreshing yoga session by the lake. All levels are welcome. Please bring your own mat and water bottle.",
-    organizer: { name: "ZenFlow Yoga", avatar: "https://placehold.co/40x40.png", hint: "yoga logo" },
+    organizer: { name: "ZenFlow Yoga", avatar: "https://placehold.co/40x40.png", hint: "yoga logo", username: "carlosray" },
     attendees: [],
     gallery: [],
   },

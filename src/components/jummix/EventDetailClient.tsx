@@ -25,6 +25,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '../ui/separator';
+import Link from 'next/link';
+import { EventCard } from './EventCard';
 
 type Event = {
     id: string;
@@ -40,8 +42,9 @@ type Event = {
       name: string;
       avatar: string;
       hint: string;
+      username: string;
     };
-    attendees: { name: string; avatar: string; hint: string }[];
+    attendees: { name: string; avatar: string; hint: string, username: string }[];
     gallery: { src: string; hint: string }[];
 };
 
@@ -118,6 +121,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         <Image src={photo.src} alt={`Gallery photo ${index + 1}`} layout='fill' objectFit='cover' data-ai-hint={photo.hint} />
                                     </div>
                                 ))}
+                                { event.gallery.length === 0 && <p className='text-muted-foreground text-sm'>No photos yet. Be the first to add one!</p>}
                             </div>
                         </CardContent>
                     </Card>
@@ -131,6 +135,16 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center">
                                 <p className="text-muted-foreground">Map placeholder</p>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                     {/* Similar Events */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline">Similar Events</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <p className='text-muted-foreground text-sm'>Similar events would be displayed here.</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -161,9 +175,14 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         </CardHeader>
                         <CardContent>
                             {isAttending ? (
-                                <Button disabled className="w-full">
-                                    <CheckCircle className="mr-2" /> Attending
-                                </Button>
+                                <div className='space-y-2'>
+                                    <Button disabled className="w-full">
+                                        <CheckCircle className="mr-2" /> Attending
+                                    </Button>
+                                    <Button variant="outline" className="w-full" onClick={() => {}}>
+                                        Go to Group Chat
+                                    </Button>
+                                </div>
                             ) : event.isFree ? (
                                  <Button onClick={handleAttendClick} className="w-full">
                                     <PlusCircle className="mr-2" /> RSVP Now
@@ -181,10 +200,12 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                              <h3 className="font-semibold text-center mb-4">{event.attendees.length} people are going</h3>
                              <div className="flex justify-center -space-x-2">
                                 {event.attendees.map(friend => (
-                                    <Avatar key={friend.name} className="h-12 w-12 border-2 border-background">
-                                        <AvatarImage src={friend.avatar} alt={friend.name} data-ai-hint={friend.hint}/>
-                                        <AvatarFallback>{friend.name.substring(0,1)}</AvatarFallback>
-                                    </Avatar>
+                                    <Link key={friend.username} href={`/profile/${friend.username}`}>
+                                        <Avatar className="h-12 w-12 border-2 border-background hover:ring-2 hover:ring-primary transition-all">
+                                            <AvatarImage src={friend.avatar} alt={friend.name} data-ai-hint={friend.hint}/>
+                                            <AvatarFallback>{friend.name.substring(0,1)}</AvatarFallback>
+                                        </Avatar>
+                                    </Link>
                                 ))}
                             </div>
                         </CardContent>
@@ -192,16 +213,16 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                          <Separator className="my-4"/>
 
                          <CardContent>
-                            <div className="flex items-center gap-4">
+                            <Link href={`/profile/${event.organizer.username}`} className="flex items-center gap-4 group">
                                 <Avatar className="w-12 h-12">
                                     <AvatarImage src={event.organizer.avatar} data-ai-hint={event.organizer.hint} />
                                     <AvatarFallback>{event.organizer.name.substring(0,2)}</AvatarFallback>
                                 </Avatar>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Organized by</p>
-                                    <p className="font-bold">{event.organizer.name}</p>
+                                    <p className="font-bold group-hover:underline group-hover:text-primary transition-colors">{event.organizer.name}</p>
                                 </div>
-                            </div>
+                            </Link>
                          </CardContent>
                     </Card>
                 </div>

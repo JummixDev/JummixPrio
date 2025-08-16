@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
+import Link from 'next/link';
 
 
 const mockUsers: { [key: string]: any } = {
@@ -95,7 +96,8 @@ const mockUsers: { [key: string]: any } = {
     hint: 'person portrait',
     bio: 'A mystery wrapped in an enigma. Shows up at the coolest events, knows everyone, but says little. What will they do next?',
     followers: 2300,
-    friends: 500,
+    friends: 2,
+    events: 2,
     interests: ['Spontaneity', 'Live Music', 'Art Installations', 'Good Vibes'],
   },
 };
@@ -180,10 +182,19 @@ export default function UserProfilePage() {
   const { user: loggedInUser } = useAuth();
   
   const username = typeof params.username === 'string' ? params.username : '';
-  const user = mockUsers[username] || mockUsers['me']; // Fallback to 'me' for dynamic routes
+  let user = mockUsers[username];
   
+  // This logic ensures that if the route is /profile/me, we show the logged in user's data.
   const myUsername = loggedInUser?.email?.split('@')[0];
-  const isMe = username === myUsername;
+  const isMe = username === myUsername || username === 'me';
+  if (isMe) {
+    user = {
+        ...mockUsers['me'],
+        name: loggedInUser?.displayName || mockUsers['me'].name,
+        username: myUsername || mockUsers['me'].username,
+    }
+  }
+
 
   if (!user) {
     return (
@@ -206,8 +217,10 @@ export default function UserProfilePage() {
     <div className="bg-secondary/20 min-h-screen flex flex-col">
        <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
-              <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/dashboard">
                   <ArrowLeft />
+                </Link>
               </Button>
               <div className="ml-4">
                   <h1 className="text-xl font-bold">{user.name}</h1>
@@ -218,14 +231,14 @@ export default function UserProfilePage() {
       <main className="flex-grow">
         <div className="container max-w-5xl mx-auto">
             {/* Banner */}
-            <div className="h-48 md:h-64 relative">
-                <Image src={user.banner} alt={`${user.name}'s banner`} layout='fill' objectFit='cover' className='rounded-b-lg' data-ai-hint={user.bannerHint}/>
+            <div className="h-48 md:h-64 relative rounded-b-lg overflow-hidden">
+                <Image src={user.banner} alt={`${user.name}'s banner`} layout='fill' objectFit='cover' data-ai-hint={user.bannerHint}/>
             </div>
 
             {/* Profile Header */}
-            <div className="px-4 sm:px-8">
-                 <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col sm:flex-row items-center sm:items-end gap-6 relative -mt-16 sm:-mt-20 z-20">
-                     <Avatar className="w-32 h-32 md:w-40 md:h-40 border-4 border-background ring-4 ring-primary flex-shrink-0">
+             <div className="relative px-4 sm:px-8 z-20">
+                 <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-24 sm:-mt-20">
+                     <Avatar className="w-32 h-32 md:w-40 md:h-40 border-4 border-background ring-4 ring-primary flex-shrink-0 -mt-12 sm:-mt-0">
                         <AvatarImage src={user.avatar} alt={user.name} data-ai-hint={user.hint} />
                         <AvatarFallback>{user.name.substring(0,2).toUpperCase()}</AvatarFallback>
                     </Avatar>
@@ -233,7 +246,7 @@ export default function UserProfilePage() {
                         <h2 className="text-3xl font-bold font-headline">{user.name}</h2>
                         <p className="text-muted-foreground">@{user.username}</p>
                         <div className="flex justify-center sm:justify-start gap-4 mt-2 text-sm">
-                            <span className="font-semibold">{user.friends}</span> Friends
+                            <Link href="/friends" className="hover:underline"><span className="font-semibold">{user.friends}</span> Friends</Link>
                             <span className="font-semibold">{user.followers}</span> Followers
                         </div>
                     </div>

@@ -22,11 +22,6 @@ const rankColors: { [key: number]: string } = {
 };
 
 export function Leaderboard() {
-  const router = useRouter();
-
-  const handleUserClick = (username: string) => {
-    router.push(`/profile/${username}`);
-  };
 
   return (
     <Card>
@@ -38,16 +33,18 @@ export function Leaderboard() {
       <CardContent>
         <ul className="space-y-4">
           {users.map((user) => (
-            <li key={user.rank} className="flex items-center space-x-4 cursor-pointer hover:bg-muted/50 p-2 rounded-md" onClick={() => handleUserClick(user.username)}>
-              <span className={`font-bold text-lg w-6 text-center ${rankColors[user.rank] || 'text-muted-foreground'}`}>{user.rank}</span>
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={user.avatar} alt={user.name} data-ai-hint={user.hint} />
-                <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-              </Avatar>
-              <div className="flex-grow">
-                <p className="font-semibold text-foreground truncate">{user.name}</p>
-              </div>
-              <span className="font-bold text-primary">{user.points} pts</span>
+            <li key={user.rank}>
+              <Link href={`/profile/${user.username}`} className="flex items-center space-x-4 cursor-pointer hover:bg-muted/50 p-2 rounded-md">
+                <span className={`font-bold text-lg w-6 text-center ${rankColors[user.rank] || 'text-muted-foreground'}`}>{user.rank}</span>
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={user.avatar} alt={user.name} data-ai-hint={user.hint} />
+                  <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-grow">
+                  <p className="font-semibold text-foreground truncate">{user.name}</p>
+                </div>
+                <span className="font-bold text-primary">{user.points} pts</span>
+              </Link>
             </li>
           ))}
         </ul>

@@ -14,11 +14,11 @@ import { Footer } from '@/components/jummix/Footer';
 
 
 const mockConversations = [
-    { id: 1, name: 'Jenna Smith', lastMessage: 'See you there!', time: '10m', avatar: 'https://placehold.co/40x40.png', hint: 'woman portrait', online: true },
-    { id: 2, name: 'Summer Music Fest Group', lastMessage: 'Aisha: The lineup is amazing!', time: '2h', avatar: 'https://placehold.co/40x40.png', hint: 'concert crowd' },
-    { id: 3, name: 'Carlos Ray', lastMessage: 'Let\'s connect after the summit.', time: '1d', avatar: 'https://placehold.co/40x40.png', hint: 'man portrait' },
-    { id: 4, name: 'Tech Innovators Summit', lastMessage: 'Official announcements here.', time: '3d', avatar: 'https://placehold.co/40x40.png', hint: 'tech logo' },
-    { id: 5, name: 'Alex Doe', lastMessage: 'You sent a photo.', time: '5d', avatar: 'https://placehold.co/40x40.png', hint: 'person portrait' },
+    { id: 1, name: 'Jenna Smith', username: 'jennasmith', lastMessage: 'See you there!', time: '10m', avatar: 'https://placehold.co/40x40.png', hint: 'woman portrait', online: true },
+    { id: 2, name: 'Summer Music Fest Group', username: 'group', lastMessage: 'Aisha: The lineup is amazing!', time: '2h', avatar: 'https://placehold.co/40x40.png', hint: 'concert crowd' },
+    { id: 3, name: 'Carlos Ray', username: 'carlosray', lastMessage: 'Let\'s connect after the summit.', time: '1d', avatar: 'https://placehold.co/40x40.png', hint: 'man portrait' },
+    { id: 4, name: 'Tech Innovators Summit', username: 'group', lastMessage: 'Official announcements here.', time: '3d', avatar: 'https://placehold.co/40x40.png', hint: 'tech logo' },
+    { id: 5, name: 'Alex Doe', username: 'alexdoe', lastMessage: 'You sent a photo.', time: '5d', avatar: 'https://placehold.co/40x40.png', hint: 'person portrait' },
 ];
 
 const mockMessages: { [key: string]: any[] } = {
@@ -113,14 +113,16 @@ export default function ChatsPage() {
                     <>
                         {/* Chat Header */}
                         <div className="flex items-center gap-4 p-4 border-b">
-                            <Avatar className="w-10 h-10">
-                                <AvatarImage src={selectedConversation.avatar} alt={selectedConversation.name} data-ai-hint={selectedConversation.hint} />
-                                <AvatarFallback>{selectedConversation.name.substring(0,2)}</AvatarFallback>
-                            </Avatar>
-                            <div>
+                           <Link href={`/profile/${selectedConversation.username}`}>
+                                <Avatar className="w-10 h-10">
+                                    <AvatarImage src={selectedConversation.avatar} alt={selectedConversation.name} data-ai-hint={selectedConversation.hint} />
+                                    <AvatarFallback>{selectedConversation.name.substring(0,2)}</AvatarFallback>
+                                </Avatar>
+                           </Link>
+                            <Link href={`/profile/${selectedConversation.username}`} className="hover:underline">
                                 <p className="font-semibold">{selectedConversation.name}</p>
                                 {selectedConversation.online && <p className="text-xs text-green-500">Online</p>}
-                            </div>
+                            </Link>
                         </div>
 
                         {/* Messages */}
