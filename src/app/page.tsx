@@ -20,7 +20,8 @@ import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Separator } from '@/components/ui/separator';
+import { useToast } from "@/hooks/use-toast";
+import { FirebaseError } from 'firebase/app';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -38,13 +39,32 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 function SignInForm() {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
   const { register, handleSubmit } = useForm();
+  const { toast } = useToast();
 
   const onSubmit = async (data: any) => {
     try {
       await signIn(data.email, data.password);
     } catch (error) {
+        if (error instanceof FirebaseError) {
+            switch (error.code) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    toast({
+                        variant: "destructive",
+                        title: "Login Failed",
+                        description: "Invalid email or password. Please try again.",
+                    });
+                    break;
+                default:
+                    toast({
+                        variant: "destructive",
+                        title: "An error occurred.",
+                        description: "Something went wrong. Please try again later.",
+                    });
+            }
+        }
       console.error(error);
-      // You can add user-facing error handling here
     }
   };
 
@@ -97,13 +117,26 @@ function SignInForm() {
 function SignUpForm() {
   const { signUp, signInWithGoogle, signInWithApple } = useAuth();
   const { register, handleSubmit } = useForm();
+  const { toast } = useToast();
 
   const onSubmit = async (data: any) => {
     try {
       await signUp(data.email, data.password);
     } catch (error) {
+        if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
+            toast({
+                variant: "destructive",
+                title: "Sign-up failed.",
+                description: "This email is already in use. Please sign in instead.",
+            });
+        } else {
+            toast({
+                variant: "destructive",
+                title: "An error occurred.",
+                description: "Something went wrong. Please try again later.",
+            });
+        }
       console.error(error);
-      // You can add user-facing error handling here
     }
   };
 
@@ -287,5 +320,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
