@@ -12,8 +12,8 @@ export function UserProfileCard() {
   const { user, signOut } = useAuth();
   const router = useRouter();
 
-  const handleEditProfile = () => {
-    router.push('/profile/edit');
+  const handleSettingsClick = () => {
+    router.push('/settings');
   }
   
   return (
@@ -41,8 +41,8 @@ export function UserProfileCard() {
           Lover of live music, outdoor adventures, and spontaneous weekend trips.
         </p>
         <div className="space-y-2">
-            <Button variant="outline" className="w-full" onClick={handleEditProfile}>
-                <Settings className="mr-2 h-4 w-4" /> Edit Profile
+            <Button variant="outline" className="w-full" onClick={handleSettingsClick}>
+                <Settings className="mr-2 h-4 w-4" /> Account Settings
             </Button>
             <Button variant="ghost" className="w-full" onClick={signOut}>
                 <LogOut className="mr-2 h-4 w-4" /> Sign Out
