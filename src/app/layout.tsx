@@ -31,11 +31,9 @@ export default function RootLayout({
       <body className="font-body antialiased h-full">
         <AuthProvider>
             {children}
-            <Toaster />
         </AuthProvider>
+        <Toaster />
       </body>
     </html>
   );
 }
-
-    

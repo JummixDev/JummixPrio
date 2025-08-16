@@ -19,7 +19,6 @@ import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import Link from 'next/link';
-import { auth } from '@/lib/firebase';
 
 function SignInForm() {
   const { signIn } = useAuth();
@@ -27,7 +26,7 @@ function SignInForm() {
 
   const onSubmit = async (data: any) => {
     try {
-      await signIn(auth, data.email, data.password);
+      await signIn(data.email, data.password);
     } catch (error) {
       console.error(error);
       // You can add user-facing error handling here
@@ -65,7 +64,7 @@ function SignUpForm() {
 
   const onSubmit = async (data: any) => {
     try {
-      await signUp(auth, data.email, data.password);
+      await signUp(data.email, data.password);
     } catch (error) {
       console.error(error);
       // You can add user-facing error handling here

@@ -14,6 +14,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
+  Auth,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -21,8 +22,8 @@ import { useRouter } from 'next/navigation';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: typeof createUserWithEmailAndPassword;
-  signIn: typeof signInWithEmailAndPassword;
+  signUp: (email: string, pass: string) => Promise<any>;
+  signIn: (email: string, pass: string) => Promise<any>;
   signOut: () => void;
 }
 
@@ -42,6 +43,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const signUp = (email: string, pass: string) => {
+    return createUserWithEmailAndPassword(auth, email, pass);
+  }
+
+  const signIn = (email: string, pass: string) => {
+    return signInWithEmailAndPassword(auth, email, pass);
+  }
+
   const signOut = async () => {
     await firebaseSignOut(auth);
     router.push('/');
@@ -50,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     loading,
-    signUp: createUserWithEmailAndPassword,
-    signIn: signInWithEmailAndPassword,
+    signUp,
+    signIn,
     signOut,
   };
 
