@@ -9,6 +9,16 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+const mockUser = {
+  name: 'Alex Doe',
+  username: 'alexdoe',
+  avatar: 'https://placehold.co/128x128.png',
+  hint: 'person portrait',
+  bio: 'Lover of live music, outdoor adventures, and spontaneous weekend trips.',
+  events: 28,
+  friends: 152,
+}
+
 export function UserProfileCard() {
   const { user, signOut } = useAuth();
   const router = useRouter();
@@ -24,28 +34,28 @@ export function UserProfileCard() {
         <CardHeader className="flex flex-col items-center text-center pb-4">
             <Link href={profileLink}>
                 <Avatar className="w-24 h-24 mb-4 border-4 border-background ring-2 ring-primary">
-                <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt={user?.displayName || "User"} data-ai-hint="person portrait" />
-                <AvatarFallback>{user?.displayName?.substring(0, 2).toUpperCase() || user?.email?.substring(0, 2).toUpperCase() || 'AD'}</AvatarFallback>
+                <AvatarImage src={user?.photoURL || mockUser.avatar} alt={user?.displayName || mockUser.name} data-ai-hint={mockUser.hint} />
+                <AvatarFallback>{mockUser.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
             </Link>
-            <CardTitle className="font-headline">{user?.displayName || user?.email || 'Alex Doe'}</CardTitle>
+            <CardTitle className="font-headline">{user?.displayName || mockUser.name}</CardTitle>
             <Link href={profileLink}>
-                <p className="text-muted-foreground hover:underline">@{user?.email?.split('@')[0] || 'alex_doe'}</p>
+                <p className="text-muted-foreground hover:underline">@{user?.email?.split('@')[0] || mockUser.username}</p>
             </Link>
         </CardHeader>
       <CardContent className="text-center">
         <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-4">
-          <div className="flex flex-col items-center p-2 rounded-lg bg-secondary">
-            <span className="font-bold text-lg text-foreground">28</span>
+          <Link href="/my-events" className="flex flex-col items-center p-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+            <span className="font-bold text-lg text-foreground">{mockUser.events}</span>
             <span>Events</span>
-          </div>
-          <div className="flex flex-col items-center p-2 rounded-lg bg-secondary">
-            <span className="font-bold text-lg text-foreground">152</span>
+          </Link>
+          <Link href="/friends" className="flex flex-col items-center p-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+            <span className="font-bold text-lg text-foreground">{mockUser.friends}</span>
             <span>Friends</span>
-          </div>
+          </Link>
         </div>
         <p className="text-sm text-muted-foreground px-2 mb-6">
-          Lover of live music, outdoor adventures, and spontaneous weekend trips.
+          {mockUser.bio}
         </p>
         <div className="space-y-2">
             <Button variant="outline" className="w-full" onClick={handleSettingsClick}>
@@ -60,5 +70,3 @@ export function UserProfileCard() {
     </Card>
   );
 }
-
-    
