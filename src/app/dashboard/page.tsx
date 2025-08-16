@@ -123,7 +123,7 @@ export default function DashboardPage() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0 flex flex-col">
                     <SheetHeader className="p-6 pb-4 border-b">
-                        <SheetTitle className="text-2xl font-bold font-headline text-primary">
+                        <SheetTitle>
                            Jummix Menu
                         </SheetTitle>
                     </SheetHeader>
@@ -219,6 +219,17 @@ export default function DashboardPage() {
 
         </div>
       </main>
+
+       {/* Floating Action Button for Mobile */}
+        <div className="fixed bottom-24 right-4 z-30 md:hidden">
+            <Button asChild size="lg" className="rounded-full shadow-lg h-16 w-16 animate-pulse">
+                <Link href="/events/nearby">
+                    <MapPin className="h-8 w-8" />
+                    <span className="sr-only">Nearby Events</span>
+                </Link>
+            </Button>
+        </div>
+
       <Footer />
     </div>
   );
