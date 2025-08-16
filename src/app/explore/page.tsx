@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Search, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
@@ -24,10 +25,12 @@ const exploreEvents = [
   {
     id: "summer-music-fest",
     name: "Summer Music Fest",
-    date: "August 15-17, 2024",
+    date: "2024-08-15",
     location: "Lakeside Park",
     image: "https://placehold.co/400x200.png",
     hint: "concert crowd",
+    price: 75,
+    isFree: false,
     friendsAttending: [
       { name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait" },
       { name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses" },
@@ -36,10 +39,12 @@ const exploreEvents = [
   {
     id: "tech-innovators-summit",
     name: "Tech Innovators Summit",
-    date: "September 5, 2024",
+    date: "2024-09-05",
     location: "Convention Center",
     image: "https://placehold.co/400x200.png",
     hint: "conference speaker",
+    price: 0,
+    isFree: true,
     friendsAttending: [
       { name: "Carlos", avatar: "https://placehold.co/40x40.png", hint: "man portrait" },
     ],
@@ -47,19 +52,23 @@ const exploreEvents = [
   {
     id: "downtown-art-walk",
     name: "Downtown Art Walk",
-    date: "July 25, 2024",
+    date: "2024-07-25",
     location: "Arts District",
     image: "https://placehold.co/400x200.png",
     hint: "art gallery",
+    price: 0,
+    isFree: true,
     friendsAttending: [],
   },
    {
     id: "live-jazz-night",
     name: "Live Jazz Night",
-    date: "Every Friday",
+    date: "2024-07-19", // A specific date for sorting
     location: "The Blue Note Cafe",
     image: "https://placehold.co/400x200.png",
     hint: "jazz club",
+    price: 25,
+    isFree: false,
     friendsAttending: [
       { name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses" },
     ],
@@ -67,10 +76,12 @@ const exploreEvents = [
   {
     id: "farmers-market",
     name: "Farmer's Market",
-    date: "This Saturday",
+    date: "2024-07-20", // A specific date for sorting
     location: "City Square",
     image: "https://placehold.co/400x200.png",
     hint: "market stall",
+    price: 0,
+    isFree: true,
     friendsAttending: [
        { name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait" },
     ],
@@ -78,18 +89,78 @@ const exploreEvents = [
   {
     id: "outdoor-yoga",
     name: "Outdoor Yoga Session",
-    date: "This Sunday Morning",
+    date: "2024-07-21", // A specific date for sorting
     location: "Lakeside Park",
     image: "https://placehold.co/400x200.png",
     hint: "yoga park",
+    price: 15,
+    isFree: false,
     friendsAttending: [],
   },
 ];
 
 const categories = ["Music", "Sports", "Art", "Tech", "Food", "Outdoors", "Comedy", "Workshops"];
 
+type SortOption = 'relevance' | 'date' | 'popularity' | 'price';
+type DateFilter = 'all' | 'today' | 'weekend' | 'month';
+
 
 export default function ExplorePage() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('relevance');
+  const [priceFilter, setPriceFilter] = useState({ free: false, paid: false });
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  
+  const filteredAndSortedEvents = useMemo(() => {
+    let events = [...exploreEvents];
+
+    // Filter by search term
+    if (searchTerm) {
+      events = events.filter(event => 
+        event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.location.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by price
+    if (priceFilter.free && !priceFilter.paid) {
+      events = events.filter(event => event.isFree);
+    } else if (!priceFilter.free && priceFilter.paid) {
+      events = events.filter(event => !event.isFree);
+    } // if both are true or false, no price filter is applied
+
+    // Filter by date (simplified example)
+    const today = new Date();
+    if (dateFilter === 'today') {
+       events = events.filter(event => new Date(event.date).toDateString() === today.toDateString());
+    }
+    // Note: More complex date logic for 'weekend' and 'month' would be needed for a real app.
+
+    // Sort events
+    switch (sortBy) {
+      case 'date':
+        events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        break;
+      case 'popularity':
+        events.sort((a, b) => b.friendsAttending.length - a.friendsAttending.length);
+        break;
+      case 'price':
+        events.sort((a, b) => a.price - b.price);
+        break;
+      case 'relevance':
+      default:
+        // No specific sorting for relevance in this mock-up
+        break;
+    }
+
+    return events;
+  }, [searchTerm, sortBy, priceFilter, dateFilter]);
+
+  const handlePriceChange = (filter: 'free' | 'paid') => {
+    setPriceFilter(prev => ({ ...prev, [filter]: !prev[filter] }));
+  }
+
+
   return (
     <div className="bg-background min-h-screen flex flex-col">
       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
@@ -101,7 +172,12 @@ export default function ExplorePage() {
               </Button>
               <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input placeholder="Search for events..." className="pl-10" />
+                <Input 
+                  placeholder="Search for events..." 
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)} 
+                />
               </div>
               <Sheet>
                 <SheetTrigger asChild>
@@ -120,7 +196,7 @@ export default function ExplorePage() {
                     <div className="py-4 space-y-6">
                         <div className="space-y-4">
                             <Label className="font-semibold">Sort by</Label>
-                             <RadioGroup defaultValue="relevance">
+                             <RadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="relevance" id="r1" />
                                     <Label htmlFor="r1">Relevance</Label>
@@ -133,22 +209,26 @@ export default function ExplorePage() {
                                     <RadioGroupItem value="popularity" id="r3" />
                                     <Label htmlFor="r3">Popularity</Label>
                                 </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="price" id="r4" />
+                                    <Label htmlFor="r4">Price</Label>
+                                </div>
                              </RadioGroup>
                         </div>
                         <div className="space-y-4">
                             <Label className="font-semibold">Price</Label>
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="price-free" />
+                                <Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/>
                                 <Label htmlFor="price-free">Free</Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="price-paid" />
+                                <Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} />
                                 <Label htmlFor="price-paid">Paid</Label>
                             </div>
                         </div>
                          <div className="space-y-4">
                             <Label className="font-semibold">Date</Label>
-                             <RadioGroup defaultValue="all">
+                             <RadioGroup value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="all" id="d1" />
                                     <Label htmlFor="d1">Anytime</Label>
@@ -188,8 +268,8 @@ export default function ExplorePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {exploreEvents.map((event, index) => (
-                <EventCard key={index} event={event} />
+            {filteredAndSortedEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
             ))}
         </div>
       </main>

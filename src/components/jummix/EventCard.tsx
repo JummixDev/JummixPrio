@@ -52,6 +52,12 @@ export function EventCard({ event }: EventCardProps) {
     });
   }
 
+  const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
 
   return (
     <Link href={`/event/${event.id}`} className="block">
@@ -102,7 +108,7 @@ export function EventCard({ event }: EventCardProps) {
         <CardContent className="p-4 flex-grow">
             <CardTitle className="font-headline text-lg mb-2 truncate">{event.name}</CardTitle>
             <div className="text-muted-foreground text-sm space-y-1">
-                <p className="flex items-center"><Calendar className="w-4 h-4 mr-2" /> {event.date}</p>
+                <p className="flex items-center"><Calendar className="w-4 h-4 mr-2" /> {formattedDate}</p>
                 <p className="flex items-center"><MapPin className="w-4 h-4 mr-2" /> {event.location}</p>
             </div>
         </CardContent>
