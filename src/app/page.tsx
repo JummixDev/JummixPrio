@@ -71,21 +71,7 @@ function SignInForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
-        </div>
-        <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-                </span>
-            </div>
-        </div>
-         <div className="space-y-2">
+        <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
@@ -107,6 +93,20 @@ function SignInForm() {
         <Button type="submit" className="w-full">
           Sign In
         </Button>
+        <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+                </span>
+            </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
+        </div>
       </div>
     </form>
   );
@@ -141,20 +141,6 @@ function SignUpForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
-         <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
-        </div>
-        <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-                </span>
-            </div>
-        </div>
         <div className="space-y-2">
           <Label htmlFor="signup-email">Email</Label>
           <Input
@@ -177,6 +163,20 @@ function SignUpForm() {
         <Button type="submit" className="w-full">
           Sign Up
         </Button>
+        <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+                </span>
+            </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
+        </div>
       </div>
     </form>
   );
@@ -207,8 +207,10 @@ export default function LandingPage() {
     <div className="bg-background text-foreground font-body">
       <header className="absolute top-0 left-0 right-0 z-10 p-4">
         <div className="container mx-auto flex justify-between items-center">
+          <Link href="/">
             <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
-            <Button onClick={scrollToSignup}>Sign In</Button>
+          </Link>
+          <Button onClick={scrollToSignup}>Sign In</Button>
         </div>
       </header>
 
@@ -263,7 +265,9 @@ export default function LandingPage() {
             <div className="container mx-auto" ref={signupCardRef}>
                 <Card className="w-full max-w-md mx-auto shadow-2xl">
                     <CardHeader className="text-center">
-                    <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
+                    <Link href="/">
+                      <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
+                    </Link>
                     <CardTitle className="text-2xl font-headline mt-4">
                         Join the Fun!
                     </CardTitle>
@@ -298,7 +302,9 @@ export default function LandingPage() {
       <footer className="bg-card border-t">
           <div className="container mx-auto py-8 px-4 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
             <div className="mb-6 sm:mb-0">
-                <h1 className="text-xl font-bold font-headline text-primary mb-2">Jummix</h1>
+                <Link href="/">
+                  <h1 className="text-xl font-bold font-headline text-primary mb-2">Jummix</h1>
+                </Link>
                 <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Jummix Inc. All rights reserved.</p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-6">
