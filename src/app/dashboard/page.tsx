@@ -10,7 +10,7 @@ import { EventCard } from "@/components/jummix/EventCard";
 import { Leaderboard } from "@/components/jummix/Leaderboard";
 import { AIRecommender } from "@/components/jummix/AIRecommender";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut } from "lucide-react";
+import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -58,8 +58,7 @@ export default function DashboardPage() {
   const { toast } = useToast();
   
   const isAdmin = user?.email === 'service@jummix.com';
-  // A user is a host if their data says so, OR if they are the master admin
-  const isVerifiedHost = userData?.isVerifiedHost || isAdmin;
+  const isVerifiedHost = userData?.isVerifiedHost || false;
 
 
   useEffect(() => {
@@ -69,7 +68,11 @@ export default function DashboardPage() {
   }, [user, loading, router]);
 
   if (loading || !user) {
-    return <div>Loading...</div>; // Or a proper loading skeleton
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+    );
   }
 
   const userProfileLink = `/profile/me`;
@@ -116,7 +119,15 @@ export default function DashboardPage() {
                           </Link>
                         </Button>
                         
-                        {isVerifiedHost ? (
+                        {isAdmin && (
+                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                               <Link href="/admin">
+                                <Shield className="mr-2 h-5 w-5" /> Admin Dashboard
+                              </Link>
+                            </Button>
+                        )}
+                        
+                        {(isVerifiedHost || isAdmin) ? (
                           <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                             <Link href="/host/dashboard">
                               <LayoutDashboard className="mr-2 h-5 w-5" /> Host Dashboard
@@ -130,13 +141,6 @@ export default function DashboardPage() {
                           </Button>
                         )}
                         
-                        {isAdmin && (
-                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
-                               <Link href="/admin">
-                                <Shield className="mr-2 h-5 w-5" /> Admin Dashboard
-                              </Link>
-                            </Button>
-                        )}
                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                            <Link href="/settings">
                             <Settings className="mr-2 h-5 w-5" /> Settings
