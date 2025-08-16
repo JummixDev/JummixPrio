@@ -20,10 +20,10 @@ export function UserProfileCard() {
     <Card>
       <CardHeader className="flex flex-col items-center text-center pb-4">
         <Avatar className="w-24 h-24 mb-4 border-4 border-background ring-2 ring-primary">
-          <AvatarImage src="https://placehold.co/100x100.png" alt={user?.email || "User"} data-ai-hint="person portrait" />
-          <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase() || 'AD'}</AvatarFallback>
+          <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt={user?.displayName || "User"} data-ai-hint="person portrait" />
+          <AvatarFallback>{user?.displayName?.substring(0, 2).toUpperCase() || user?.email?.substring(0, 2).toUpperCase() || 'AD'}</AvatarFallback>
         </Avatar>
-        <CardTitle className="font-headline">{user?.email || 'Alex Doe'}</CardTitle>
+        <CardTitle className="font-headline">{user?.displayName || user?.email || 'Alex Doe'}</CardTitle>
         <p className="text-muted-foreground">@{user?.email?.split('@')[0] || 'alex_doe'}</p>
       </CardHeader>
       <CardContent className="text-center">

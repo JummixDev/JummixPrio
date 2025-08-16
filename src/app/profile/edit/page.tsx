@@ -15,10 +15,10 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 export default function EditProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, updateUserProfile } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const { register, handleSubmit, setValue } = useForm();
+  const { register, handleSubmit, setValue, formState: { isSubmitting } } = useForm();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -27,19 +27,31 @@ export default function EditProfilePage() {
     if (user) {
         // Pre-fill form with user data
         setValue('displayName', user.displayName || user.email?.split('@')[0]);
-        // You can add more fields here, like a bio, once you store them
+        // Note: bio is not part of the standard Firebase User object.
+        // This would typically be stored in a separate database (like Firestore)
+        // linked to the user's UID. For now, we'll use a default value.
+        setValue('bio', 'Lover of live music, outdoor adventures, and spontaneous weekend trips.');
     }
   }, [user, loading, router, setValue]);
 
-  const onSubmit = (data: any) => {
-    // Here you would typically update the user's profile in your database
-    // For now, we'll just show a success toast
-    console.log('Profile updated:', data);
-    toast({
-      title: 'Profile Updated!',
-      description: 'Your changes have been saved successfully.',
-    });
-    router.push('/dashboard');
+  const onSubmit = async (data: any) => {
+    try {
+      await updateUserProfile({ displayName: data.displayName });
+      // Here you would also update other data in Firestore, e.g. the bio
+      console.log('Profile updated in Firebase Auth:', data);
+      toast({
+        title: 'Profile Updated!',
+        description: 'Your changes have been saved successfully.',
+      });
+      router.push('/dashboard');
+    } catch (error) {
+        console.error("Failed to update profile:", error)
+        toast({
+            variant: "destructive",
+            title: 'Update Failed',
+            description: 'Could not save your profile changes. Please try again.',
+        })
+    }
   };
 
   if (loading || !user) {
@@ -88,14 +100,15 @@ export default function EditProfilePage() {
                   id="bio"
                   placeholder="Tell us a little about yourself"
                   {...register('bio')}
-                  defaultValue="Lover of live music, outdoor adventures, and spontaneous weekend trips."
                 />
               </div>
               <div className="flex justify-end gap-2">
                   <Button variant="outline" asChild>
                       <Link href="/dashboard">Cancel</Link>
                   </Button>
-                  <Button type="submit">Save Changes</Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  </Button>
               </div>
             </form>
           </CardContent>

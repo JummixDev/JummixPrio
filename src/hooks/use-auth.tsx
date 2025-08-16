@@ -18,6 +18,7 @@ import {
   signInWithPopup,
   sendPasswordResetEmail,
   OAuthProvider,
+  updateProfile,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -31,6 +32,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
+  updateUserProfile: (profileData: { displayName?: string, photoURL?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,6 +78,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/');
   };
 
+  const updateUserProfile = async (profileData: { displayName?: string, photoURL?: string }) => {
+    if (!auth.currentUser) {
+        throw new Error("No user is signed in to update profile.");
+    }
+    await updateProfile(auth.currentUser, profileData);
+    // Manually update the user state to reflect changes immediately
+    setUser(auth.currentUser);
+  }
+
   const value = {
     user,
     loading,
@@ -85,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     signInWithApple,
     sendPasswordReset,
+    updateUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
