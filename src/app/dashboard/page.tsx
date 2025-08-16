@@ -79,13 +79,6 @@ export default function DashboardPage() {
     return <div>Loading...</div>; // Or a proper loading skeleton
   }
 
-  const handleFeatureClick = () => {
-    toast({
-        title: "Feature Coming Soon!",
-        description: "We're working hard to bring this feature to you.",
-    });
-  }
-
   return (
     <div className="bg-background min-h-screen font-body flex flex-col">
       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
@@ -101,8 +94,10 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button onClick={handleFeatureClick} className="bg-accent hover:bg-accent/90 text-accent-foreground hidden sm:flex">
-                <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
+              <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground hidden sm:flex">
+                <Link href="/events/nearby">
+                  <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
+                </Link>
               </Button>
                <Sheet>
                 <SheetTrigger asChild>
@@ -123,8 +118,10 @@ export default function DashboardPage() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <Input placeholder="Search events or friends..." className="pl-10" />
                         </div>
-                        <Button onClick={handleFeatureClick} className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
+                        <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
+                          <Link href="/events/nearby">
                             <MapPin className="mr-2 h-4 w-4" /> Attend Nearby
+                          </Link>
                         </Button>
                     </div>
                     <div className="mt-auto p-6">

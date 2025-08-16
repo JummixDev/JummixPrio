@@ -22,12 +22,27 @@ type EventCardProps = {
 export function EventCard({ event }: EventCardProps) {
   const { toast } = useToast();
 
-  const handleFeatureClick = () => {
+  const handleLikeClick = () => {
     toast({
-        title: "Feature Coming Soon!",
-        description: "We're working hard to bring this feature to you.",
+        title: "Event Liked!",
+        description: `You've liked ${event.name}.`,
     });
   }
+  
+  const handleBookmarkClick = () => {
+    toast({
+        title: "Event Saved!",
+        description: `${event.name} has been added to your bookmarks.`,
+    });
+  }
+
+  const handleRsvpClick = () => {
+    toast({
+        title: "RSVP'd!",
+        description: `You are now attending ${event.name}.`,
+    });
+  }
+
 
   return (
     <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
@@ -42,10 +57,10 @@ export function EventCard({ event }: EventCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent group-hover:from-black/70 transition-colors" />
         <div className="absolute top-2 right-2 flex gap-2">
-            <Button onClick={handleFeatureClick} size="icon" variant="ghost" className="text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110">
+            <Button onClick={handleLikeClick} size="icon" variant="ghost" className="text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110">
                 <Heart className="w-4 h-4" />
             </Button>
-            <Button onClick={handleFeatureClick} size="icon" variant="ghost" className="text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110">
+            <Button onClick={handleBookmarkClick} size="icon" variant="ghost" className="text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110">
                 <Bookmark className="w-4 h-4" />
             </Button>
         </div>
@@ -82,7 +97,7 @@ export function EventCard({ event }: EventCardProps) {
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button onClick={handleFeatureClick} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground transition-transform active:scale-95">RSVP Now</Button>
+        <Button onClick={handleRsvpClick} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground transition-transform active:scale-95">RSVP Now</Button>
       </CardFooter>
     </Card>
   );

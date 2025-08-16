@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ArrowLeft, Cake, VenetianMask, MapPin, Users, Award } from 'lucide-react';
 import Link from 'next/link';
 import { Footer } from '@/components/jummix/Footer';
+import { useToast } from '@/hooks/use-toast';
 
 const mockUsers: { [key: string]: any } = {
   carlosray: {
@@ -80,6 +81,7 @@ const mockUsers: { [key: string]: any } = {
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const username = typeof params.username === 'string' ? params.username : '';
   const user = mockUsers[username];
 
@@ -92,6 +94,20 @@ export default function UserProfilePage() {
         </div>
     )
   }
+
+  const handleFollow = () => {
+    toast({
+      title: 'Now Following!',
+      description: `You are now following ${user.name}.`,
+    });
+  };
+
+  const handleMessage = () => {
+    toast({
+      title: 'Message Sent!',
+      description: `Your message to ${user.name} has been sent.`,
+    });
+  };
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
@@ -116,8 +132,8 @@ export default function UserProfilePage() {
                     <CardTitle className="text-4xl font-headline">{user.name}</CardTitle>
                     <CardDescription className="text-lg">@{user.username}</CardDescription>
                     <div className="flex justify-center md:justify-start gap-4 mt-4">
-                        <Button>Follow</Button>
-                        <Button variant="outline">Message</Button>
+                        <Button onClick={handleFollow}>Follow</Button>
+                        <Button onClick={handleMessage} variant="outline">Message</Button>
                     </div>
                 </div>
             </CardHeader>
