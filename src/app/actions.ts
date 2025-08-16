@@ -5,7 +5,8 @@ import { personalizedEventRecommendations, PersonalizedEventRecommendationsInput
 import type { PersonalizedEventRecommendationsOutput } from "@/ai/flows/event-recommendations";
 import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
-import { z } from "zod";
+import { createEventSchema, CreateEventInput } from "@/lib/schemas";
+
 
 interface AIResult extends PersonalizedEventRecommendationsOutput {
   error?: string;
@@ -20,19 +21,6 @@ export async function getAIRecommendations(input: PersonalizedEventRecommendatio
     return { error: "Failed to get recommendations. Please try again.", eventRecommendations: [] };
   }
 }
-
-// Schema for event creation form
-export const createEventSchema = z.object({
-  name: z.string().min(3, "Event name must be at least 3 characters long."),
-  date: z.date(),
-  location: z.string().min(3, "Location is required."),
-  description: z.string().min(10, "Description must be at least 10 characters long."),
-  price: z.coerce.number().min(0, "Price must be a positive number."),
-  image: z.string().url("Please enter a valid image URL."),
-  hostUid: z.string(),
-});
-
-export type CreateEventInput = z.infer<typeof createEventSchema>;
 
 export async function createEvent(eventData: CreateEventInput) {
     const validation = createEventSchema.safeParse(eventData);

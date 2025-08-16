@@ -3,7 +3,8 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createEventSchema, createEvent, CreateEventInput } from '@/app/actions';
+import { createEvent } from '@/app/actions';
+import { createEventSchema, CreateEventInput } from '@/lib/schemas';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
