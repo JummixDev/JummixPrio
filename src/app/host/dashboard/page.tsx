@@ -14,6 +14,8 @@ import { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Bar, Pie, Cell, ResponsiveContainer, BarChart as RechartsBarChart, PieChart as RechartsPieChart } from 'recharts';
+import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 
 const mockEvents = [
     { id: 'evt-1', name: 'Summer Music Fest', date: '2024-08-15', status: 'Upcoming', bookings: 342, revenue: 25650 },
@@ -142,9 +144,12 @@ function Overview() {
 function EventManagement() {
      return (
         <Card>
-            <CardHeader>
-                <CardTitle>Event Management</CardTitle>
-                <CardDescription>Manage your upcoming and past events.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Event Management</CardTitle>
+                    <CardDescription>Manage your upcoming and past events.</CardDescription>
+                </div>
+                <Button>Create New Event</Button>
             </CardHeader>
             <CardContent>
                  <Table>
@@ -212,10 +217,49 @@ function ReviewManagement() {
 }
 
 function Communication() {
-    return <Card><CardHeader><CardTitle>Communication</CardTitle></CardHeader><CardContent><p>Send messages to event group chats.</p></CardContent></Card>
+    const { toast } = useToast();
+    const [message, setMessage] = useState('');
+
+    const handleSend = () => {
+        if (!message.trim()) return;
+        toast({
+            title: "Message Sent!",
+            description: "Your message has been broadcast to all event group chats."
+        });
+        setMessage('');
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Communication</CardTitle>
+                <CardDescription>Send messages to your event group chats. Use this for important announcements.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Textarea 
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Type your announcement here..."
+                    rows={4}
+                />
+                <Button onClick={handleSend} disabled={!message.trim()}>Send to All Event Chats</Button>
+            </CardContent>
+        </Card>
+    )
 }
 function Finances() {
-    return <Card><CardHeader><CardTitle>Finances</CardTitle></CardHeader><CardContent><p>Manage Stripe connection and payouts.</p></CardContent></Card>
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Finances</CardTitle>
+                <CardDescription>Manage Stripe connection and view payouts.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-center p-8 border-2 border-dashed rounded-lg">
+                <p className="text-muted-foreground">Stripe integration not yet configured.</p>
+                <Button className="mt-4">Connect with Stripe</Button>
+            </CardContent>
+        </Card>
+    )
 }
 
 function AccessDenied() {
