@@ -246,12 +246,10 @@ function NotificationSettings() {
     });
     const [globalPushEnabled, setGlobalPushEnabled] = useState(false);
 
+    // Check current permission status on component mount
     useEffect(() => {
-        // Check current permission status on component mount
         if ("Notification" in window) {
-            if (Notification.permission === "granted") {
-                setGlobalPushEnabled(true);
-            }
+            setGlobalPushEnabled(Notification.permission === "granted");
         }
     }, []);
 
@@ -266,6 +264,8 @@ function NotificationSettings() {
                 [type]: !prev[category][type],
             }
         }));
+        // In a real app, you would save this preference to the user's profile in Firestore.
+        toast({ title: "Preferences Saved (Simulated)", description: "Your notification settings have been updated."})
     };
 
     const handleGlobalPushToggle = async (checked: boolean) => {
@@ -274,19 +274,43 @@ function NotificationSettings() {
             return;
         }
 
+        // If the user is trying to enable notifications
         if (checked) {
+            // Check if permission is already denied
+            if (Notification.permission === "denied") {
+                 toast({ 
+                    variant: "destructive", 
+                    title: "Permission Denied", 
+                    description: "You have previously blocked notifications. Please enable them in your browser settings." 
+                });
+                return;
+            }
+            
+            // Request permission
             const permission = await Notification.requestPermission();
 
             if (permission === 'granted') {
                 setGlobalPushEnabled(true);
                 toast({ title: "Push Notifications Enabled", description: "You will now receive push notifications." });
+                // --- BACKEND-LOGIC REQUIRED ---
+                // 1. Get the FCM token for this device.
+                //    e.g., const token = await getFCMToken();
+                // 2. Save this token to Firestore under the current user's document.
+                //    e.g., await saveTokenToDB(token);
+                // -----------------------------
             } else {
                 setGlobalPushEnabled(false);
-                toast({ variant: "destructive", title: "Push Notifications Denied", description: "You have blocked push notifications. You may need to change this in your browser settings." });
+                toast({ 
+                    variant: "destructive", 
+                    title: "Permission Not Granted", 
+                    description: "You have not granted permission for notifications." 
+                });
             }
         } else {
+            // If the user is disabling notifications, we just update the state.
+            // In a real app, you might want to remove the FCM token from the DB.
             setGlobalPushEnabled(false);
-            toast({ title: "Push Notifications Disabled", description: "You will no longer receive push notifications." });
+            toast({ title: "Push Notifications Disabled", description: "You will no longer receive push notifications on this device." });
         }
     };
 
