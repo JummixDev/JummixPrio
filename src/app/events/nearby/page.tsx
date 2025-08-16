@@ -8,67 +8,70 @@ import Link from 'next/link';
 import { EventCard } from '@/components/jummix/EventCard';
 import { Footer } from '@/components/jummix/Footer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { getDistance } from '@/lib/utils';
 
 
-const nearbyEvents = [
-  {
-    id: "live-jazz-night",
-    name: "Live Jazz Night",
-    date: "Every Friday",
-    location: "The Blue Note Cafe",
-    image: "https://placehold.co/400x200.png",
-    hint: "jazz club",
-    friendsAttending: [
-      { name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses" },
-    ],
-  },
-  {
-    id: "farmers-market",
-    name: "Farmer's Market",
-    date: "This Saturday",
-    location: "City Square",
-    image: "https://placehold.co/400x200.png",
-    hint: "market stall",
-    friendsAttending: [
-       { name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait" },
-    ],
-  },
-  {
-    id: "outdoor-yoga",
-    name: "Outdoor Yoga Session",
-    date: "This Sunday Morning",
-    location: "Lakeside Park",
-    image: "https://placehold.co/400x200.png",
-    hint: "yoga park",
-    friendsAttending: [],
-  },
-   {
-    id: "open-mic-comedy",
-    name: "Open Mic Comedy",
-    date: "Tonight",
-    location: "The Chuckle Hut",
-    image: "https://placehold.co/400x200.png",
-    hint: "comedy stage",
-    friendsAttending: [
-      { name: "David", avatar: "https://placehold.co/40x40.png", hint: "man face" },
-    ],
-  },
-];
+type EventData = {
+    id: string;
+    distance?: number;
+    [key: string]: any;
+};
 
 type GeolocationStatus = 'loading' | 'success' | 'error' | 'idle';
 
 export default function NearbyEventsPage() {
     const [status, setStatus] = useState<GeolocationStatus>('idle');
     const [error, setError] = useState<string | null>(null);
+    const [events, setEvents] = useState<EventData[]>([]);
+    const [isLoadingEvents, setIsLoadingEvents] = useState(true);
 
+    // Fetch all events from Firestore
     useEffect(() => {
-        // Automatically request location when the component mounts
+        async function fetchEvents() {
+            setIsLoadingEvents(true);
+            try {
+                const querySnapshot = await getDocs(collection(db, 'events'));
+                const allEvents = querySnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as EventData[];
+                setEvents(allEvents);
+            } catch (err) {
+                console.error("Error fetching events:", err);
+                setError("Could not load events from the database.");
+                setStatus('error');
+            } finally {
+                setIsLoadingEvents(false);
+            }
+        }
+        fetchEvents();
+    }, []);
+
+    // Get user's location and sort events by distance
+    useEffect(() => {
+        // Don't run until events are loaded
+        if (isLoadingEvents || events.length === 0) return;
+
         setStatus('loading');
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    // In a real app, you would use position.coords.latitude and position.coords.longitude
-                    // to query your backend for nearby events.
+                    const { latitude, longitude } = position.coords;
+                    
+                    const sortedEvents = events
+                        .map(event => {
+                            // Assuming events have lat/lon. If not, they will be at the end.
+                            if (event.lat && event.lon) {
+                                const distance = getDistance(latitude, longitude, event.lat, event.lon);
+                                return { ...event, distance };
+                            }
+                            return { ...event, distance: Infinity }; // Events without location go to the end
+                        })
+                        .sort((a, b) => a.distance - b.distance);
+
+                    setEvents(sortedEvents);
                     setStatus('success');
                 },
                 (error) => {
@@ -93,7 +96,7 @@ export default function NearbyEventsPage() {
             setError("Geolocation is not supported by your browser.");
             setStatus('error');
         }
-    }, []);
+    }, [isLoadingEvents, events.length]); // Rerun when events are loaded
 
 
   return (
@@ -110,12 +113,12 @@ export default function NearbyEventsPage() {
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
         <div className="mb-8">
-          {status === 'loading' && (
+          {(status === 'loading' || isLoadingEvents) && (
              <Alert>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <AlertTitle>Finding your location...</AlertTitle>
+                <AlertTitle>{isLoadingEvents ? 'Loading Events...' : 'Finding your location...'}</AlertTitle>
                 <AlertDescription>
-                  Please grant permission if prompted. We're looking for events near you.
+                  {isLoadingEvents ? 'Just a moment while we fetch all available events.' : "Please grant permission if prompted. We're looking for events near you."}
                 </AlertDescription>
               </Alert>
           )}
@@ -133,14 +136,14 @@ export default function NearbyEventsPage() {
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <AlertTitle>Standort erfolgreich erkannt!</AlertTitle>
                 <AlertDescription>
-                  Die folgenden Events werden basierend auf Ihrem aktuellen Standort angezeigt.
+                  Die folgenden Events sind nach ihrer Entfernung zu Ihnen sortiert.
                 </AlertDescription>
               </Alert>
           )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {nearbyEvents.map((event, index) => (
-                <EventCard key={index} event={event} />
+            {events.map((event) => (
+                <EventCard key={event.id} event={event} />
             ))}
         </div>
       </main>
