@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { UserProfileCard } from "@/components/jummix/UserProfileCard";
@@ -80,7 +81,7 @@ export default function DashboardPage() {
       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/">
+            <Link href="/dashboard">
               <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
             </Link>
             <div className="flex-1 max-w-sm mx-4 hidden md:block">
