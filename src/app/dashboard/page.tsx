@@ -123,8 +123,8 @@ export default function DashboardPage() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0 flex flex-col">
                     <SheetHeader className="p-6 pb-0">
-                        <SheetTitle>
-                           <h1 className="text-2xl font-bold font-headline text-primary">Jummix Menu</h1>
+                        <SheetTitle className="text-2xl font-bold font-headline text-primary">
+                           Jummix Menu
                         </SheetTitle>
                     </SheetHeader>
                   <div className="flex-grow overflow-y-auto">
