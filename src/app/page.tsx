@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
+import Link from 'next/link';
 
 function SignInForm() {
   const { signIn } = useAuth();
@@ -214,15 +215,22 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-card border-t">
-          <div className="container mx-auto py-8 px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
-            <div className="mb-4 md:mb-0">
+          <div className="container mx-auto py-8 px-4 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
+            <div className="mb-6 sm:mb-0">
                 <h1 className="text-xl font-bold font-headline text-primary mb-2">Jummix</h1>
                 <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Jummix Inc. All rights reserved.</p>
             </div>
-            <div className="flex gap-4">
-                <Button variant="ghost" size="icon"><Twitter className="h-5 w-5" /></Button>
-                <Button variant="ghost" size="icon"><Instagram className="h-5 w-5" /></Button>
-                <Button variant="ghost" size="icon"><Facebook className="h-5 w-5" /></Button>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="flex gap-4 text-sm">
+                    <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
+                    <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
+                    <Link href="/imprint" className="text-muted-foreground hover:text-primary transition-colors">Imprint</Link>
+                </div>
+                <div className="flex gap-2">
+                    <Button variant="ghost" size="icon"><Twitter className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon"><Instagram className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon"><Facebook className="h-5 w-5" /></Button>
+                </div>
             </div>
           </div>
       </footer>
