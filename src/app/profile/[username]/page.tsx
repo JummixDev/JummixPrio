@@ -216,18 +216,20 @@ export default function UserProfilePage() {
           </div>
       </header>
       <main className="flex-grow">
-        {/* Banner and Profile Header */}
-        <div className="container max-w-5xl mx-auto -mb-24">
+        <div className="container max-w-5xl mx-auto">
+            {/* Banner */}
             <div className="h-48 md:h-64 relative">
                 <Image src={user.banner} alt={`${user.name}'s banner`} layout='fill' objectFit='cover' className='rounded-b-lg' data-ai-hint={user.bannerHint}/>
             </div>
-            <div className="px-4 sm:px-8 relative">
-                 <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-16 sm:-mt-20 z-20">
+
+            {/* Profile Header */}
+            <div className="px-4 sm:px-8">
+                 <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col sm:flex-row items-center sm:items-end gap-6 relative -mt-16 sm:-mt-20 z-20">
                      <Avatar className="w-32 h-32 md:w-40 md:h-40 border-4 border-background ring-4 ring-primary flex-shrink-0">
                         <AvatarImage src={user.avatar} alt={user.name} data-ai-hint={user.hint} />
                         <AvatarFallback>{user.name.substring(0,2).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-grow w-full text-center sm:text-left">
+                    <div className="flex-grow w-full text-center sm:text-left pt-4 sm:pt-0">
                         <h2 className="text-3xl font-bold font-headline">{user.name}</h2>
                         <p className="text-muted-foreground">@{user.username}</p>
                         <div className="flex justify-center sm:justify-start gap-4 mt-2 text-sm">
@@ -241,66 +243,66 @@ export default function UserProfilePage() {
                     </div>
                  </div>
             </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="container max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 pt-28">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Left Sidebar */}
-                <div className="md:col-span-1 space-y-6">
-                    <Card>
-                        <CardContent className="p-6">
-                            <h3 className="font-bold font-headline mb-4">About Me</h3>
-                            <p className="text-sm text-muted-foreground">{user.bio}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-6">
-                            <h3 className="font-bold font-headline mb-4">Interests</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {user.interests.map((interest: string) => (
-                                    <div key={interest} className="bg-secondary text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full">{interest}</div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-                {/* Right Content */}
-                <div className="md:col-span-2">
-                    <Tabs defaultValue="attended" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="hosted">Hosted</TabsTrigger>
-                            <TabsTrigger value="attended">Attended</TabsTrigger>
-                            <TabsTrigger value="gallery">Gallery</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="hosted" className="py-6">
-                            <div className="text-center text-muted-foreground py-8">
-                                <p>{user.name} hasn't hosted any events yet.</p>
-                            </div>
-                        </TabsContent>
-                        <TabsContent value="attended" className="py-6">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {mockAttendedEvents.map(event => (
-                                    <EventCard key={event.id} event={event} />
-                                ))}
-                            </div>
-                        </TabsContent>
-                        <TabsContent value="gallery" className="py-6">
-                            {mockGallery.length > 0 ? (
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    {mockGallery.map((photo, index) => (
-                                        <div key={index} className="aspect-square relative rounded-lg overflow-hidden">
-                                            <Image src={photo.src} alt={`Gallery photo ${index + 1}`} layout='fill' objectFit='cover' data-ai-hint={photo.hint} />
-                                        </div>
+            {/* Main Content */}
+            <div className="p-4 sm:p-6 lg:p-8 pt-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Left Sidebar */}
+                    <div className="md:col-span-1 space-y-6">
+                        <Card>
+                            <CardContent className="p-6">
+                                <h3 className="font-bold font-headline mb-4">About Me</h3>
+                                <p className="text-sm text-muted-foreground">{user.bio}</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardContent className="p-6">
+                                <h3 className="font-bold font-headline mb-4">Interests</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {user.interests.map((interest: string) => (
+                                        <div key={interest} className="bg-secondary text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full">{interest}</div>
                                     ))}
                                 </div>
-                            ) : (
+                            </CardContent>
+                        </Card>
+                    </div>
+                    {/* Right Content */}
+                    <div className="md:col-span-2">
+                        <Tabs defaultValue="attended" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="hosted">Hosted</TabsTrigger>
+                                <TabsTrigger value="attended">Attended</TabsTrigger>
+                                <TabsTrigger value="gallery">Gallery</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="hosted" className="py-6">
                                 <div className="text-center text-muted-foreground py-8">
-                                    <p>{user.name} hasn't added any photos yet.</p>
+                                    <p>{user.name} hasn't hosted any events yet.</p>
                                 </div>
-                            )}
-                        </TabsContent>
-                    </Tabs>
+                            </TabsContent>
+                            <TabsContent value="attended" className="py-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {mockAttendedEvents.map(event => (
+                                        <EventCard key={event.id} event={event} />
+                                    ))}
+                                </div>
+                            </TabsContent>
+                            <TabsContent value="gallery" className="py-6">
+                                {mockGallery.length > 0 ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        {mockGallery.map((photo, index) => (
+                                            <div key={index} className="aspect-square relative rounded-lg overflow-hidden">
+                                                <Image src={photo.src} alt={`Gallery photo ${index + 1}`} layout='fill' objectFit='cover' data-ai-hint={photo.hint} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center text-muted-foreground py-8">
+                                        <p>{user.name} hasn't added any photos yet.</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+                        </Tabs>
+                    </div>
                 </div>
             </div>
         </div>
