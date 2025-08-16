@@ -36,7 +36,7 @@ export function UserProfileCard() {
   
   const profileLink = `/profile/me`;
   const displayName = userData?.displayName || user?.displayName || user?.email?.split('@')[0] || 'User';
-  const username = user?.email?.split('@')[0] || 'username';
+  const username = userData?.username || user?.email?.split('@')[0] || 'username';
   const photoURL = userData?.photoURL || user?.photoURL;
 
   return (

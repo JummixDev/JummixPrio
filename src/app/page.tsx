@@ -18,7 +18,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { PartyPopper, CalendarDays, Users, Wand2, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useForm, UseFormSetValue } from 'react-hook-form';
+import { useForm, UseFormSetValue, UseFormReturn } from 'react-hook-form';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -38,9 +38,9 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-function SignInForm() {
+function SignInForm({ form }: { form: UseFormReturn<any> }) {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
-  const { register, handleSubmit, setValue } = useForm();
+  const { register, handleSubmit } = form;
   const { toast } = useToast();
 
   const onSubmit = async (data: any) => {
@@ -195,7 +195,7 @@ export default function LandingPage() {
   const router = useRouter();
   const signupCardRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('signin');
-  const signInFormMethods = useForm();
+  const signInForm = useForm();
   
   useEffect(() => {
     if (user) {
@@ -213,13 +213,7 @@ export default function LandingPage() {
   
   const handleEmailInUse = (email: string) => {
     setActiveTab('signin');
-    // We need to use a reference to the form's setValue function
-    // A better approach would be to lift the form state up or use a context
-    // For now, we'll try to get the form instance and call setValue.
-    // This is a bit of a hack, ideally the form state is managed higher up.
-    // A cleaner way is to pass the whole form object or just setValue down.
-    // Let's pass setValue down from a useForm instance in the parent.
-    signInFormMethods.setValue('email', email);
+    signInForm.setValue('email', email);
   }
 
 
@@ -303,7 +297,7 @@ export default function LandingPage() {
                         </TabsList>
                         <TabsContent value="signin">
                             <div className="p-4">
-                                <SignInForm />
+                                <SignInForm form={signInForm} />
                             </div>
                         </TabsContent>
                         <TabsContent value="signup">
@@ -322,5 +316,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    

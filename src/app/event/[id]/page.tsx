@@ -11,10 +11,16 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useParams } from 'next/navigation';
 
+// Define a type for your event data for better type safety
+type EventData = {
+    id: string;
+    [key: string]: any;
+};
+
 export default function EventDetailPage() {
     const params = useParams();
     const eventId = params.id as string;
-    const [event, setEvent] = useState<any>(null);
+    const [event, setEvent] = useState<EventData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -33,8 +39,9 @@ export default function EventDetailPage() {
                     setError("Event not found.");
                 }
             } catch (err) {
-                console.error(err);
-                setError("Failed to load event.");
+                console.error("Error fetching event:", err);
+                // It's good practice to provide a more user-friendly error message
+                setError("Failed to load event. Please try again later.");
             } finally {
                 setLoading(false);
             }
@@ -51,11 +58,11 @@ export default function EventDetailPage() {
         );
     }
     
-    if (error) {
+    if (error || !event) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-                <h1 className="text-4xl font-bold mb-4">Error</h1>
-                <p className="text-muted-foreground mb-8">{error}</p>
+                <h1 className="text-4xl font-bold mb-4">{error ? 'Error' : 'Event Not Found'}</h1>
+                <p className="text-muted-foreground mb-8">{error || "We couldn't find the event you're looking for."}</p>
                 <Button asChild>
                     <Link href="/explore">Back to Events</Link>
                 </Button>
@@ -72,14 +79,13 @@ export default function EventDetailPage() {
                       <ArrowLeft />
                   </Link>
               </Button>
-              <h1 className="text-xl font-bold ml-4 truncate">{event?.name || "Event"}</h1>
+              <h1 className="text-xl font-bold ml-4 truncate">{event.name || "Event"}</h1>
           </div>
       </header>
       <main className="flex-grow">
-        {event && <EventDetailClient event={event} />}
+        <EventDetailClient event={event} />
       </main>
       <Footer />
     </div>
   );
 }
-

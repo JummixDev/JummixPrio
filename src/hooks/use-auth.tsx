@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const createUserDocument = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
-    const username = user.email!.split('@')[0];
+    const username = user.email!.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
 
     if (!userDocSnap.exists()) {
       // Create a new document in the 'users' collection with the user's uid
@@ -91,6 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         bio: 'Welcome to Jummix! Edit your bio in the settings.',
         isVerifiedHost: false,
         interests: [],
+        followers: 0,
+        friendsCount: 0,
+        eventsCount: 0,
+        friends: 0, // Legacy field, keeping for compatibility if needed
       }, { merge: true });
     }
   };
