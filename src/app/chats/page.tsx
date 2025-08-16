@@ -1,54 +1,162 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, Paperclip, Send, Camera, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Search, Paperclip, Send, Camera, MessageSquare, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Footer } from '@/components/jummix/Footer';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
+import { sendMessage } from '../actions';
+import { useToast } from '@/hooks/use-toast';
 
-
-const mockConversations = [
-    { id: 1, name: 'Jenna Smith', username: 'jennasmith', lastMessage: 'See you there!', time: '10m', avatar: 'https://placehold.co/40x40.png', hint: 'woman portrait', online: true },
-    { id: 2, name: 'Summer Music Fest Group', username: 'group', lastMessage: 'Aisha: The lineup is amazing!', time: '2h', avatar: 'https://placehold.co/40x40.png', hint: 'concert crowd' },
-    { id: 3, name: 'Carlos Ray', username: 'carlosray', lastMessage: 'Let\'s connect after the summit.', time: '1d', avatar: 'https://placehold.co/40x40.png', hint: 'man portrait' },
-    { id: 4, name: 'Tech Innovators Summit', username: 'group', lastMessage: 'Official announcements here.', time: '3d', avatar: 'https://placehold.co/40x40.png', hint: 'tech logo' },
-    { id: 5, name: 'Alex Doe', username: 'alexdoe', lastMessage: 'You sent a photo.', time: '5d', avatar: 'https://placehold.co/40x40.png', hint: 'person portrait' },
-];
-
-const mockMessages: { [key: string]: any[] } = {
-    '1': [
-        { sender: 'Jenna Smith', text: 'Hey! Are you excited for the music fest?', time: '15m', me: false },
-        { sender: 'Me', text: 'Absolutely! Can\'t wait. The lineup looks incredible.', time: '14m', me: true },
-        { sender: 'Jenna Smith', text: 'I know, right? We should meet up by the main stage.', time: '12m', me: false },
-        { sender: 'Me', text: 'Sounds like a plan! I\'ll text you when I get there.', time: '11m', me: true },
-        { sender: 'Jenna Smith', text: 'See you there!', time: '10m', me: false },
-    ],
-    '2': [
-        { sender: 'Alex Doe', text: 'Who is everyone most excited to see?', time: '3h', me: false },
-        { sender: 'Aisha Khan', text: 'The lineup is amazing!', time: '2h', me: false },
-    ],
-    '3': [
-        { sender: 'Carlos Ray', text: 'Let\'s connect after the summit.', time: '1d', me: false },
-    ],
+// Define types for our data for better safety
+type Conversation = {
+    id: string;
+    participants: { uid: string; name: string; avatar: string; hint: string; }[];
+    lastMessage: string;
+    lastMessageTimestamp: Timestamp;
+    isGroup: boolean;
+    groupName?: string;
+    groupAvatar?: string;
 };
 
+type Message = {
+    id: string;
+    senderUid: string;
+    text: string;
+    timestamp: Timestamp;
+};
+
+const formatTimeAgo = (timestamp: Timestamp | null) => {
+    if (!timestamp) return '';
+    const now = new Date();
+    const messageDate = timestamp.toDate();
+    const diffInSeconds = Math.floor((now.getTime() - messageDate.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return `${diffInSeconds}s`;
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}m`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}d`;
+};
 
 export default function ChatsPage() {
-    const [selectedConversation, setSelectedConversation] = useState<any>(null);
-    
-    // Set a default selected conversation on initial render
-    useState(() => {
-        setSelectedConversation(mockConversations[0]);
-        return null;
-    });
+    const { user, loading: authLoading, userData } = useAuth();
+    const { toast } = useToast();
+    const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [messageText, setMessageText] = useState('');
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-    const messages = selectedConversation ? (mockMessages as any)[selectedConversation.id] || [] : [];
+
+    // Fetch conversations for the current user
+    useEffect(() => {
+        if (!user) return;
+
+        setLoading(true);
+        const q = query(collection(db, 'chats'), where('participantUids', 'array-contains', user.uid));
+        
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const userConversations: Conversation[] = [];
+            querySnapshot.forEach((doc) => {
+                userConversations.push({ id: doc.id, ...doc.data() } as Conversation);
+            });
+            // Sort by most recent message
+            userConversations.sort((a, b) => b.lastMessageTimestamp?.toMillis() - a.lastMessageTimestamp?.toMillis());
+            setConversations(userConversations);
+            setLoading(false);
+            
+            // Auto-select the first conversation if none is selected
+            if (!selectedConversation && userConversations.length > 0) {
+              setSelectedConversation(userConversations[0]);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [user, selectedConversation]);
+
+    // Fetch messages for the selected conversation
+    useEffect(() => {
+        if (!selectedConversation) {
+            setMessages([]);
+            return;
+        };
+
+        const messagesRef = collection(db, 'chats', selectedConversation.id, 'messages');
+        const q = query(messagesRef, orderBy('timestamp', 'asc'));
+
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const conversationMessages: Message[] = [];
+            querySnapshot.forEach((doc) => {
+                conversationMessages.push({ id: doc.id, ...doc.data() } as Message);
+            });
+            setMessages(conversationMessages);
+        });
+
+        return () => unsubscribe();
+    }, [selectedConversation]);
+    
+    // Auto-scroll to the bottom of the messages
+    useEffect(() => {
+        if (scrollAreaRef.current) {
+            scrollAreaRef.current.scrollTo({
+              top: scrollAreaRef.current.scrollHeight,
+              behavior: 'smooth'
+            });
+        }
+    }, [messages]);
+
+    const handleSendMessage = async () => {
+        if (!messageText.trim() || !selectedConversation || !user) return;
+        const textToSend = messageText;
+        setMessageText(''); // Clear input immediately for better UX
+        const result = await sendMessage(selectedConversation.id, user.uid, textToSend);
+
+        if (!result.success) {
+            toast({ variant: 'destructive', title: 'Error', description: result.error });
+            setMessageText(textToSend); // Restore text if sending failed
+        }
+    };
+    
+    if (authLoading || loading) {
+        return (
+            <div className="flex h-screen w-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        )
+    }
+    
+    const getConversationDisplay = (convo: Conversation) => {
+        if (convo.isGroup) {
+            return {
+                name: convo.groupName || 'Group Chat',
+                avatar: convo.groupAvatar || 'https://placehold.co/40x40.png',
+                hint: 'group icon',
+                username: convo.id,
+                online: false,
+            }
+        }
+        const otherParticipant = convo.participants.find(p => p.uid !== user?.uid);
+        return {
+            name: otherParticipant?.name || 'Unknown User',
+            avatar: otherParticipant?.avatar || 'https://placehold.co/40x40.png',
+            hint: otherParticipant?.hint || 'person portrait',
+            username: otherParticipant?.uid || 'unknown',
+            online: false, // Online status would require another system like Firestore presence
+        }
+    }
+
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
@@ -80,22 +188,24 @@ export default function ChatsPage() {
                     </TabsList>
                     <ScrollArea className="flex-grow">
                         <TabsContent value="all" className="m-0">
-                            {mockConversations.map(convo => (
+                            {conversations.map(convo => {
+                                const display = getConversationDisplay(convo);
+                                return (
                                 <div key={convo.id}
                                     onClick={() => setSelectedConversation(convo)}
                                     className={`flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50 ${selectedConversation?.id === convo.id ? 'bg-muted' : ''}`}>
                                     <Avatar className="w-12 h-12 relative">
-                                        <AvatarImage src={convo.avatar} alt={convo.name} data-ai-hint={convo.hint} />
-                                        <AvatarFallback>{convo.name.substring(0,2)}</AvatarFallback>
-                                        {convo.online && <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />}
+                                        <AvatarImage src={display.avatar} alt={display.name} data-ai-hint={display.hint} />
+                                        <AvatarFallback>{display.name.substring(0,2)}</AvatarFallback>
+                                        {display.online && <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />}
                                     </Avatar>
                                     <div className="flex-grow overflow-hidden">
-                                        <p className="font-semibold truncate">{convo.name}</p>
+                                        <p className="font-semibold truncate">{display.name}</p>
                                         <p className="text-sm text-muted-foreground truncate">{convo.lastMessage}</p>
                                     </div>
-                                    <span className="text-xs text-muted-foreground">{convo.time}</span>
+                                    <span className="text-xs text-muted-foreground">{formatTimeAgo(convo.lastMessageTimestamp)}</span>
                                 </div>
-                            ))}
+                            )})}
                         </TabsContent>
                          <TabsContent value="groups" className="m-0 text-center p-8 text-muted-foreground">
                             <p>Group chats will appear here.</p>
@@ -113,63 +223,71 @@ export default function ChatsPage() {
                     <>
                         {/* Chat Header */}
                         <div className="flex items-center gap-4 p-4 border-b">
-                           <Link href={`/profile/${selectedConversation.username}`}>
+                           <Link href={`/profile/${getConversationDisplay(selectedConversation).username}`}>
                                 <Avatar className="w-10 h-10">
-                                    <AvatarImage src={selectedConversation.avatar} alt={selectedConversation.name} data-ai-hint={selectedConversation.hint} />
-                                    <AvatarFallback>{selectedConversation.name.substring(0,2)}</AvatarFallback>
+                                    <AvatarImage src={getConversationDisplay(selectedConversation).avatar} alt={getConversationDisplay(selectedConversation).name} data-ai-hint={getConversationDisplay(selectedConversation).hint} />
+                                    <AvatarFallback>{getConversationDisplay(selectedConversation).name.substring(0,2)}</AvatarFallback>
                                 </Avatar>
                            </Link>
-                            <Link href={`/profile/${selectedConversation.username}`} className="hover:underline">
-                                <p className="font-semibold">{selectedConversation.name}</p>
-                                {selectedConversation.online && <p className="text-xs text-green-500">Online</p>}
+                            <Link href={`/profile/${getConversationDisplay(selectedConversation).username}`} className="hover:underline">
+                                <p className="font-semibold">{getConversationDisplay(selectedConversation).name}</p>
+                                {getConversationDisplay(selectedConversation).online && <p className="text-xs text-green-500">Online</p>}
                             </Link>
                         </div>
 
                         {/* Messages */}
-                        <ScrollArea className="flex-grow p-4">
-                            <div className="space-y-4">
-                                {messages.map((msg: any, index: number) => (
-                                     <div key={index} className={`flex items-end gap-2 ${msg.me ? 'justify-end' : ''}`}>
-                                        {!msg.me && (
+                        <ScrollArea className="flex-grow" ref={scrollAreaRef}>
+                            <div className="space-y-4 p-4">
+                                {messages.map((msg) => {
+                                    const isMe = msg.senderUid === user?.uid;
+                                    const senderInfo = selectedConversation.participants.find(p => p.uid === msg.senderUid);
+                                    return (
+                                     <div key={msg.id} className={`flex items-end gap-2 ${isMe ? 'justify-end' : ''}`}>
+                                        {!isMe && (
                                             <Avatar className="w-8 h-8">
-                                                <AvatarImage src={selectedConversation.avatar} alt={selectedConversation.name} data-ai-hint={selectedConversation.hint} />
-                                                <AvatarFallback>{selectedConversation.name.substring(0,2)}</AvatarFallback>
+                                                <AvatarImage src={senderInfo?.avatar} alt={senderInfo?.name} data-ai-hint={senderInfo?.hint} />
+                                                <AvatarFallback>{senderInfo?.name.substring(0,2)}</AvatarFallback>
                                             </Avatar>
                                         )}
-                                        <div className={`rounded-lg px-4 py-2 max-w-xs lg:max-w-md ${msg.me ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                                        <div className={`rounded-lg px-4 py-2 max-w-xs lg:max-w-md ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                                             <p className="text-sm">{msg.text}</p>
-                                            <p className={`text-xs mt-1 ${msg.me ? 'text-primary-foreground/70' : 'text-muted-foreground/70'}`}>{msg.time}</p>
+                                            <p className={`text-xs mt-1 text-right ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground/70'}`}>{formatTimeAgo(msg.timestamp)}</p>
                                         </div>
                                     </div>
-                                ))}
+                                )})}
                             </div>
                         </ScrollArea>
 
                         {/* Chat Input */}
                         <div className="p-4 border-t bg-background/80">
-                            <div className="relative">
-                                <Input placeholder="Type a message..." className="pr-24" />
+                            <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="relative">
+                                <Input 
+                                  placeholder="Type a message..." 
+                                  className="pr-24"
+                                  value={messageText}
+                                  onChange={(e) => setMessageText(e.target.value)}
+                                />
                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
                                      <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                 <Button variant="ghost" size="icon"><Camera className="w-5 h-5"/></Button>
+                                                 <Button type="button" variant="ghost" size="icon"><Camera className="w-5 h-5"/></Button>
                                             </TooltipTrigger>
                                             <TooltipContent><p>Use Camera</p></TooltipContent>
                                         </Tooltip>
                                          <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button variant="ghost" size="icon"><Paperclip className="w-5 h-5"/></Button>
+                                                <Button type="button" variant="ghost" size="icon"><Paperclip className="w-5 h-5"/></Button>
                                             </TooltipTrigger>
                                             <TooltipContent><p>Attach File</p></TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
-                                    <Button size="icon" className="ml-2 w-10 h-8 rounded-full">
+                                    <Button type="submit" size="icon" className="ml-2 w-10 h-8 rounded-full">
                                         <Send className="w-5 h-5"/>
                                         <span className="sr-only">Send</span>
                                     </Button>
                                 </div>
-                            </div>
+                            </form>
                         </div>
                     </>
                 ) : (

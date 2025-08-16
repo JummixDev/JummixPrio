@@ -4,7 +4,7 @@
 import { personalizedEventRecommendations, PersonalizedEventRecommendationsInput } from "@/ai/flows/event-recommendations";
 import type { PersonalizedEventRecommendationsOutput } from "@/ai/flows/event-recommendations";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy } from "firebase/firestore";
 import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput } from "@/lib/schemas";
 
 
@@ -85,4 +85,30 @@ export async function updateEvent(eventData: UpdateEventInput) {
     }
 }
 
+export async function sendMessage(conversationId: string, senderUid: string, text: string) {
+    if (!conversationId || !senderUid || !text.trim()) {
+        return { success: false, error: 'Invalid message data.' };
+    }
+
+    try {
+        const messagesRef = collection(db, 'chats', conversationId, 'messages');
+        await addDoc(messagesRef, {
+            senderUid: senderUid,
+            text: text,
+            timestamp: serverTimestamp(),
+        });
+
+        // Also update the last message on the conversation document itself
+        const conversationRef = doc(db, 'chats', conversationId);
+        await updateDoc(conversationRef, {
+            lastMessage: text,
+            lastMessageTimestamp: serverTimestamp(),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error sending message:", error);
+        return { success: false, error: 'Failed to send message.' };
+    }
+}
     
