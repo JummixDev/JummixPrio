@@ -174,7 +174,16 @@ function NotificationSettings() {
         eventReminders: { email: true, push: true },
         newMessages: { email: false, push: true },
     });
-    const [globalPushEnabled, setGlobalPushEnabled] = useState(true);
+    const [globalPushEnabled, setGlobalPushEnabled] = useState(false);
+
+    useEffect(() => {
+        // Check current permission status on component mount
+        if ("Notification" in window) {
+            if (Notification.permission === "granted") {
+                setGlobalPushEnabled(true);
+            }
+        }
+    }, []);
 
     const handleToggle = (
         category: keyof typeof notifications, 
@@ -190,24 +199,20 @@ function NotificationSettings() {
     };
 
     const handleGlobalPushToggle = async (checked: boolean) => {
+        if (!("Notification" in window)) {
+            toast({ variant: "destructive", title: "Unsupported Browser", description: "This browser does not support push notifications." });
+            return;
+        }
+
         if (checked) {
-            // This simulates the browser's permission dialog
-            // In a real app, you would use the Push API: `Notification.requestPermission()`
-            const permission = await new Promise<NotificationPermission>((resolve) => {
-                // This is a fake dialog for demonstration purposes
-                if (window.confirm("Jummix would like to show notifications. Allow?")) {
-                    resolve("granted");
-                } else {
-                    resolve("denied");
-                }
-            });
+            const permission = await Notification.requestPermission();
 
             if (permission === 'granted') {
                 setGlobalPushEnabled(true);
                 toast({ title: "Push Notifications Enabled", description: "You will now receive push notifications." });
             } else {
                 setGlobalPushEnabled(false);
-                toast({ variant: "destructive", title: "Push Notifications Denied", description: "You have blocked push notifications." });
+                toast({ variant: "destructive", title: "Push Notifications Denied", description: "You have blocked push notifications. You may need to change this in your browser settings." });
             }
         } else {
             setGlobalPushEnabled(false);

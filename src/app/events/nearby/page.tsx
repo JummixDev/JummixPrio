@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, WifiOff } from 'lucide-react';
+import { ArrowLeft, Loader2, WifiOff, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { EventCard } from '@/components/jummix/EventCard';
 import { Footer } from '@/components/jummix/Footer';
@@ -129,11 +129,12 @@ export default function NearbyEventsPage() {
               </Alert>
           )}
            {status === 'success' && (
-             <Alert variant="default" className="bg-green-50 border-green-200">
-                <AlertTitle>Success!</AlertTitle>
+             <Alert variant="default" className="bg-green-50 border-green-200 text-green-800">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertTitle>Standort erfolgreich erkannt!</AlertTitle>
                 <AlertDescription>
-                  Showing events near your current location.
-                </AlerDescription>
+                  Die folgenden Events werden basierend auf Ihrem aktuellen Standort angezeigt.
+                </AlertDescription>
               </Alert>
           )}
         </div>
