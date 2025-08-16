@@ -33,31 +33,30 @@ import { db } from '@/lib/firebase';
 
 
 function ProfileSettings() {
-  const { user, loading, updateUserProfile } = useAuth();
+  const { user, loading, updateUserProfile, userData } = useAuth();
   const { toast } = useToast();
   const { register, handleSubmit, setValue, formState: { isSubmitting, isDirty } } = useForm();
-  const [isFormLoading, setIsFormLoading] = useState(true);
-
+  
   useEffect(() => {
-    async function fetchUserData() {
-        if (user) {
-            const userDocRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                setValue('displayName', userData.displayName || user.email?.split('@')[0]);
-                setValue('bio', userData.bio || 'Lover of live music, outdoor adventures, and spontaneous weekend trips.');
-            }
-            setIsFormLoading(false);
-        }
+    if (userData) {
+      setValue('displayName', userData.displayName || user?.email?.split('@')[0]);
+      setValue('bio', userData.bio || 'Lover of live music, outdoor adventures, and spontaneous weekend trips.');
     }
-    fetchUserData();
-  }, [user, setValue]);
+  }, [userData, user, setValue]);
 
   const onSubmit = async (data: any) => {
     if (!user) return;
     try {
-      await updateUserProfile({ displayName: data.displayName });
+      // Create a profile data object with only the fields that have changed
+      const profileUpdate: { displayName?: string } = {};
+      if (data.displayName !== (userData?.displayName || user.displayName)) {
+        profileUpdate.displayName = data.displayName;
+      }
+
+      if (Object.keys(profileUpdate).length > 0) {
+        await updateUserProfile(profileUpdate);
+      }
+
       const userDocRef = doc(db, "users", user.uid);
       await setDoc(userDocRef, { bio: data.bio }, { merge: true });
 
@@ -75,7 +74,7 @@ function ProfileSettings() {
     }
   };
 
-  if (loading || isFormLoading) {
+  if (loading) {
     return (
         <Card>
             <CardHeader>
@@ -103,7 +102,7 @@ function ProfileSettings() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
-            <Input id="username" value={`@${user.email?.split('@')[0] || 'username'}`} disabled />
+            <Input id="username" value={`@${user?.email?.split('@')[0] || 'username'}`} disabled />
           </div>
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
@@ -111,6 +110,7 @@ function ProfileSettings() {
           </div>
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting || !isDirty}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
@@ -409,7 +409,7 @@ export default function SettingsPage() {
   }, [user, loading, router]);
   
   if (loading || !user) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;
   }
 
   const navItems = [
@@ -461,3 +461,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
