@@ -42,6 +42,7 @@ export function Leaderboard() {
                 </Avatar>
                 <div className="flex-grow">
                   <p className="font-semibold text-foreground truncate">{user.name}</p>
+                   <p className="text-sm text-muted-foreground">@{user.username}</p>
                 </div>
                 <span className="font-bold text-primary">{user.points} pts</span>
               </Link>

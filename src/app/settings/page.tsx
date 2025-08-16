@@ -28,8 +28,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 
 function ProfileSettings() {
@@ -47,18 +45,10 @@ function ProfileSettings() {
   const onSubmit = async (data: any) => {
     if (!user) return;
     try {
-      // Create a profile data object with only the fields that have changed
-      const profileUpdate: { displayName?: string } = {};
-      if (data.displayName !== (userData?.displayName || user.displayName)) {
-        profileUpdate.displayName = data.displayName;
-      }
-
-      if (Object.keys(profileUpdate).length > 0) {
-        await updateUserProfile(profileUpdate);
-      }
-
-      const userDocRef = doc(db, "users", user.uid);
-      await setDoc(userDocRef, { bio: data.bio }, { merge: true });
+      await updateUserProfile({
+        displayName: data.displayName,
+        bio: data.bio
+      });
 
       toast({
         title: 'Profile Updated!',
@@ -102,7 +92,7 @@ function ProfileSettings() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
-            <Input id="username" value={`@${user?.email?.split('@')[0] || 'username'}`} disabled />
+            <Input id="username" value={`@${userData?.username || 'username'}`} disabled />
           </div>
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
@@ -461,5 +451,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

@@ -18,7 +18,9 @@ const nextConfig = {
     ],
   },
   experimental: {
-    allowedDevOrigins: ["https://6000-firebase-studio-1755331739303.cluster-l6vkdperq5ebaqo3qy4ksvoqom.cloudworkstations.dev"],
+    // This is required for the Studio preview to work correctly in the development environment.
+    // It allows cross-origin requests from the cloud workstation to the Next.js dev server.
+    allowedDevOrigins: ["https://*.cloudworkstations.dev"],
   },
 };
 

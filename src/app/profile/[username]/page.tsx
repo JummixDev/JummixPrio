@@ -88,7 +88,7 @@ function InteractionButtons({ isMe, initialIsFriend, initialIsRequestSent }: { i
     }
     
     if (isMe) {
-        return <Button variant="outline" disabled>This is you</Button>;
+        return <Button asChild variant="outline"><Link href="/settings">Edit Profile</Link></Button>;
     }
     if (isFriend) {
         return <Button variant="secondary"><Check className="mr-2"/> Friends</Button>;
@@ -111,30 +111,31 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     async function fetchUserProfile() {
-        if (!username) return;
+        if (!username || !loggedInUser) return;
 
         setLoading(true);
         try {
-            // Determine the username to query
-            const isMe = username === 'me' || (loggedInUser && username === loggedInUser.email?.split('@')[0]);
-            let userToFetch = username;
-            if(isMe && loggedInUser) {
-                userToFetch = loggedInUser.email!.split('@')[0];
+            const isMe = username === 'me';
+            let userToQuery = username;
+            if (isMe) {
+                userToQuery = loggedInUser.uid;
             }
             
-            // Query for the user
             const usersRef = collection(db, "users");
-            const q = query(usersRef, where("email", "==", `${userToFetch}@example.com`), limit(1)); // Note: this is a simulated query on email
+            // Query by username for non-"me" profiles, or by UID for "me"
+            const q = isMe 
+                ? query(usersRef, where("uid", "==", userToQuery), limit(1))
+                : query(usersRef, where("username", "==", userToQuery), limit(1));
+
             const querySnapshot = await getDocs(q);
 
             if (!querySnapshot.empty) {
                 const userDoc = querySnapshot.docs[0];
                 const userData = userDoc.data();
-                setProfileUser({
+                 setProfileUser({
                     ...userData,
                     id: userDoc.id,
-                    username: userData.email.split('@')[0],
-                    // Mock data for now
+                    username: userData.username || userData.email.split('@')[0],
                     banner: 'https://placehold.co/1000x300.png',
                     bannerHint: 'abstract tech pattern',
                     followers: userData.followers || 1250,
@@ -174,8 +175,7 @@ export default function UserProfilePage() {
     )
   }
   
-  const myUsername = loggedInUser?.email?.split('@')[0];
-  const isMe = username === myUsername || username === 'me';
+  const isMe = loggedInUser?.uid === profileUser.uid;
 
   const handleMessage = () => {
     toast({
@@ -217,12 +217,12 @@ export default function UserProfilePage() {
                         <h2 className="text-3xl font-bold font-headline">{profileUser.displayName}</h2>
                         <p className="text-muted-foreground">@{profileUser.username}</p>
                         <div className="flex justify-center sm:justify-start gap-4 mt-2 text-sm">
-                            <Link href="/friends" className="hover:underline"><span className="font-semibold">{profileUser.friends}</span> Friends</Link>
-                            <span className="font-semibold">{profileUser.followers}</span> Followers
+                            <Link href={`/profile/${profileUser.username}/friends`} className="hover:underline"><span className="font-semibold">{profileUser.friends}</span> Friends</Link>
+                            <Link href={`/profile/${profileUser.username}/friends`} className="hover:underline"><span className="font-semibold">{profileUser.followers}</span> Followers</Link>
                         </div>
                     </div>
                      <div className="flex gap-2 flex-shrink-0">
-                        <InteractionButtons isMe={isMe} initialIsFriend={false} initialIsRequestSent={profileUser.username === 'carlosray' ? true : false} />
+                        <InteractionButtons isMe={isMe} initialIsFriend={false} initialIsRequestSent={profileUser.username === 'carlosray'} />
                         {!isMe && <QuickChatDialog userName={profileUser.displayName} onSend={handleMessage} />}
                     </div>
                  </div>
@@ -295,4 +295,3 @@ export default function UserProfilePage() {
     </div>
   );
 }
-

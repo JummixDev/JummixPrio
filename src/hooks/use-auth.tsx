@@ -21,7 +21,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, onSnapshot } from "firebase/firestore"; 
+import { doc, setDoc, getDoc, onSnapshot, updateDoc } from "firebase/firestore"; 
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
@@ -34,7 +34,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
-  updateUserProfile: (profileData: { displayName?: string, photoURL?: string }) => Promise<void>;
+  updateUserProfile: (profileData: { displayName?: string, photoURL?: string, bio?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,21 +70,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
       return () => unsubscribe();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
   const createUserDocument = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
+    const username = user.email!.split('@')[0];
 
     if (!userDocSnap.exists()) {
       // Create a new document in the 'users' collection with the user's uid
       await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
-        displayName: user.displayName || user.email?.split('@')[0],
+        username: username,
+        displayName: user.displayName || username,
         photoURL: user.photoURL || '',
-        bio: '',
+        bio: 'Welcome to Jummix! Edit your bio in the settings.',
         isVerifiedHost: false,
         interests: [],
       }, { merge: true });
@@ -126,13 +130,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/');
   };
 
-  const updateUserProfile = async (profileData: { displayName?: string, photoURL?: string }) => {
+  const updateUserProfile = async (profileData: { displayName?: string, photoURL?: string, bio?: string }) => {
     if (!auth.currentUser) {
         throw new Error("No user is signed in to update profile.");
     }
-    await updateProfile(auth.currentUser, profileData);
-    // Also update the user's document in Firestore
-    await setDoc(doc(db, "users", auth.currentUser.uid), profileData, { merge: true });
+    
+    const { bio, ...authProfileData } = profileData;
+
+    // Update Firebase Auth profile (displayName, photoURL)
+    if (Object.keys(authProfileData).length > 0) {
+      await updateProfile(auth.currentUser, authProfileData);
+    }
+    
+    // Update user's document in Firestore (bio and other custom fields)
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(userDocRef, profileData);
   }
 
   const value = {
