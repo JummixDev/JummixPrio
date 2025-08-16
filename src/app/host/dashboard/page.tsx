@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, ShieldAlert, Star, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, ShieldAlert, Star, Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,18 +10,22 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Bar, Pie, Cell, ResponsiveContainer, BarChart as RechartsBarChart, PieChart as RechartsPieChart } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-const mockEvents = [
-    { id: 'evt-1', name: 'Summer Music Fest', date: '2024-08-15', status: 'Upcoming', bookings: 342, revenue: 25650 },
-    { id: 'evt-2', name: 'Tech Innovators Summit', date: '2024-09-05', status: 'Upcoming', bookings: 180, revenue: 0 },
-    { id: 'evt-3', name: 'The Color Run', date: '2024-06-20', status: 'Past', bookings: 512, revenue: 20480 },
-];
+type EventData = {
+    id: string;
+    name: string;
+    date: string;
+    status: 'Upcoming' | 'Past';
+    bookings: number;
+    revenue: number;
+};
 
 const mockReviews = [
     { id: 'rev-1', event: 'The Color Run', user: 'Jenna S.', rating: 5, comment: 'So much fun! Well organized.' },
@@ -142,6 +146,56 @@ function Overview() {
 }
 
 function EventManagement() {
+    const { user } = useAuth();
+    const [events, setEvents] = useState<EventData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchHostEvents() {
+            if (!user) return;
+            setIsLoading(true);
+            try {
+                const eventsRef = collection(db, 'events');
+                const q = query(eventsRef, where('hostUid', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+                
+                const hostEvents = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const eventDate = new Date(data.date);
+                    return {
+                        id: doc.id,
+                        name: data.name,
+                        date: eventDate.toLocaleDateString(),
+                        status: eventDate > new Date() ? 'Upcoming' : 'Past',
+                        // Mock data for now, replace with real data when available
+                        bookings: data.attendees?.length || 0, 
+                        revenue: (data.attendees?.length || 0) * data.price,
+                    } as EventData;
+                });
+                setEvents(hostEvents);
+            } catch (error) {
+                console.error("Error fetching host events:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchHostEvents();
+    }, [user]);
+
+    if (isLoading) {
+        return (
+             <Card>
+                <CardHeader>
+                    <CardTitle>Event Management</CardTitle>
+                    <CardDescription>Loading your events...</CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-center items-center p-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        )
+    }
+
      return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -166,20 +220,30 @@ function EventManagement() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {mockEvents.map(event => (
-                            <TableRow key={event.id}>
-                                <TableCell className="font-medium">{event.name}</TableCell>
-                                <TableCell>{event.date}</TableCell>
-                                <TableCell>
-                                    <Badge variant={event.status === 'Upcoming' ? 'default' : 'secondary'}>{event.status}</Badge>
-                                </TableCell>
-                                <TableCell>{event.bookings}</TableCell>
-                                <TableCell>${event.revenue.toLocaleString()}</TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="outline" size="sm">Manage</Button>
+                        {events.length > 0 ? (
+                            events.map(event => (
+                                <TableRow key={event.id}>
+                                    <TableCell className="font-medium">{event.name}</TableCell>
+                                    <TableCell>{event.date}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={event.status === 'Upcoming' ? 'default' : 'secondary'}>{event.status}</Badge>
+                                    </TableCell>
+                                    <TableCell>{event.bookings}</TableCell>
+                                    <TableCell>${event.revenue.toLocaleString()}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={`/host/edit-event/${event.id}`}>Manage</Link>
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center text-muted-foreground p-8">
+                                    You haven't created any events yet.
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>
@@ -281,15 +345,12 @@ function AccessDenied() {
 export default function HostDashboardPage() {
     const { user, loading, userData } = useAuth();
     const router = useRouter();
-    // This would be fetched from your database in a real app
     const [isVerifiedHost, setIsVerifiedHost] = useState(false);
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/');
         }
-        // In a real app, you'd fetch the user's custom claims or a field from their
-        // Firestore document to set `isVerifiedHost`. 
         if (userData) {
              setIsVerifiedHost(userData.isVerifiedHost);
         }
@@ -297,7 +358,7 @@ export default function HostDashboardPage() {
     }, [user, loading, router, userData]);
     
     if (loading || !user) {
-        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+        return <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;
     }
     
     return (
@@ -315,12 +376,12 @@ export default function HostDashboardPage() {
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                 {isVerifiedHost ? (
                     <Tabs defaultValue="overview">
-                        <TabsList className="grid w-full grid-cols-5 mb-6">
-                            <TabsTrigger value="overview"><BarChart className="mr-2"/>Overview</TabsTrigger>
-                            <TabsTrigger value="events"><Calendar className="mr-2"/>Events</TabsTrigger>
-                            <TabsTrigger value="reviews"><Star className="mr-2"/>Reviews</TabsTrigger>
-                            <TabsTrigger value="communication"><MessageCircle className="mr-2"/>Communication</TabsTrigger>
-                            <TabsTrigger value="finances"><DollarSign className="mr-2"/>Finances</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
+                            <TabsTrigger value="overview"><BarChart className="mr-2 hidden md:block"/>Overview</TabsTrigger>
+                            <TabsTrigger value="events"><Calendar className="mr-2 hidden md:block"/>Events</TabsTrigger>
+                            <TabsTrigger value="reviews"><Star className="mr-2 hidden md:block"/>Reviews</TabsTrigger>
+                            <TabsTrigger value="communication"><MessageCircle className="mr-2 hidden md:block"/>Communication</TabsTrigger>
+                            <TabsTrigger value="finances"><DollarSign className="mr-2 hidden md:block"/>Finances</TabsTrigger>
                         </TabsList>
                         <TabsContent value="overview"><Overview/></TabsContent>
                         <TabsContent value="events"><EventManagement/></TabsContent>

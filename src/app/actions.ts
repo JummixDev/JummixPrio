@@ -4,8 +4,8 @@
 import { personalizedEventRecommendations, PersonalizedEventRecommendationsInput } from "@/ai/flows/event-recommendations";
 import type { PersonalizedEventRecommendationsOutput } from "@/ai/flows/event-recommendations";
 import { db } from "@/lib/firebase";
-import { addDoc, collection } from "firebase/firestore";
-import { createEventSchema, CreateEventInput } from "@/lib/schemas";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput } from "@/lib/schemas";
 
 
 interface AIResult extends PersonalizedEventRecommendationsOutput {
@@ -57,3 +57,32 @@ export async function createEvent(eventData: CreateEventInput) {
         return { success: false, errors: ["Failed to create event in the database."] };
     }
 }
+
+export async function updateEvent(eventData: UpdateEventInput) {
+    const validation = updateEventSchema.safeParse(eventData);
+
+    if (!validation.success) {
+        return {
+            success: false,
+            errors: validation.error.errors.map(e => e.message),
+        };
+    }
+    
+    try {
+        const { eventId, ...dataToUpdate } = validation.data;
+        const eventRef = doc(db, "events", eventId);
+
+        await updateDoc(eventRef, {
+            ...dataToUpdate,
+            date: dataToUpdate.date.toISOString().split('T')[0],
+            isFree: dataToUpdate.price === 0,
+        });
+        
+        return { success: true, eventId: eventId };
+    } catch (error) {
+        console.error("Error updating event:", error);
+        return { success: false, errors: ["Failed to update event in the database."] };
+    }
+}
+
+    

@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 // Schema for event creation form
@@ -12,3 +13,12 @@ export const createEventSchema = z.object({
 });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;
+
+// Schema for updating an existing event
+export const updateEventSchema = createEventSchema.extend({
+    eventId: z.string(),
+}).omit({ hostUid: true }); // hostUid cannot be changed
+
+export type UpdateEventInput = z.infer<typeof updateEventSchema>;
+
+    
