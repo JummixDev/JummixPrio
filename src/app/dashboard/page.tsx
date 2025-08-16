@@ -9,7 +9,7 @@ import { EventCard } from "@/components/jummix/EventCard";
 import { Leaderboard } from "@/components/jummix/Leaderboard";
 import { AIRecommender } from "@/components/jummix/AIRecommender";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Menu } from "lucide-react";
+import { MapPin, Search, Menu, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -97,10 +97,11 @@ export default function DashboardPage() {
                 <Input placeholder="Search events or friends..." className="pl-10" />
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground hidden sm:flex">
-                 <Link href="/explore">
-                  <Search className="mr-2 h-4 w-4" /> Explore Events
+            <div className="flex items-center gap-2">
+              <Button asChild variant="ghost" size="icon">
+                <Link href="/chats">
+                  <MessageSquare />
+                  <span className="sr-only">Chats</span>
                 </Link>
               </Button>
                <Sheet>
@@ -127,6 +128,11 @@ export default function DashboardPage() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <Input placeholder="Search events or friends..." className="pl-10" />
                         </div>
+                         <Button asChild className="w-full">
+                           <Link href="/chats">
+                            <MessageSquare className="mr-2 h-4 w-4" /> Go to Chats
+                          </Link>
+                        </Button>
                         <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
                            <Link href="/explore">
                             <Search className="mr-2 h-4 w-4" /> Explore Events
