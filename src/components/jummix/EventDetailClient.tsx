@@ -154,13 +154,13 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                      <Card>
                         <CardContent className="p-4">
                             <div className="flex justify-around">
-                                <Button variant="ghost" onClick={() => handleActionClick('Liked')}>
+                                <Button variant="ghost" onClick={() => handleActionClick('Liked')} className="transition-transform active:scale-90">
                                     <Heart className="mr-2" /> Like
                                 </Button>
-                                <Button variant="ghost" onClick={() => handleActionClick('Saved')}>
+                                <Button variant="ghost" onClick={() => handleActionClick('Saved')} className="transition-transform active:scale-90">
                                     <Bookmark className="mr-2" /> Save
                                 </Button>
-                                <Button variant="ghost" onClick={() => handleActionClick('Shared')}>
+                                <Button variant="ghost" onClick={() => handleActionClick('Shared')} className="transition-transform active:scale-90">
                                     <Share2 className="mr-2" /> Share
                                 </Button>
                             </div>
@@ -184,11 +184,11 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                     </Button>
                                 </div>
                             ) : event.isFree ? (
-                                 <Button onClick={handleAttendClick} className="w-full">
+                                 <Button onClick={handleAttendClick} className="w-full transition-transform active:scale-95">
                                     <PlusCircle className="mr-2" /> RSVP Now
                                 </Button>
                             ) : (
-                                <Button onClick={handleAttendClick} className="w-full">
+                                <Button onClick={handleAttendClick} className="w-full transition-transform active:scale-95">
                                     <Ticket className="mr-2" /> Get Tickets
                                 </Button>
                             )}
