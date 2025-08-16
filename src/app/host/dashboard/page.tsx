@@ -149,7 +149,9 @@ function EventManagement() {
                     <CardTitle>Event Management</CardTitle>
                     <CardDescription>Manage your upcoming and past events.</CardDescription>
                 </div>
-                <Button>Create New Event</Button>
+                <Button asChild>
+                    <Link href="/host/create-event">Create New Event</Link>
+                </Button>
             </CardHeader>
             <CardContent>
                  <Table>
@@ -277,7 +279,7 @@ function AccessDenied() {
 
 
 export default function HostDashboardPage() {
-    const { user, loading } = useAuth();
+    const { user, loading, userData } = useAuth();
     const router = useRouter();
     // This would be fetched from your database in a real app
     const [isVerifiedHost, setIsVerifiedHost] = useState(false);
@@ -287,15 +289,12 @@ export default function HostDashboardPage() {
             router.push('/');
         }
         // In a real app, you'd fetch the user's custom claims or a field from their
-        // Firestore document to set `isVerifiedHost`. For now, we'll simulate it.
-        // For example:
-        // const userDoc = await getUserDoc(user.uid);
-        // setIsVerifiedHost(userDoc.isVerifiedHost);
-        if (user && user.email === 'carlos.ray@example.com') {
-             setIsVerifiedHost(true);
+        // Firestore document to set `isVerifiedHost`. 
+        if (userData) {
+             setIsVerifiedHost(userData.isVerifiedHost);
         }
 
-    }, [user, loading, router]);
+    }, [user, loading, router, userData]);
     
     if (loading || !user) {
         return <div className="flex items-center justify-center min-h-screen">Loading...</div>;

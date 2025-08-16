@@ -57,6 +57,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const createUserDocument = async (user: User) => {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+    const username = user.email!.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+    if (!userDocSnap.exists()) {
+      // Create a new document in the 'users' collection with the user's uid
+       const newUserData = {
+        uid: user.uid,
+        email: user.email,
+        username: username,
+        displayName: user.displayName || username,
+        photoURL: user.photoURL || '',
+        bio: 'Welcome to Jummix! Edit your bio in the settings.',
+        isVerifiedHost: false, // Default value for new users
+        interests: [],
+        followers: 0,
+        friendsCount: 0,
+        eventsCount: 0,
+      };
+      await setDoc(userDocRef, newUserData);
+      setUserData(newUserData); // Immediately set user data in state
+    }
+  };
+
+
   useEffect(() => {
     if (user) {
       const userDocRef = doc(db, "users", user.uid);
@@ -74,30 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   }, [user]);
-
-  const createUserDocument = async (user: User) => {
-    const userDocRef = doc(db, "users", user.uid);
-    const userDocSnap = await getDoc(userDocRef);
-    const username = user.email!.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
-
-    if (!userDocSnap.exists()) {
-      // Create a new document in the 'users' collection with the user's uid
-      await setDoc(userDocRef, {
-        uid: user.uid,
-        email: user.email,
-        username: username,
-        displayName: user.displayName || username,
-        photoURL: user.photoURL || '',
-        bio: 'Welcome to Jummix! Edit your bio in the settings.',
-        isVerifiedHost: false,
-        interests: [],
-        followers: 0,
-        friendsCount: 0,
-        eventsCount: 0,
-        friends: 0, // Legacy field, keeping for compatibility if needed
-      }, { merge: true });
-    }
-  };
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -148,7 +150,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Update user's document in Firestore (bio and other custom fields)
     const userDocRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userDocRef, profileData);
+    
+    // Create a clean object to update, excluding undefined values
+    const dataToUpdate: { [key: string]: any } = {};
+    if (profileData.displayName) dataToUpdate.displayName = profileData.displayName;
+    if (profileData.photoURL) dataToUpdate.photoURL = profileData.photoURL;
+    if (bio) dataToUpdate.bio = bio;
+
+    await updateDoc(userDocRef, dataToUpdate);
   }
 
   const value = {
