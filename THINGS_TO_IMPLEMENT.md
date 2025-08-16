@@ -10,30 +10,30 @@ Diese Datei listet die wichtigsten Funktionen auf, die als Nächstes implementie
 <summary>Details zu den erledigten Aufgaben anzeigen</summary>
 
 - **<del>1. Backend-Datenpersistenz (Höchste Priorität)</del>**
-  - **<del>Problem:</del>** <del>Alle Daten (Benutzer, Events, Chats etc.) sind derzeit statisch und in "mock"-Objekten im Code hinterlegt. Sie werden bei jedem Neuladen der Seite zurückgesetzt.</del>
+  - **<del>Problem:</del>** <del>Alle Daten (Benutzer, Events, Chats etc.) waren statisch und in "mock"-Objekten im Code hinterlegt.</del>
   - **<del>Lösung:</del>**
-      - **<del>Datenbank einrichten:</del>** <del>Alle Mock-Daten durch eine echte Datenbank wie **Firebase Firestore** ersetzen.</del>
-      - **<del>Datenmodelle erstellen:</del>** <del>Collections für `users`, `events`, `chats`, `reviews`, etc. anlegen.</del>
-      - **<del>API-Endpunkte/Server-Actions anpassen:</del>** <del>Alle Lese- und Schreibvorgänge (z.B. ein Event erstellen, ein Profil aktualisieren) so umbauen, dass sie mit der Datenbank interagieren.</del>
+      - **<del>Datenbank eingerichtet:</del>** <del>Alle Mock-Daten wurden durch eine echte Datenbank (**Firebase Firestore**) ersetzt.</del>
+      - **<del>Datenmodelle erstellt:</del>** <del>Collections für `users`, `events`, `chats`, `reviews`, etc. sind angelegt und werden genutzt.</del>
+      - **<del>API-Endpunkte/Server-Actions angepasst:</del>** <del>Alle Lese- und Schreibvorgänge (z.B. Event-Details laden, Profil aktualisieren) interagieren erfolgreich mit der Datenbank.</del>
 
-- **<del>2. Echte Benutzerauthentifizierung & -verwaltung</del>**
-  - **<del>Problem:</del>** <del>Die Login- und Registrierungsfunktionen sind mit dem Firebase Auth Emulator verbunden, aber die Benutzerdaten (Bio, Interessen etc.) werden nicht in einer Datenbank gespeichert.</del>
+- **<del>2. Echte Benutzerauthentifizierung & -verwaltung (Vollständig erledigt)</del>**
+  - **<del>Problem:</del>** <del>Login, Registrierung und die Verknüpfung der Benutzerdaten mit der Datenbank waren fehlerhaft.</del>
   - **<del>Lösung:</del>**
-      - **<del>Firestore-Dokument bei Registrierung:</del>** <del>Wenn ein neuer Nutzer sich registriert, automatisch ein `user`-Dokument in Firestore mit seiner `uid` erstellen.</del>
-      - **<del>Profildaten speichern:</del>** <del>Die Profil- und Einstellungsseiten so anpassen, dass sie Daten aus dem Firestore-Dokument des Nutzers lesen und dorthin schreiben.</del>
-      - **Host-Status:** Den `isVerifiedHost`-Status als Feld im Firestore-Dokument des Nutzers speichern und serverseitig überprüfen.
+      - **<del>Firestore-Dokument bei Registrierung:</del>** <del>Wenn ein neuer Nutzer sich registriert, wird automatisch ein korrekt strukturiertes `user`-Dokument in Firestore mit seiner `uid` erstellt.</del>
+      - **<del>Profildaten speichern und laden:</del>** <del>Die Profil- und Einstellungsseiten lesen und schreiben Daten nun zuverlässig aus dem Firestore-Dokument des Nutzers.</del>
+      - **<del>Host-Status:</del>** <del>Der `isVerifiedHost`-Status ist als Feld im Firestore-Dokument des Nutzers gespeichert und kann serverseitig überprüft werden.</del>
 
-- **<del>7. Echte Geolokalisierung für "Events in der Nähe"</del>**
-  - **<del>Problem:</del>** <del>Die Seite `/events/nearby` zeigt statische Daten an.</del>
-  - **<del>Lösung (Frontend erledigt):</del>**
-      - **<del>Browser-Geolocation-API nutzen:</del>** <del>Den Nutzer um die Freigabe seines Standorts bitten.</del>
-      - **Noch offen (Backend):** Eine geografische Abfrage an die Datenbank senden (erfordert oft eine Erweiterung wie GeoFire für Firestore), um Events im Umkreis des Nutzerstandorts zu finden und anzuzeigen.
+- **7. Echte Geolokalisierung für "Events in der Nähe" (Frontend erledigt)**
+  - **Problem:** Die Seite `/events/nearby` zeigt statische Daten an.
+  - **Lösung (Frontend erledigt):**
+      - **Browser-Geolocation-API nutzen:** Der Nutzer wird erfolgreich um die Freigabe seines Standorts gebeten.
+      - **Noch offen (Backend):** Implementierung einer geografischen Abfrage an die Datenbank (z.B. mit GeoFire für Firestore), um Events im Umkreis des Nutzerstandorts zu filtern und dynamisch anzuzeigen.
 
-- **<del>8. Benachrichtigungssystem</del>**
-  - **<del>Problem:</del>** <del>Benachrichtigungen (z.B. über neue Freundschaftsanfragen oder Nachrichten) werden nur simuliert.</del>
-  - **<del>Lösung (Frontend erledigt):</del>**
-      - **<del>Firebase Cloud Messaging (FCM):</del>** <del>FCM integrieren, um Push-Benachrichtigungen an mobile Geräte und Browser zu senden.</del>
-      - **Noch offen (Backend):** Benachrichtigungs-Logik: Serverseitige Logik implementieren, die bei bestimmten Aktionen (z.B. Erhalt einer neuen Nachricht) eine Benachrichtigung auslöst.
+- **8. Benachrichtigungssystem (UI erledigt)**
+  - **Problem:** Benachrichtigungen werden nur simuliert.
+  - **Lösung (Frontend erledigt):**
+      - Die Benutzeroberfläche für Benachrichtigungen ist vorhanden.
+      - **Noch offen (Backend):** Integration von **Firebase Cloud Messaging (FCM)** und Implementierung der serverseitigen Logik, die bei bestimmten Aktionen (z.B. Erhalt einer neuen Nachricht) eine Benachrichtigung auslöst und versendet.
 
 </details>
 
@@ -54,7 +54,7 @@ Diese Datei listet die wichtigsten Funktionen auf, die als Nächstes implementie
 - **Problem:** Der "Tickets kaufen"-Button simuliert nur die Teilnahme.
 - **Lösung:**
     - **Stripe-Integration:** Stripe Checkout implementieren, um echte Zahlungen abzuwickeln.
-    - **Ticket-Generierung:** Nach erfolgreicher Zahlung ein "Ticket"-Objekt in der Datenbank erstellen, das den Nutzer mit dem Event verknüpft (z.B. als QR-Code).
+    - **Ticket-Generierung:** Nach erfolgreicher Zahlung ein "Ticket"-Objekt in der Datenbank erstellen, das den Nutzer mit dem Event verknüpft (z.B. in einer Sub-Collection des Events).
 
 ## 5. Live-Chat mit WebSockets
 
