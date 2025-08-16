@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, User, Shield, Bell, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Shield, Bell, Trash2, Image as ImageIcon, CheckCircle, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -26,6 +26,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 
 function ProfileSettings() {
@@ -93,15 +95,64 @@ function ProfileSettings() {
   );
 }
 
+function PhotoSettings() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Profile Photos</CardTitle>
+                <CardDescription>Manage your profile picture and banner image.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div>
+                    <Label>Profile Picture</Label>
+                    <div className="flex items-center gap-4 mt-2">
+                       {/* Placeholder for Avatar */}
+                        <div className="w-20 h-20 bg-muted rounded-full"></div>
+                        <Button variant="outline">Upload New</Button>
+                    </div>
+                </div>
+                 <div>
+                    <Label>Banner Image</Label>
+                    <div className="flex items-center gap-4 mt-2">
+                         {/* Placeholder for Banner */}
+                        <div className="w-48 h-20 bg-muted rounded-md"></div>
+                        <Button variant="outline">Upload New</Button>
+                    </div>
+                </div>
+                <Separator />
+                 <div>
+                    <h3 className="font-semibold mb-2">Photo Gallery</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Manage photos displayed on your profile's gallery tab.</p>
+                    <Button><ImageIcon className="mr-2" /> Manage Gallery</Button>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
 function PrivacySettings() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Privacy</CardTitle>
+                <CardTitle>Privacy & Visibility</CardTitle>
                 <CardDescription>Manage who can see your activity and profile.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <p className="text-muted-foreground">Privacy settings will be available here soon.</p>
+            <CardContent className="space-y-6">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                        <Label>Profile Visibility</Label>
+                        <p className="text-sm text-muted-foreground">Control who can see your full profile.</p>
+                    </div>
+                    {/* Placeholder for a select component */}
+                    <p className="font-semibold">Public</p>
+                </div>
+                 <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                        <Label>Online Status</Label>
+                        <p className="text-sm text-muted-foreground">Allow others to see when you're online.</p>
+                    </div>
+                    <Switch defaultChecked />
+                </div>
             </CardContent>
         </Card>
     )
@@ -112,28 +163,82 @@ function NotificationSettings() {
         <Card>
             <CardHeader>
                 <CardTitle>Notifications</CardTitle>
-                <CardDescription>Choose how you want to be notified.</CardDescription>
+                <CardDescription>Choose how and when you want to be notified.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                 <p className="text-muted-foreground">Notification settings will be available here soon.</p>
+            <CardContent className="divide-y">
+                <div className="py-4 flex items-start justify-between">
+                    <div>
+                        <Label>New Friend Request</Label>
+                        <p className="text-sm text-muted-foreground">When someone sends you a friend request.</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <div className="flex items-center gap-2"><Mail className="w-4 h-4" /><Switch/></div>
+                        <div className="flex items-center gap-2"><Bell className="w-4 h-4" /><Switch defaultChecked/></div>
+                    </div>
+                </div>
+                 <div className="py-4 flex items-start justify-between">
+                    <div>
+                        <Label>Event Reminders</Label>
+                        <p className="text-sm text-muted-foreground">For events you have RSVP'd to.</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <div className="flex items-center gap-2"><Mail className="w-4 h-4" /><Switch defaultChecked/></div>
+                        <div className="flex items-center gap-2"><Bell className="w-4 h-4" /><Switch defaultChecked/></div>
+                    </div>
+                </div>
+                 <div className="py-4 flex items-start justify-between">
+                    <div>
+                        <Label>New Messages</Label>
+                        <p className="text-sm text-muted-foreground">When you receive a new chat message.</p>
+                    </div>
+                    <div className="flex gap-4">
+                         <div className="flex items-center gap-2"><Mail className="w-4 h-4" /><Switch/></div>
+                        <div className="flex items-center gap-2"><Bell className="w-4 h-4" /><Switch defaultChecked/></div>
+                    </div>
+                </div>
             </CardContent>
         </Card>
     )
 }
 
 function AccountSettings() {
-  const { user } = useAuth();
+  const { user, toast } = useToast();
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [emailForVerification, setEmailForVerification] = useState("");
+
+  const handleEmailChange = () => {
+      toast({
+          title: "Confirmation Required",
+          description: "A confirmation link has been sent to your new email address."
+      })
+      setIsConfirming(true);
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Account</CardTitle>
-        <CardDescription>Manage your account settings.</CardDescription>
+        <CardTitle>Account Settings</CardTitle>
+        <CardDescription>Manage your email, password, and account status.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" value={user?.email || ''} disabled />
+            <Label htmlFor="email">Email Address</Label>
+            <div className="flex gap-2">
+                <Input id="email" type="email" defaultValue={user?.email || ''} onChange={(e) => setEmailForVerification(e.target.value)} />
+                <Button onClick={handleEmailChange}>Change</Button>
+            </div>
+            {isConfirming && (
+                <p className="text-sm text-muted-foreground p-2 bg-secondary/50 rounded-md flex items-center gap-2 mt-2">
+                    <CheckCircle className="text-primary w-5 h-5"/> Awaiting confirmation for {emailForVerification}
+                </p>
+            )}
         </div>
+        <div className="space-y-2">
+            <Label>Password</Label>
+            <Button variant="outline">Change Password</Button>
+            <p className="text-sm text-muted-foreground">You will be sent an email to reset your password.</p>
+        </div>
+
         <Card className="border-destructive">
             <CardHeader>
                 <CardTitle className="text-destructive flex items-center gap-2"><Trash2/> Danger Zone</CardTitle>
@@ -183,6 +288,7 @@ export default function SettingsPage() {
 
   const navItems = [
     { id: 'profile', label: 'Profile', icon: User },
+    { id: 'photos', label: 'Photos', icon: ImageIcon },
     { id: 'privacy', label: 'Privacy', icon: Shield },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'account', label: 'Account', icon: Trash2 },
@@ -217,8 +323,9 @@ export default function SettingsPage() {
                     ))}
                 </nav>
             </aside>
-            <section className="md:col-span-3">
+            <section className="md:col-span-3 space-y-6">
                 {activeSection === 'profile' && <ProfileSettings />}
+                {activeSection === 'photos' && <PhotoSettings />}
                 {activeSection === 'privacy' && <PrivacySettings />}
                 {activeSection === 'notifications' && <NotificationSettings />}
                 {activeSection === 'account' && <AccountSettings />}
@@ -228,3 +335,6 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+
+    

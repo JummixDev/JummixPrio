@@ -9,7 +9,7 @@ import { EventCard } from "@/components/jummix/EventCard";
 import { Leaderboard } from "@/components/jummix/Leaderboard";
 import { AIRecommender } from "@/components/jummix/AIRecommender";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Menu, MessageSquare } from "lucide-react";
+import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/jummix/Footer";
+import { Separator } from "@/components/ui/separator";
 
 const events = [
   {
@@ -83,6 +84,11 @@ export default function DashboardPage() {
     return <div>Loading...</div>; // Or a proper loading skeleton
   }
 
+  const userProfileLink = `/profile/${user?.email?.split('@')[0] || 'me'}`;
+  // Replace with actual admin check
+  const isAdmin = user?.email === 'admin@jummix.com';
+
+
   return (
     <div className="bg-background min-h-screen font-body flex flex-col">
       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
@@ -97,7 +103,7 @@ export default function DashboardPage() {
                 <Input placeholder="Search events or friends..." className="pl-10" />
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button asChild variant="ghost" size="icon">
                 <Link href="/chats">
                   <MessageSquare />
@@ -106,43 +112,46 @@ export default function DashboardPage() {
               </Button>
                <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden">
+                  <Button variant="ghost" size="icon">
                     <Menu />
                     <span className="sr-only">Open menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                    <SheetHeader className="p-6 text-left">
+                <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0 flex flex-col">
+                    <SheetHeader className="p-6 pb-0">
                         <SheetTitle>
-                            <Link href="/">
-                                <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
-                            </Link>
+                           <h1 className="text-2xl font-bold font-headline text-primary">Jummix Menu</h1>
                         </SheetTitle>
-                        <SheetDescription>
-                            Your social event hub.
-                        </SheetDescription>
                     </SheetHeader>
-                  <div className="flex flex-col h-full">
-                    <div className="p-6 space-y-4">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            <Input placeholder="Search events or friends..." className="pl-10" />
-                        </div>
-                         <Button asChild className="w-full">
-                           <Link href="/chats">
-                            <MessageSquare className="mr-2 h-4 w-4" /> Go to Chats
+                  <div className="flex-grow overflow-y-auto">
+                    <nav className="p-6 space-y-2">
+                        <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                           <Link href={userProfileLink}>
+                            <User className="mr-2 h-5 w-5" /> My Profile
                           </Link>
                         </Button>
-                        <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground w-full">
-                           <Link href="/explore">
-                            <Search className="mr-2 h-4 w-4" /> Explore Events
+                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                           <Link href="/host/dashboard">
+                            <LayoutDashboard className="mr-2 h-5 w-5" /> Host Dashboard
                           </Link>
                         </Button>
-                    </div>
-                    <div className="mt-auto p-6">
+                        <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                           <Link href="/settings">
+                            <Settings className="mr-2 h-5 w-5" /> Settings
+                          </Link>
+                        </Button>
+                        {isAdmin && (
+                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                               <Link href="/admin">
+                                <Shield className="mr-2 h-5 w-5" /> Admin Dashboard
+                              </Link>
+                            </Button>
+                        )}
+                    </nav>
+                  </div>
+                    <div className="mt-auto p-6 border-t">
                         <UserProfileCard />
                     </div>
-                  </div>
                 </SheetContent>
               </Sheet>
             </div>
@@ -182,3 +191,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

@@ -7,6 +7,7 @@ import { LogOut, Settings } from "lucide-react";
 import { Button } from "../ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function UserProfileCard() {
   const { user, signOut } = useAuth();
@@ -16,16 +17,22 @@ export function UserProfileCard() {
     router.push('/settings');
   }
   
+  const profileLink = `/profile/${user?.email?.split('@')[0] || 'me'}`;
+
   return (
     <Card>
-      <CardHeader className="flex flex-col items-center text-center pb-4">
-        <Avatar className="w-24 h-24 mb-4 border-4 border-background ring-2 ring-primary">
-          <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt={user?.displayName || "User"} data-ai-hint="person portrait" />
-          <AvatarFallback>{user?.displayName?.substring(0, 2).toUpperCase() || user?.email?.substring(0, 2).toUpperCase() || 'AD'}</AvatarFallback>
-        </Avatar>
-        <CardTitle className="font-headline">{user?.displayName || user?.email || 'Alex Doe'}</CardTitle>
-        <p className="text-muted-foreground">@{user?.email?.split('@')[0] || 'alex_doe'}</p>
-      </CardHeader>
+        <CardHeader className="flex flex-col items-center text-center pb-4">
+            <Link href={profileLink}>
+                <Avatar className="w-24 h-24 mb-4 border-4 border-background ring-2 ring-primary">
+                <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt={user?.displayName || "User"} data-ai-hint="person portrait" />
+                <AvatarFallback>{user?.displayName?.substring(0, 2).toUpperCase() || user?.email?.substring(0, 2).toUpperCase() || 'AD'}</AvatarFallback>
+                </Avatar>
+            </Link>
+            <CardTitle className="font-headline">{user?.displayName || user?.email || 'Alex Doe'}</CardTitle>
+            <Link href={profileLink}>
+                <p className="text-muted-foreground hover:underline">@{user?.email?.split('@')[0] || 'alex_doe'}</p>
+            </Link>
+        </CardHeader>
       <CardContent className="text-center">
         <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-4">
           <div className="flex flex-col items-center p-2 rounded-lg bg-secondary">
@@ -53,3 +60,5 @@ export function UserProfileCard() {
     </Card>
   );
 }
+
+    

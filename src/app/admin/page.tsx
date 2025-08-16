@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BarChart, Users, ShieldAlert, CheckCircle, ArrowLeft } from 'lucide-react';
+import { BarChart, Users, ShieldAlert, CheckCircle, ArrowLeft, MoreHorizontal, FileText, BadgeHelp, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,18 +23,28 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-// IMPORTANT: This is a placeholder for a real admin check.
-// In a production app, you would fetch the user's role from your database
-// and protect this route on the server-side.
-const ADMIN_UIDS = ['ADMIN_USER_UID_HERE']; // Replace with actual Admin User IDs from Firebase Auth
+const ADMIN_EMAIL = 'admin@jummix.com';
 
 const mockUsers = [
-    { id: 'user-1', name: 'Carlos Ray', email: 'carlos.ray@example.com', events: 42, status: 'Active' },
-    { id: 'user-2', name: 'Jenna Smith', email: 'jenna.smith@example.com', events: 35, status: 'Active' },
-    { id: 'user-3', name: 'Alex Doe', email: 'alex.doe@example.com', events: 73, status: 'Banned' },
-    { id: 'user-4', name: 'Aisha Khan', email: 'aisha.khan@example.com', events: 50, status: 'Active' },
+    { id: 'user-1', name: 'Carlos Ray', email: 'carlos.ray@example.com', events: 42, status: 'Active', isHost: true },
+    { id: 'user-2', name: 'Jenna Smith', email: 'jenna.smith@example.com', events: 35, status: 'Active', isHost: false },
+    { id: 'user-3', name: 'Alex Doe', email: 'alex.doe@example.com', events: 73, status: 'Banned', isHost: true },
+    { id: 'user-4', name: 'Aisha Khan', email: 'aisha.khan@example.com', events: 50, status: 'Active', isHost: false },
 ];
+
+const mockReports = [
+    { id: 'rep-1', type: 'Event', item: 'Underground Rave Party', reason: 'Illegal Activity', status: 'Pending Review' },
+    { id: 'rep-2', type: 'Profile', item: '@spammer', reason: 'Spam Account', status: 'Resolved' },
+    { id: 'rep-3', type: 'Activity', item: 'Hate speech comment', reason: 'Harassment', status: 'Pending Review' },
+];
+
+const mockVerificationRequests = [
+    { id: 'ver-1', name: 'Aisha Khan', email: 'aisha.khan@example.com', date: '2024-07-20' },
+    { id: 'ver-2', name: 'David Lee', email: 'david.lee@example.com', date: '2024-07-19' },
+]
+
 
 function Statistics() {
     return (
@@ -97,6 +107,15 @@ function UserManagement() {
         toast({ title: 'User Unbanned', description: `User ${userId} has been unbanned.`});
     }
 
+    const handleHostRevoke = (userId: string) => {
+        setUsers(users.map(u => u.id === userId ? {...u, isHost: false} : u));
+        toast({ title: 'Host Rights Revoked', description: `User ${userId} is no longer a host.`});
+    }
+     const handleDelete = (userId: string) => {
+        setUsers(users.filter(u => u.id !== userId));
+        toast({ title: 'User Deleted', description: `User ${userId} has been deleted.`});
+    }
+
     return (
         <Card>
             <CardHeader>
@@ -109,7 +128,7 @@ function UserManagement() {
                         <TableRow>
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
-                            <TableHead className="text-center">Events Attended</TableHead>
+                             <TableHead>Host Status</TableHead>
                              <TableHead className="text-center">Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -119,34 +138,31 @@ function UserManagement() {
                              <TableRow key={user.id}>
                                 <TableCell className="font-medium">{user.name}</TableCell>
                                 <TableCell>{user.email}</TableCell>
-                                <TableCell className="text-center">{user.events}</TableCell>
+                                <TableCell>{user.isHost ? 'Yes' : 'No'}</TableCell>
                                 <TableCell className="text-center">
                                     <Badge variant={user.status === 'Active' ? 'secondary' : 'destructive'}>
                                         {user.status}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                     {user.status === 'Active' ? (
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="sm">Ban User</Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                <AlertDialogTitle>Are you sure you want to ban {user.name}?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    This will prevent them from accessing the platform. This action can be reversed.
-                                                </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleBan(user.id)} className="bg-destructive hover:bg-destructive/90">Confirm Ban</AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                     ) : (
-                                         <Button onClick={() => handleUnban(user.id)} variant="outline" size="sm">Unban</Button>
-                                     )}
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <span className="sr-only">Open menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            {user.status === 'Active' ? (
+                                                <DropdownMenuItem onClick={() => handleBan(user.id)} className="text-destructive">Ban User</DropdownMenuItem>
+                                             ) : (
+                                                 <DropdownMenuItem onClick={() => handleUnban(user.id)}>Unban User</DropdownMenuItem>
+                                             )}
+                                             {user.isHost && <DropdownMenuItem onClick={() => handleHostRevoke(user.id)} className="text-destructive">Revoke Host Rights</DropdownMenuItem>}
+                                              <DropdownMenuItem onClick={() => handleDelete(user.id)} className="text-destructive">Delete User</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -165,7 +181,32 @@ function Reports() {
                 <CardDescription>Review and take action on user-reported content.</CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground">Reported content management will be available here soon.</p>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Reported Item</TableHead>
+                            <TableHead>Reason</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                     <TableBody>
+                        {mockReports.map(report => (
+                             <TableRow key={report.id}>
+                                <TableCell>{report.type}</TableCell>
+                                <TableCell className="font-medium">{report.item}</TableCell>
+                                <TableCell>{report.reason}</TableCell>
+                                <TableCell>
+                                    <Badge variant={report.status === 'Pending Review' ? 'default' : 'secondary'}>{report.status}</Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="outline" size="sm">View Details</Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                     </TableBody>
+                </Table>
             </CardContent>
         </Card>
     )
@@ -179,7 +220,30 @@ function Verifications() {
                 <CardDescription>Approve or deny requests from users to become verified event hosts.</CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground">Host verification management will be available here soon.</p>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                             <TableHead>Request Date</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                     <TableBody>
+                        {mockVerificationRequests.map(req => (
+                             <TableRow key={req.id}>
+                                <TableCell className="font-medium">{req.name}</TableCell>
+                                <TableCell>{req.email}</TableCell>
+                                <TableCell>{req.date}</TableCell>
+                                <TableCell className="text-right space-x-2">
+                                    <Button variant="outline" size="icon" className="text-green-600"><Check className="w-4 h-4"/></Button>
+                                    <Button variant="outline" size="icon" className="text-red-600"><X className="w-4 h-4"/></Button>
+                                    <Button variant="outline" size="sm"><FileText className="w-4 h-4 mr-2"/>View Application</Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                     </TableBody>
+                </Table>
             </CardContent>
         </Card>
     )
@@ -198,7 +262,7 @@ export default function AdminPage() {
             if (!user) {
                 // Not logged in, redirect to home
                 router.push('/');
-            } else if (!ADMIN_UIDS.includes(user.uid)) {
+            } else if (user.email !== ADMIN_EMAIL) {
                 // Logged in but not an admin, show access denied
                 setIsAdmin(false);
             } else {
@@ -233,7 +297,7 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="bg-background min-h-screen">
+        <div className="bg-secondary/20 min-h-screen">
             <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
                      <Button variant="ghost" size="icon" asChild>
@@ -245,8 +309,8 @@ export default function AdminPage() {
                 </div>
             </header>
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <aside className="md:col-span-1">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                    <aside className="lg:col-span-1 lg:sticky top-24">
                         <nav className="flex flex-col space-y-2">
                              {navItems.map(item => (
                                 <Button 
@@ -261,7 +325,7 @@ export default function AdminPage() {
                             ))}
                         </nav>
                     </aside>
-                    <section className="md:col-span-3 space-y-8">
+                    <section className="lg:col-span-3 space-y-8">
                         {activeSection === 'stats' && <Statistics />}
                         {activeSection === 'users' && <UserManagement />}
                         {activeSection === 'reports' && <Reports />}
@@ -272,3 +336,5 @@ export default function AdminPage() {
         </div>
     )
 }
+
+    
