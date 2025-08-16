@@ -19,8 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog"
 import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
 
 
 const mockUsers: { [key: string]: any } = {
@@ -139,15 +141,24 @@ function QuickChatDialog({ userName, onSend }: { userName: string, onSend: () =>
                 </DialogHeader>
                 <div className="space-y-4">
                     <Textarea placeholder={`Type your message to ${userName}...`} rows={5} />
-                    <Button onClick={onSend} className="w-full">Send Message</Button>
+                    <DialogClose asChild>
+                        <Button onClick={onSend} className="w-full">Send Message</Button>
+                    </DialogClose>
                 </div>
             </DialogContent>
         </Dialog>
     )
 }
 
-function InteractionButtons({ isFriend, isRequestSent, isMe }: { isFriend: boolean, isRequestSent: boolean, isMe: boolean }) {
+function InteractionButtons({ isMe, initialIsFriend, initialIsRequestSent }: { isMe: boolean, initialIsFriend: boolean, initialIsRequestSent: boolean }) {
     const { toast } = useToast();
+    const [isFriend, setIsFriend] = useState(initialIsFriend);
+    const [isRequestSent, setIsRequestSent] = useState(initialIsRequestSent);
+
+    const handleAddFriend = () => {
+        setIsRequestSent(true);
+        toast({title: "Friend request sent!"});
+    }
     
     if (isMe) {
         return <Button variant="outline" disabled>This is you</Button>;
@@ -158,7 +169,7 @@ function InteractionButtons({ isFriend, isRequestSent, isMe }: { isFriend: boole
     if (isRequestSent) {
         return <Button variant="secondary" disabled><Clock className="mr-2"/> Request Sent</Button>;
     }
-    return <Button onClick={() => toast({title: "Friend request sent!"})}><UserPlus className="mr-2"/> Add Friend</Button>;
+    return <Button onClick={handleAddFriend}><UserPlus className="mr-2"/> Add Friend</Button>;
 }
 
 
@@ -225,7 +236,7 @@ export default function UserProfilePage() {
                         </div>
                     </div>
                      <div className="flex gap-2 flex-shrink-0">
-                        <InteractionButtons isMe={isMe} isFriend={false} isRequestSent={true} />
+                        <InteractionButtons isMe={isMe} initialIsFriend={false} initialIsRequestSent={username === 'carlosray' ? true : false} />
                         {!isMe && <QuickChatDialog userName={user.name} onSend={handleMessage} />}
                     </div>
                  </div>
@@ -298,5 +309,3 @@ export default function UserProfilePage() {
     </div>
   );
 }
-
-    

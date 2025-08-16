@@ -96,6 +96,10 @@ function ProfileSettings() {
 }
 
 function PhotoSettings() {
+    const handleUploadClick = (photoType: string) => {
+        alert(`In a real app, this would open a file dialog to upload a new ${photoType}.`);
+    }
+
     return (
         <Card>
             <CardHeader>
@@ -107,23 +111,27 @@ function PhotoSettings() {
                     <Label>Profile Picture</Label>
                     <div className="flex items-center gap-4 mt-2">
                        {/* Placeholder for Avatar */}
-                        <div className="w-20 h-20 bg-muted rounded-full"></div>
-                        <Button variant="outline">Upload New</Button>
+                        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center">
+                            <ImageIcon className="w-10 h-10 text-muted-foreground" />
+                        </div>
+                        <Button variant="outline" onClick={() => handleUploadClick('profile picture')}>Upload New</Button>
                     </div>
                 </div>
                  <div>
                     <Label>Banner Image</Label>
                     <div className="flex items-center gap-4 mt-2">
                          {/* Placeholder for Banner */}
-                        <div className="w-48 h-20 bg-muted rounded-md"></div>
-                        <Button variant="outline">Upload New</Button>
+                        <div className="w-48 h-20 bg-muted rounded-md flex items-center justify-center">
+                             <ImageIcon className="w-10 h-10 text-muted-foreground" />
+                        </div>
+                        <Button variant="outline" onClick={() => handleUploadClick('banner image')}>Upload New</Button>
                     </div>
                 </div>
                 <Separator />
                  <div>
                     <h3 className="font-semibold mb-2">Photo Gallery</h3>
                     <p className="text-sm text-muted-foreground mb-4">Manage photos displayed on your profile's gallery tab.</p>
-                    <Button><ImageIcon className="mr-2" /> Manage Gallery</Button>
+                    <Button onClick={() => handleUploadClick('gallery photo')}><ImageIcon className="mr-2" /> Manage Gallery</Button>
                 </div>
             </CardContent>
         </Card>
@@ -131,6 +139,8 @@ function PhotoSettings() {
 }
 
 function PrivacySettings() {
+    const [isProfilePublic, setIsProfilePublic] = useState(true);
+    const [showOnlineStatus, setShowOnlineStatus] = useState(true);
     return (
         <Card>
             <CardHeader>
@@ -140,18 +150,17 @@ function PrivacySettings() {
             <CardContent className="space-y-6">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                        <Label>Profile Visibility</Label>
-                        <p className="text-sm text-muted-foreground">Control who can see your full profile.</p>
+                        <Label htmlFor="online-status-switch">Profile is Public</Label>
+                        <p className="text-sm text-muted-foreground">Allow anyone on the internet to see your profile.</p>
                     </div>
-                    {/* Placeholder for a select component */}
-                    <p className="font-semibold">Public</p>
+                     <Switch id="online-status-switch" checked={isProfilePublic} onCheckedChange={setIsProfilePublic} />
                 </div>
                  <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                        <Label>Online Status</Label>
+                        <Label htmlFor='online-status-switch'>Online Status</Label>
                         <p className="text-sm text-muted-foreground">Allow others to see when you're online.</p>
                     </div>
-                    <Switch defaultChecked />
+                    <Switch id="online-status-switch" checked={showOnlineStatus} onCheckedChange={setShowOnlineStatus} />
                 </div>
             </CardContent>
         </Card>
@@ -159,6 +168,31 @@ function PrivacySettings() {
 }
 
 function NotificationSettings() {
+    const [notifications, setNotifications] = useState({
+        friendRequest: { email: false, push: true },
+        eventReminders: { email: true, push: true },
+        newMessages: { email: false, push: true },
+    });
+
+    const handleToggle = (
+        category: keyof typeof notifications, 
+        type: 'email' | 'push'
+    ) => {
+        setNotifications(prev => ({
+            ...prev,
+            [category]: {
+                ...prev[category],
+                [type]: !prev[category][type],
+            }
+        }));
+    };
+
+    const notificationItems = [
+        { id: 'friendRequest', title: 'New Friend Request', description: 'When someone sends you a friend request.' },
+        { id: 'eventReminders', title: 'Event Reminders', description: 'For events you have RSVP\'d to.' },
+        { id: 'newMessages', title: 'New Messages', description: 'When you receive a new chat message.' },
+    ] as const;
+
     return (
         <Card>
             <CardHeader>
@@ -166,52 +200,75 @@ function NotificationSettings() {
                 <CardDescription>Choose how and when you want to be notified.</CardDescription>
             </CardHeader>
             <CardContent className="divide-y">
-                <div className="py-4 flex items-start justify-between">
-                    <div>
-                        <Label>New Friend Request</Label>
-                        <p className="text-sm text-muted-foreground">When someone sends you a friend request.</p>
+                {notificationItems.map(item => (
+                     <div key={item.id} className="py-4 flex items-start justify-between">
+                        <div>
+                            <Label>{item.title}</Label>
+                            <p className="text-sm text-muted-foreground">{item.description}</p>
+                        </div>
+                        <div className="flex gap-4">
+                            <div className="flex items-center gap-2" title="Email Notifications">
+                                <Mail className="w-4 h-4" />
+                                <Switch 
+                                    checked={notifications[item.id].email} 
+                                    onCheckedChange={() => handleToggle(item.id, 'email')}
+                                />
+                            </div>
+                            <div className="flex items-center gap-2" title="Push Notifications">
+                                <Bell className="w-4 h-4" />
+                                <Switch 
+                                    checked={notifications[item.id].push} 
+                                    onCheckedChange={() => handleToggle(item.id, 'push')}
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex gap-4">
-                        <div className="flex items-center gap-2"><Mail className="w-4 h-4" /><Switch/></div>
-                        <div className="flex items-center gap-2"><Bell className="w-4 h-4" /><Switch defaultChecked/></div>
-                    </div>
-                </div>
-                 <div className="py-4 flex items-start justify-between">
-                    <div>
-                        <Label>Event Reminders</Label>
-                        <p className="text-sm text-muted-foreground">For events you have RSVP'd to.</p>
-                    </div>
-                    <div className="flex gap-4">
-                        <div className="flex items-center gap-2"><Mail className="w-4 h-4" /><Switch defaultChecked/></div>
-                        <div className="flex items-center gap-2"><Bell className="w-4 h-4" /><Switch defaultChecked/></div>
-                    </div>
-                </div>
-                 <div className="py-4 flex items-start justify-between">
-                    <div>
-                        <Label>New Messages</Label>
-                        <p className="text-sm text-muted-foreground">When you receive a new chat message.</p>
-                    </div>
-                    <div className="flex gap-4">
-                         <div className="flex items-center gap-2"><Mail className="w-4 h-4" /><Switch/></div>
-                        <div className="flex items-center gap-2"><Bell className="w-4 h-4" /><Switch defaultChecked/></div>
-                    </div>
-                </div>
+                ))}
             </CardContent>
         </Card>
     )
 }
 
 function AccountSettings() {
-  const { user, toast } = useToast();
+  const { user, sendPasswordReset } = useAuth();
+  const { toast } = useToast();
   const [isConfirming, setIsConfirming] = useState(false);
   const [emailForVerification, setEmailForVerification] = useState("");
 
   const handleEmailChange = () => {
+      // In a real app, you'd call a function to update the email in Firebase Auth,
+      // which would send a verification link.
       toast({
           title: "Confirmation Required",
-          description: "A confirmation link has been sent to your new email address."
+          description: `A confirmation link has been sent to ${emailForVerification}. (This is a simulation)`
       })
       setIsConfirming(true);
+  }
+
+  const handlePasswordReset = async () => {
+    if (!user?.email) return;
+    try {
+        await sendPasswordReset(user.email);
+        toast({
+            title: "Password Reset Email Sent",
+            description: "Check your inbox for a link to reset your password.",
+        });
+    } catch(error) {
+        toast({
+            variant: "destructive",
+            title: "Failed to send email",
+            description: "Could not send password reset email. Please try again later.",
+        });
+    }
+  }
+
+  const handleDeleteAccount = () => {
+    // In a real app, this would trigger a multi-step process
+    // to delete user data from all services (Auth, Firestore, Storage)
+    toast({
+        title: "Account Deletion Initiated",
+        description: "Your account is scheduled for deletion. (This is a simulation)",
+    });
   }
 
   return (
@@ -235,7 +292,7 @@ function AccountSettings() {
         </div>
         <div className="space-y-2">
             <Label>Password</Label>
-            <Button variant="outline">Change Password</Button>
+            <Button variant="outline" onClick={handlePasswordReset}>Change Password</Button>
             <p className="text-sm text-muted-foreground">You will be sent an email to reset your password.</p>
         </div>
 
@@ -259,7 +316,7 @@ function AccountSettings() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction className="bg-destructive hover:bg-destructive/90">Yes, delete account</AlertDialogAction>
+                      <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90">Yes, delete account</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -335,6 +392,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-
-    
