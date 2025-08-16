@@ -21,7 +21,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc, getDoc } from "firebase/firestore"; 
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
@@ -52,20 +52,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const createUserDocument = async (user: User) => {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (!userDocSnap.exists()) {
+      // Create a new document in the 'users' collection with the user's uid
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || user.email?.split('@')[0],
+        photoURL: user.photoURL || '',
+        bio: '',
+        isVerifiedHost: false,
+        interests: [],
+      });
+    }
+  };
+
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    const user = userCredential.user;
-    
-    // Create a new document in the 'users' collection with the user's uid
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.email?.split('@')[0],
-      photoURL: '',
-      bio: '',
-      isVerifiedHost: false,
-    });
-    
+    await createUserDocument(userCredential.user);
     return userCredential;
   }
 
@@ -76,15 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     return signInWithPopup(auth, provider).then(async (result) => {
-        const user = result.user;
-        await setDoc(doc(db, "users", user.uid), {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            bio: '',
-            isVerifiedHost: false,
-        }, { merge: true }); // Use merge to not overwrite existing data if user signs in again
+        await createUserDocument(result.user);
         return result;
     });
   };
@@ -92,15 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithApple = () => {
     const provider = new OAuthProvider('apple.com');
     return signInWithPopup(auth, provider).then(async (result) => {
-        const user = result.user;
-        await setDoc(doc(db, "users", user.uid), {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            bio: '',
-isVerifiedHost: false,
-        }, { merge: true });
+        await createUserDocument(result.user);
         return result;
     });
   };

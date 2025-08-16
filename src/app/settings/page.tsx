@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, User, Shield, Bell, Trash2, Image as ImageIcon, CheckCircle, Mail } from 'lucide-react';
+import { ArrowLeft, User, Shield, Bell, Trash2, Image as ImageIcon, CheckCircle, Mail, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -28,24 +28,39 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 
 function ProfileSettings() {
   const { user, loading, updateUserProfile } = useAuth();
   const { toast } = useToast();
-  const { register, handleSubmit, setValue, formState: { isSubmitting } } = useForm();
+  const { register, handleSubmit, setValue, formState: { isSubmitting, isDirty } } = useForm();
+  const [isFormLoading, setIsFormLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      setValue('displayName', user.displayName || user.email?.split('@')[0]);
-      setValue('bio', 'Lover of live music, outdoor adventures, and spontaneous weekend trips.'); // This would come from your DB
+    async function fetchUserData() {
+        if (user) {
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                setValue('displayName', userData.displayName || user.email?.split('@')[0]);
+                setValue('bio', userData.bio || 'Lover of live music, outdoor adventures, and spontaneous weekend trips.');
+            }
+            setIsFormLoading(false);
+        }
     }
+    fetchUserData();
   }, [user, setValue]);
 
   const onSubmit = async (data: any) => {
+    if (!user) return;
     try {
       await updateUserProfile({ displayName: data.displayName });
-      // Here you would also update other data in Firestore, e.g. the bio
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(userDocRef, { bio: data.bio }, { merge: true });
+
       toast({
         title: 'Profile Updated!',
         description: 'Your changes have been saved successfully.',
@@ -60,8 +75,18 @@ function ProfileSettings() {
     }
   };
 
-  if (loading || !user) {
-    return <p>Loading...</p>;
+  if (loading || isFormLoading) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Public Profile</CardTitle>
+                <CardDescription>Update your public profile details.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center p-12">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </CardContent>
+        </Card>
+    );
   }
 
   return (
@@ -85,7 +110,7 @@ function ProfileSettings() {
             <Textarea id="bio" placeholder="Tell us a little about yourself" {...register('bio')} />
           </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !isDirty}>
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
