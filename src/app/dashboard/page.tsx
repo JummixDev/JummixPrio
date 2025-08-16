@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/jummix/Footer";
@@ -122,13 +122,13 @@ export default function DashboardPage() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0 flex flex-col">
-                    <SheetHeader className="p-6 pb-0">
+                    <SheetHeader className="p-6 pb-4">
                         <SheetTitle className="text-2xl font-bold font-headline text-primary">
                            Jummix Menu
                         </SheetTitle>
                     </SheetHeader>
                   <div className="flex-grow overflow-y-auto">
-                    <nav className="p-6 space-y-2">
+                    <nav className="p-6 pt-0 space-y-2">
                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                            <Link href={userProfileLink}>
                             <User className="mr-2 h-5 w-5" /> My Profile
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                         </Button>
                     </nav>
                   </div>
-                    <div className="mt-auto p-6 border-t">
+                    <div className="p-6 border-t">
                         <UserProfileCard />
                     </div>
                 </SheetContent>
