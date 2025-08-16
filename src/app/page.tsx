@@ -99,7 +99,7 @@ function SignInForm() {
                 <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
+                <span className="bg-card px-2 text-muted-foreground">
                 Or continue with
                 </span>
             </div>
@@ -174,7 +174,7 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
                 <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
+                <span className="bg-card px-2 text-muted-foreground">
                 Or continue with
                 </span>
             </div>
@@ -280,7 +280,7 @@ export default function LandingPage() {
         </section>
 
         {/* Sign-up Section */}
-        <section className="bg-secondary py-20">
+        <section className="bg-secondary/40 py-20">
             <div className="container mx-auto" ref={signupCardRef}>
                 <Card className="w-full max-w-md mx-auto shadow-2xl">
                     <CardHeader className="text-center">
@@ -301,14 +301,14 @@ export default function LandingPage() {
                         <TabsTrigger value="signup">Sign Up</TabsTrigger>
                         </TabsList>
                         <TabsContent value="signin">
-                            <CardContent className="p-4">
+                            <div className="p-4">
                                 <SignInForm />
-                            </CardContent>
+                            </div>
                         </TabsContent>
                         <TabsContent value="signup">
-                            <CardContent className="p-4">
+                            <div className="p-4">
                                 <SignUpForm onEmailInUse={handleEmailInUse} />
-                            </CardContent>
+                            </div>
                         </TabsContent>
                     </Tabs>
                     </CardContent>
