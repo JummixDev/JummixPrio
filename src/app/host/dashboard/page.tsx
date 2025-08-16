@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, Star, Users } from 'lucide-react';
+import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, ShieldAlert, Star, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -218,16 +218,39 @@ function Finances() {
     return <Card><CardHeader><CardTitle>Finances</CardTitle></CardHeader><CardContent><p>Manage Stripe connection and payouts.</p></CardContent></Card>
 }
 
+function AccessDenied() {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] bg-background text-center p-4 rounded-lg border-2 border-dashed">
+            <ShieldAlert className="w-16 h-16 mb-4 text-destructive" />
+            <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+            <p className="text-muted-foreground mb-6 max-w-md">You are not a verified host. To create and manage events, you need to apply for host verification.</p>
+            <Button asChild>
+                <Link href="/host/apply-verification">Apply to be a Host</Link>
+            </Button>
+        </div>
+    )
+}
+
 
 export default function HostDashboardPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
+    // This would be fetched from your database in a real app
+    const [isVerifiedHost, setIsVerifiedHost] = useState(false);
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/');
         }
-        // In a real app, you'd also check if the user has host privileges.
+        // In a real app, you'd fetch the user's custom claims or a field from their
+        // Firestore document to set `isVerifiedHost`. For now, we'll simulate it.
+        // For example:
+        // const userDoc = await getUserDoc(user.uid);
+        // setIsVerifiedHost(userDoc.isVerifiedHost);
+        if (user && user.email === 'carlos.ray@example.com') {
+             setIsVerifiedHost(true);
+        }
+
     }, [user, loading, router]);
     
     if (loading || !user) {
@@ -247,23 +270,25 @@ export default function HostDashboardPage() {
                 </div>
             </header>
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                <Tabs defaultValue="overview">
-                    <TabsList className="grid w-full grid-cols-5 mb-6">
-                        <TabsTrigger value="overview"><BarChart className="mr-2"/>Overview</TabsTrigger>
-                        <TabsTrigger value="events"><Calendar className="mr-2"/>Events</TabsTrigger>
-                        <TabsTrigger value="reviews"><Star className="mr-2"/>Reviews</TabsTrigger>
-                        <TabsTrigger value="communication"><MessageCircle className="mr-2"/>Communication</TabsTrigger>
-                        <TabsTrigger value="finances"><DollarSign className="mr-2"/>Finances</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="overview"><Overview/></TabsContent>
-                    <TabsContent value="events"><EventManagement/></TabsContent>
-                    <TabsContent value="reviews"><ReviewManagement/></TabsContent>
-                    <TabsContent value="communication"><Communication/></TabsContent>
-                    <TabsContent value="finances"><Finances/></TabsContent>
-                </Tabs>
+                {isVerifiedHost ? (
+                    <Tabs defaultValue="overview">
+                        <TabsList className="grid w-full grid-cols-5 mb-6">
+                            <TabsTrigger value="overview"><BarChart className="mr-2"/>Overview</TabsTrigger>
+                            <TabsTrigger value="events"><Calendar className="mr-2"/>Events</TabsTrigger>
+                            <TabsTrigger value="reviews"><Star className="mr-2"/>Reviews</TabsTrigger>
+                            <TabsTrigger value="communication"><MessageCircle className="mr-2"/>Communication</TabsTrigger>
+                            <TabsTrigger value="finances"><DollarSign className="mr-2"/>Finances</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="overview"><Overview/></TabsContent>
+                        <TabsContent value="events"><EventManagement/></TabsContent>
+                        <TabsContent value="reviews"><ReviewManagement/></TabsContent>
+                        <TabsContent value="communication"><Communication/></TabsContent>
+                        <TabsContent value="finances"><Finances/></TabsContent>
+                    </Tabs>
+                ) : (
+                    <AccessDenied />
+                )}
             </main>
         </div>
     )
 }
-
-    

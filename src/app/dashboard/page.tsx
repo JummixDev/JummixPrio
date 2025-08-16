@@ -13,7 +13,7 @@ import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, S
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -73,10 +73,17 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  // In a real app, this would come from the user's profile/claims
+  const [isVerifiedHost, setIsVerifiedHost] = useState(false);
+  const isAdmin = user?.email === 'admin@jummix.com';
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/');
+    }
+    // Simulate fetching host status.
+    if (user && user.email === 'carlos.ray@example.com') {
+      setIsVerifiedHost(true);
     }
   }, [user, loading, router]);
 
@@ -85,9 +92,6 @@ export default function DashboardPage() {
   }
 
   const userProfileLink = `/profile/${user?.email?.split('@')[0] || 'me'}`;
-  // Replace with actual admin check
-  const isAdmin = user?.email === 'admin@jummix.com';
-
 
   return (
     <div className="bg-background min-h-screen font-body flex flex-col">
@@ -130,11 +134,13 @@ export default function DashboardPage() {
                             <User className="mr-2 h-5 w-5" /> My Profile
                           </Link>
                         </Button>
+                        {isVerifiedHost && (
                          <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                            <Link href="/host/dashboard">
                             <LayoutDashboard className="mr-2 h-5 w-5" /> Host Dashboard
                           </Link>
                         </Button>
+                        )}
                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                            <Link href="/settings">
                             <Settings className="mr-2 h-5 w-5" /> Settings
@@ -191,5 +197,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

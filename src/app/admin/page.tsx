@@ -213,6 +213,19 @@ function Reports() {
 }
 
 function Verifications() {
+    const { toast } = useToast();
+    const [requests, setRequests] = useState(mockVerificationRequests);
+
+    const handleApprove = (reqId: string) => {
+        setRequests(requests.filter(req => req.id !== reqId));
+        toast({ title: 'Host Approved', description: 'The user has been granted host privileges.' });
+    };
+
+    const handleDeny = (reqId: string) => {
+        setRequests(requests.filter(req => req.id !== reqId));
+        toast({ variant: 'destructive', title: 'Host Denied', description: 'The user\'s request has been denied.' });
+    };
+
     return (
          <Card>
             <CardHeader>
@@ -230,14 +243,18 @@ function Verifications() {
                         </TableRow>
                     </TableHeader>
                      <TableBody>
-                        {mockVerificationRequests.map(req => (
+                        {requests.map(req => (
                              <TableRow key={req.id}>
                                 <TableCell className="font-medium">{req.name}</TableCell>
                                 <TableCell>{req.email}</TableCell>
                                 <TableCell>{req.date}</TableCell>
                                 <TableCell className="text-right space-x-2">
-                                    <Button variant="outline" size="icon" className="text-green-600"><Check className="w-4 h-4"/></Button>
-                                    <Button variant="outline" size="icon" className="text-red-600"><X className="w-4 h-4"/></Button>
+                                    <Button onClick={() => handleApprove(req.id)} variant="outline" size="icon" className="text-green-600 hover:bg-green-100 hover:text-green-700">
+                                        <Check className="w-4 h-4"/>
+                                    </Button>
+                                    <Button onClick={() => handleDeny(req.id)} variant="outline" size="icon" className="text-red-600 hover:bg-red-100 hover:text-red-700">
+                                        <X className="w-4 h-4"/>
+                                    </Button>
                                     <Button variant="outline" size="sm"><FileText className="w-4 h-4 mr-2"/>View Application</Button>
                                 </TableCell>
                             </TableRow>
@@ -336,5 +353,3 @@ export default function AdminPage() {
         </div>
     )
 }
-
-    
