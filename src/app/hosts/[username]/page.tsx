@@ -133,27 +133,34 @@ export default function HostProfilePage() {
         setLoading(true);
         
         try {
-            // 1. Fetch Host User Data
+            // 1. Fetch User Data by username (simplified query)
             const usersRef = collection(db, "users");
-            const qUser = query(usersRef, where("username", "==", username), where("isVerifiedHost", "==", true), limit(1));
+            const qUser = query(usersRef, where("username", "==", username), limit(1));
             const userSnapshot = await getDocs(qUser);
 
             if (!userSnapshot.empty) {
                 const userDoc = userSnapshot.docs[0];
                 const userData = userDoc.data();
-                setHostUser({ ...userData, id: userDoc.id });
 
-                // 2. Fetch Host's Events
-                const eventsRef = collection(db, "events");
-                const qEvents = query(eventsRef, where("hostUid", "==", userDoc.id));
-                const eventsSnapshot = await getDocs(qEvents);
-                setHostEvents(eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                
-                // 3. Fetch Host's Reviews
-                const reviewsRef = collection(db, `users/${userDoc.id}/reviews`);
-                const qReviews = query(reviewsRef, orderBy('createdAt', 'desc'));
-                const reviewsSnapshot = await getDocs(qReviews);
-                setHostReviews(reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                // 2. Client-side check for isVerifiedHost
+                if (userData.isVerifiedHost) {
+                    setHostUser({ ...userData, id: userDoc.id });
+
+                    // 3. Fetch Host's Events
+                    const eventsRef = collection(db, "events");
+                    const qEvents = query(eventsRef, where("hostUid", "==", userDoc.id));
+                    const eventsSnapshot = await getDocs(qEvents);
+                    setHostEvents(eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                    
+                    // 4. Fetch Host's Reviews
+                    const reviewsRef = collection(db, `users/${userDoc.id}/reviews`);
+                    const qReviews = query(reviewsRef, orderBy('createdAt', 'desc'));
+                    const reviewsSnapshot = await getDocs(qReviews);
+                    setHostReviews(reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                } else {
+                    // User exists but is not a verified host
+                    setHostUser(null);
+                }
 
             } else {
                  setHostUser(null);
@@ -187,7 +194,7 @@ export default function HostProfilePage() {
     )
   }
   
-  const isMe = loggedInUser?.uid === hostUser.uid;
+  const isMe = loggedInUser?.uid === hostUser.id;
 
   return (
     <div className="bg-secondary/20 min-h-screen">
@@ -288,4 +295,6 @@ export default function HostProfilePage() {
     </div>
   );
 }
+    
+
     
