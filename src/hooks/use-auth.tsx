@@ -35,6 +35,7 @@ interface UserProfileData {
   interests?: string[];
   likedEvents?: string[];
   savedEvents?: string[];
+  hostApplicationStatus?: 'pending' | 'approved' | 'rejected' | 'none';
 }
 interface AuthContextType {
   user: User | null;
@@ -48,6 +49,7 @@ interface AuthContextType {
   sendPasswordReset: (email: string) => Promise<void>;
   updateUserProfile: (profileData: UserProfileData) => Promise<void>;
   updateUserProfileImage: (file: File, type: 'profile' | 'banner') => Promise<string>;
+  updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -87,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         bannerURL: '',
         bio: 'Welcome to Jummix! Edit your bio in the settings.',
         isVerifiedHost: false, // Default value for new users
+        hostApplicationStatus: 'none', // Default application status
         interests: [],
         followers: 0,
         friendsCount: 0,
@@ -162,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("No user is signed in to update profile.");
     }
 
-    const { bio, bannerURL, interests, likedEvents, savedEvents, ...authProfileData } = profileData;
+    const { bio, bannerURL, interests, likedEvents, savedEvents, hostApplicationStatus, ...authProfileData } = profileData;
 
     // Update Firebase Auth profile (displayName, photoURL)
     if (Object.keys(authProfileData).length > 0) {
@@ -179,10 +182,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (interests !== undefined) dataToUpdate.interests = interests;
     if (likedEvents !== undefined) dataToUpdate.likedEvents = likedEvents;
     if (savedEvents !== undefined) dataToUpdate.savedEvents = savedEvents;
+    if (hostApplicationStatus !== undefined) dataToUpdate.hostApplicationStatus = hostApplicationStatus;
     
     if (Object.keys(dataToUpdate).length > 0) {
         await updateDoc(userDocRef, dataToUpdate);
     }
+  }
+
+  const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
+     if (!auth.currentUser) {
+        throw new Error("No user is signed in to update profile.");
+    }
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(userDocRef, { hostApplicationStatus: status });
   }
   
   const updateUserProfileImage = async (file: File, type: 'profile' | 'banner'): Promise<string> => {
@@ -212,7 +224,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithApple,
     sendPasswordReset,
     updateUserProfile,
-    updateUserProfileImage
+    updateUserProfileImage,
+    updateUserHostApplicationStatus
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -225,4 +238,3 @@ export const useAuth = () => {
   }
   return context;
 };
-    

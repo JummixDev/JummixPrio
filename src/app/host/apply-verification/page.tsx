@@ -10,20 +10,32 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ApplyVerificationPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { updateUserHostApplicationStatus } = useAuth();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // In a real app, you would submit this data to your backend
-        toast({
-            title: 'Application Submitted!',
-            description: 'Thank you for applying. We will review your application and get back to you soon.',
-        });
-        // Redirect the user after submission
-        setTimeout(() => router.push('/dashboard'), 2000);
+        
+        try {
+            await updateUserHostApplicationStatus('pending');
+            toast({
+                title: 'Bewerbung eingereicht!',
+                description: 'Vielen Dank für Ihre Bewerbung. Wir werden sie prüfen und uns bei Ihnen melden.',
+            });
+            // Redirect the user after submission
+            setTimeout(() => router.push('/dashboard'), 2000);
+        } catch (error) {
+            console.error("Error submitting application:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Fehler',
+                description: 'Ihre Bewerbung konnte nicht eingereicht werden. Bitte versuchen Sie es erneut.',
+            });
+        }
     };
 
     return (
@@ -32,47 +44,47 @@ export default function ApplyVerificationPage() {
                  <Button variant="ghost" size="sm" asChild className="mb-4">
                     <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Dashboard
+                        Zurück zum Dashboard
                     </Link>
                 </Button>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline text-2xl">Become a Verified Host</CardTitle>
+                        <CardTitle className="font-headline text-2xl">Als verifizierter Host bewerben</CardTitle>
                         <CardDescription>
-                            Fill out the form below to apply for host privileges. This allows you to create and manage events on Jummix.
+                            Füllen Sie das Formular aus, um Host-Privilegien zu beantragen. Damit können Sie Events auf Jummix erstellen und verwalten.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="fullName">Full Name</Label>
-                                    <Input id="fullName" placeholder="e.g., Alex Doe" required />
+                                    <Label htmlFor="fullName">Vollständiger Name</Label>
+                                    <Input id="fullName" placeholder="z.B. Alex Doe" required />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="brandName">Organization / Brand Name (Optional)</Label>
-                                    <Input id="brandName" placeholder="e.g., Awesome Events Inc." />
+                                    <Label htmlFor="brandName">Organisation / Markenname (Optional)</Label>
+                                    <Input id="brandName" placeholder="z.B. Awesome Events Inc." />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Input id="address" placeholder="123 Main St, Anytown, USA" required />
+                                <Label htmlFor="address">Adresse</Label>
+                                <Input id="address" placeholder="Hauptstr. 123, 10115 Berlin" required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="motivation">Motivation</Label>
-                                <Textarea id="motivation" placeholder="Tell us why you want to be a host and what kind of events you plan to organize." required />
+                                <Textarea id="motivation" placeholder="Sagen Sie uns, warum Sie Host werden möchten und welche Art von Events Sie planen." required />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="experience">Experience (Optional)</Label>
-                                <Textarea id="experience" placeholder="Describe any past experience you have with organizing events. You can include links to past events or social media pages." />
+                                <Label htmlFor="experience">Erfahrung (Optional)</Label>
+                                <Textarea id="experience" placeholder="Beschreiben Sie Ihre bisherige Erfahrung in der Organisation von Events. Sie können Links zu vergangenen Events oder Social-Media-Seiten einfügen." />
                             </div>
                              <div className="flex items-start space-x-2">
                                 <input type="checkbox" id="terms" required className="mt-1"/>
                                 <label htmlFor="terms" className="text-sm text-muted-foreground">
-                                    I have read and agree to the <Link href="/terms" className="underline">Host Terms of Service</Link> and our <Link href="/privacy" className="underline">Privacy Policy</Link>.
+                                    Ich habe die <Link href="/terms" className="underline">Host-Nutzungsbedingungen</Link> und unsere <Link href="/privacy" className="underline">Datenschutzrichtlinie</Link> gelesen und stimme ihnen zu.
                                 </label>
                             </div>
-                            <Button type="submit" className="w-full">Submit Application</Button>
+                            <Button type="submit" className="w-full">Bewerbung absenden</Button>
                         </form>
                     </CardContent>
                 </Card>
@@ -80,5 +92,3 @@ export default function ApplyVerificationPage() {
         </div>
     );
 }
-
-    
