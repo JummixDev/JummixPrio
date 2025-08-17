@@ -28,6 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalSearch } from '@/components/jummix/GlobalSearch';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 
 
 const categories = ["Music", "Sports", "Art", "Tech", "Food", "Outdoors", "Comedy", "Workshops"];
@@ -39,6 +40,24 @@ type Event = {
   id: string;
   [key:string]: any;
 };
+
+const EventTile = ({ event }: { event: Event }) => (
+    <Link href={`/event/${event.id}`} className="block group relative aspect-square overflow-hidden rounded-lg">
+        <Image 
+            src={event.image} 
+            alt={event.name} 
+            layout="fill" 
+            objectFit="cover" 
+            className="transition-transform duration-300 ease-in-out group-hover:scale-110"
+            data-ai-hint={event.hint}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute bottom-0 left-0 p-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <h3 className="font-bold truncate">{event.name}</h3>
+            <p className="text-sm">{event.location}</p>
+        </div>
+    </Link>
+)
 
 export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -225,24 +244,16 @@ export default function ExplorePage() {
             </Button>
         </div>
         
-        <div className="mb-8">
-            <h2 className="text-lg font-semibold mb-3">Top Categories</h2>
-            <div className="flex flex-wrap gap-2">
-                {categories.map(category => (
-                    <Button key={category} variant="outline">{category}</Button>
-                ))}
-            </div>
-        </div>
         {loading ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Skeleton className="h-96 w-full" />
-                <Skeleton className="h-96 w-full" />
-                <Skeleton className="h-96 w-full" />
+             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {Array.from({ length: 10 }).map((_, i) => (
+                    <Skeleton key={i} className="h-auto aspect-square w-full" />
+                ))}
              </div>
         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {filteredAndSortedEvents.map((event) => (
-                    <EventCard key={event.id} event={event} />
+                    <EventTile key={event.id} event={event} />
                 ))}
             </div>
         )}
