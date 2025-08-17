@@ -127,6 +127,10 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                 });
                 toast({ title: "Shared successfully!" });
             } catch (error) {
+                // Don't show an error if the user cancels the share dialog
+                if (error instanceof Error && error.name === 'AbortError') {
+                    return;
+                }
                 console.error('Error sharing:', error);
                 toast({ variant: "destructive", title: "Could not share", description: "Something went wrong while trying to share."});
             }
@@ -378,3 +382,5 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
+
+    
