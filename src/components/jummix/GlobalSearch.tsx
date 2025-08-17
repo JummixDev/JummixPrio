@@ -16,7 +16,7 @@ import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { getAISearchResults } from '@/app/actions';
-import { Textarea } from '../ui/textarea';
+import { Input } from '../ui/input';
 
 type Result = {
     id: string;
@@ -121,11 +121,11 @@ export function GlobalSearch() {
         </kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <div className="flex items-center border-b px-3">
+        <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
             <Wand2 className="mr-2 h-4 w-4 shrink-0 text-primary" />
-            <Textarea
+            <Input
                 placeholder='Try "a relaxed jazz event for this weekend"'
-                className="flex h-24 w-full rounded-md bg-transparent py-3 text-base resize-none border-0 shadow-none focus-visible:ring-0"
+                className="flex h-12 w-full rounded-md bg-transparent py-3 text-base resize-none border-0 shadow-none focus-visible:ring-0"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
