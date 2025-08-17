@@ -120,13 +120,13 @@ export async function toggleEventInteraction(userId: string, eventId: string, ty
 
     try {
         const userRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userRef); // Use getDoc with a direct ref for efficiency
-        const userData = userDoc.data();
+        const userDoc = await getDoc(userRef);
         
-        if (!userData) {
+        if (!userDoc.exists()) {
             return { success: false, error: 'User not found.' };
         }
 
+        const userData = userDoc.data();
         const field = type === 'liked' ? 'likedEvents' : 'savedEvents';
         const isInteracted = userData[field]?.includes(eventId);
 
