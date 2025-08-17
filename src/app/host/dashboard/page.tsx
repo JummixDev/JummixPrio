@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, QrCode, ShieldAlert, Star, Users, Loader2, Ticket } from 'lucide-react';
+import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, QrCode, ShieldAlert, Star, Users, Loader2, Ticket, Archive, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -301,6 +301,39 @@ function Ticketing() {
     )
 }
 
+function StoryManagement() {
+  return (
+    <Card>
+        <CardHeader>
+            <CardTitle>Story Management</CardTitle>
+            <CardDescription>Manage your active and archived stories. Boost your events with promotional stories.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <Card className="bg-secondary/50">
+                <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground">View and manage your past stories.</p>
+                     <Button asChild className="mt-4">
+                        <Link href="/story/archive">
+                            <Archive className="mr-2"/> View Story Archive
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+            <Card className="bg-secondary/50">
+                 <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground">Create a new story to engage your followers.</p>
+                     <Button asChild className="mt-4">
+                        <Link href="/story/create">
+                            <ImageIcon className="mr-2"/> Create New Story
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </CardContent>
+    </Card>
+  )
+}
+
 
 function Communication() {
     const { toast } = useToast();
@@ -411,9 +444,10 @@ export default function HostDashboardPage() {
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                 {isAuthorized ? (
                     <Tabs defaultValue="overview">
-                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-6">
+                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 mb-6">
                             <TabsTrigger value="overview"><BarChart className="mr-2 hidden md:block"/>Overview</TabsTrigger>
                             <TabsTrigger value="events"><Calendar className="mr-2 hidden md:block"/>Events</TabsTrigger>
+                             <TabsTrigger value="stories"><ImageIcon className="mr-2 hidden md:block"/>Stories</TabsTrigger>
                             <TabsTrigger value="ticketing"><Ticket className="mr-2 hidden md:block"/>Ticketing</TabsTrigger>
                             <TabsTrigger value="reviews"><Star className="mr-2 hidden md:block"/>Reviews</TabsTrigger>
                             <TabsTrigger value="communication"><MessageCircle className="mr-2 hidden md:block"/>Communication</TabsTrigger>
@@ -421,6 +455,7 @@ export default function HostDashboardPage() {
                         </TabsList>
                         <TabsContent value="overview"><Overview/></TabsContent>
                         <TabsContent value="events"><EventManagement/></TabsContent>
+                        <TabsContent value="stories"><StoryManagement /></TabsContent>
                         <TabsContent value="ticketing"><Ticketing /></TabsContent>
                         <TabsContent value="reviews"><ReviewManagement/></TabsContent>
                         <TabsContent value="communication"><Communication/></TabsContent>
@@ -433,3 +468,5 @@ export default function HostDashboardPage() {
         </div>
     )
 }
+
+    

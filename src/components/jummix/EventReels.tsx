@@ -33,7 +33,7 @@ export function EventReels() {
     <Card>
         <CardHeader>
             <CardTitle className="font-headline">Event Stories</CardTitle>
-            <CardDescription>Exklusive Highlights von verifizierten Hosts.</CardDescription>
+            <CardDescription>Exklusive Highlights von verifizierten Hosts. Bewirb dein Event hier!</CardDescription>
         </CardHeader>
         <CardContent>
             <div className="flex items-center gap-4 overflow-x-auto pb-4">
@@ -62,3 +62,5 @@ export function EventReels() {
     </Card>
   );
 }
+
+    
