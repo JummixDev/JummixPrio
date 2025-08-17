@@ -21,6 +21,8 @@ type UserProfile = {
     username: string;
     photoURL: string;
     hint: string;
+    followers?: string[];
+    following?: string[];
 };
 
 const FriendList = ({ users, type, onAction, currentUserData }: { users: UserProfile[], type: 'follower' | 'following' | 'suggestion', onAction: () => void, currentUserData: any }) => {
@@ -120,13 +122,16 @@ export default function FriendsPage() {
                 ? query(usersRef, where('displayName', '>=', debouncedSearchTerm), where('displayName', '<=', debouncedSearchTerm + '\uf8ff'))
                 : usersRef;
             const querySnapshot = await getDocs(q);
-            const allUsers = querySnapshot.docs.map(doc => doc.data() as UserProfile & { followers?: string[], following?: string[] });
+            const allUsers = querySnapshot.docs.map(doc => doc.data() as UserProfile);
 
             const currentUserDoc = allUsers.find(u => u.uid === user.uid);
-            const currentUserFollowing = currentUserDoc?.following || [];
+            
+            // Ensure properties are arrays before using them
+            const currentUserFollowers = Array.isArray(currentUserDoc?.followers) ? currentUserDoc.followers : [];
+            const currentUserFollowing = Array.isArray(currentUserDoc?.following) ? currentUserDoc.following : [];
             
             // Get profiles for followers
-            const followerProfiles = allUsers.filter(u => currentUserDoc?.followers?.includes(u.uid));
+            const followerProfiles = allUsers.filter(u => currentUserFollowers.includes(u.uid));
             setFollowers(followerProfiles);
 
             // Get profiles for following
