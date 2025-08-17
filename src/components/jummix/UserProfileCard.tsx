@@ -52,12 +52,12 @@ export function UserProfileCard() {
         </CardHeader>
       <CardContent className="text-center">
         <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-4">
-          <Link href="/my-events" className="flex flex-col items-center p-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
-            <span className="font-bold text-lg text-foreground">{userData?.eventsCount || 0}</span>
+          <Link href="/my-events" className="flex flex-col items-center p-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors group">
+            <span className="font-bold text-lg text-foreground group-hover:text-primary">{userData?.eventsCount || 0}</span>
             <span>Events</span>
           </Link>
-          <Link href="/friends" className="flex flex-col items-center p-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
-            <span className="font-bold text-lg text-foreground">{userData?.friendsCount || 0}</span>
+          <Link href="/friends" className="flex flex-col items-center p-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors group">
+            <span className="font-bold text-lg text-foreground group-hover:text-primary">{userData?.friendsCount || 0}</span>
             <span>Friends</span>
           </Link>
         </div>

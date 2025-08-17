@@ -3,9 +3,10 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy } from "lucide-react";
+import { ArrowUpRight, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Button } from "../ui/button";
 
 const users = [
   { name: "Carlos Ray", username: "carlosray", avatar: "https://placehold.co/40x40.png", hint: "man portrait", points: 2450, rank: 1 },
@@ -25,10 +26,15 @@ export function Leaderboard() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="font-headline flex items-center gap-2">
             <Trophy className="text-primary" /> Leaderboard
         </CardTitle>
+         <Button variant="ghost" size="icon" className="w-8 h-8 group" asChild>
+            <Link href="/friends">
+                <ArrowUpRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-transform group-hover:scale-110"/>
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">
