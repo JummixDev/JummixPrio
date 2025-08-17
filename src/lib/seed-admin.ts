@@ -182,7 +182,7 @@ const seedDatabase = async () => {
   for (const user of users) {
     // IMPORTANT: Use the specified UID as the document ID
     const userRef = db.collection('users').doc(user.uid); 
-    const { photoHint, ...userData } = user; // Exclude uid and photoHint from the data payload
+    const { photoHint, ...userData } = user; // Exclude photoHint from the data payload
     batch.set(userRef, {
       ...userData,
       bannerURL: 'https://placehold.co/1000x300.png',

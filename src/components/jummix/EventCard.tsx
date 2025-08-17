@@ -50,21 +50,26 @@ export function EventCard({ event }: EventCardProps) {
         return;
     }
     
+    // Optimistic UI update
+    if (type === 'liked') setIsLiked(prev => !prev);
+    if (type === 'saved') setIsSaved(prev => !prev);
+
     const result = await toggleEventInteraction(user.uid, event.id, type);
 
-    if (result.success) {
+    if (!result.success) {
+        // Revert UI on failure
+        if (type === 'liked') setIsLiked(prev => !prev);
+        if (type === 'saved') setIsSaved(prev => !prev);
+        
+        toast({ variant: 'destructive', title: 'Error', description: result.error });
+    } else {
         const actionVerb = type === 'liked' ? 'Liked' : 'Saved';
         const pastTenseVerb = type === 'liked' ? 'liked' : 'saved';
         
-        if (type === 'liked') setIsLiked(result.newState);
-        if (type === 'saved') setIsSaved(result.newState);
-
         toast({
             title: `Event ${result.newState ? actionVerb : 'Un' + pastTenseVerb}!`,
             description: `You've ${result.newState ? '' : 'un'}${pastTenseVerb} ${event.name}.`,
         });
-    } else {
-        toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
   }
   
