@@ -17,9 +17,21 @@ export default function ApplyVerificationPage() {
     const router = useRouter();
     const { updateUserHostApplicationStatus } = useAuth();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
+        // Basic form validation for the new checkbox
+        const form = e.currentTarget;
+        const ageCheckbox = form.elements.namedItem('age') as HTMLInputElement;
+        if (!ageCheckbox.checked) {
+            toast({
+                variant: 'destructive',
+                title: 'Bestätigung erforderlich',
+                description: 'Sie müssen bestätigen, dass Sie mindestens 18 Jahre alt sind.',
+            });
+            return;
+        }
+
         try {
             await updateUserHostApplicationStatus('pending');
             toast({
@@ -77,6 +89,12 @@ export default function ApplyVerificationPage() {
                              <div className="space-y-2">
                                 <Label htmlFor="experience">Erfahrung (Optional)</Label>
                                 <Textarea id="experience" placeholder="Beschreiben Sie Ihre bisherige Erfahrung in der Organisation von Events. Sie können Links zu vergangenen Events oder Social-Media-Seiten einfügen." />
+                            </div>
+                             <div className="flex items-start space-x-2">
+                                <input type="checkbox" id="age" name="age" required className="mt-1"/>
+                                <label htmlFor="age" className="text-sm text-muted-foreground">
+                                   Ich bestätige, dass ich mindestens 18 Jahre alt bin.
+                                </label>
                             </div>
                              <div className="flex items-start space-x-2">
                                 <input type="checkbox" id="terms" required className="mt-1"/>

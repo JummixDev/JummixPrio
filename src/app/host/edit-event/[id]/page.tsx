@@ -68,7 +68,7 @@ function ProfitabilityCalculator({ form }: { form: any }) {
         <Card className="bg-secondary/50">
             <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2"><TrendingUp /> Profitability Analysis</CardTitle>
-                <CardDescription>Real-time calculation based on your inputs.</CardDescription>
+                <CardDescription>Real-time calculation based on your inputs. Does not yet include platform service fees.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
