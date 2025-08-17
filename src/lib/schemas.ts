@@ -7,7 +7,10 @@ export const createEventSchema = z.object({
   date: z.date(),
   location: z.string().min(3, "Location is required."),
   description: z.string().min(10, "Description must be at least 10 characters long."),
-  price: z.coerce.number().min(0, "Price must be a positive number."),
+  price: z.preprocess(
+    (val) => (typeof val === 'string' ? parseFloat(val) : val),
+    z.number().min(0, "Price must be a positive number.")
+  ),
   image: z.string().url("Please enter a valid image URL."),
   hostUid: z.string(),
 });
