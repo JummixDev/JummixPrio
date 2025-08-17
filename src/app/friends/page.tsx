@@ -1,62 +1,98 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, UserPlus, Check, UserCheck, Search } from 'lucide-react';
+import { ArrowLeft, UserPlus, Check, UserCheck, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/use-debounce';
 
-const followers = [
-    { name: 'Jenna Smith', username: 'jennasmith', avatar: 'https://placehold.co/40x40.png', hint: 'woman portrait', isFollowing: true },
-    { name: 'Carlos Ray', username: 'carlosray', avatar: 'https://placehold.co/40x40.png', hint: 'man portrait', isFollowing: false },
-];
+type UserProfile = {
+    uid: string;
+    displayName: string;
+    username: string;
+    photoURL: string;
+    hint: string;
+};
 
-const following = [
-    { name: 'Jenna Smith', username: 'jennasmith', avatar: 'https://placehold.co/40x40.png', hint: 'woman portrait' },
-    { name: 'Aisha Khan', username: 'aishakhan', avatar: 'https://placehold.co/40x40.png', hint: 'woman face' },
-];
+const FriendList = ({ users, type, onAction, currentUserData }: { users: UserProfile[], type: 'follower' | 'following' | 'suggestion', onAction: () => void, currentUserData: any }) => {
+    const { toast } = useToast();
+    const { user: currentUser } = useAuth();
 
-const suggestions = [
-    { name: 'David Lee', username: 'davidlee', avatar: 'https://placehold.co/40x40.png', hint: 'man face' },
-    { name: 'Maria Garcia', username: 'mariagarcia', avatar: 'https://placehold.co/40x40.png', hint: 'woman smiling' },
-];
+    const handleFollow = async (targetUserUid: string) => {
+        if (!currentUser) return;
+        
+        const currentUserRef = doc(db, "users", currentUser.uid);
+        const targetUserRef = doc(db, "users", targetUserUid);
 
-const FriendList = ({ users, type }: { users: any[], type: 'follower' | 'following' | 'suggestion' }) => {
-    const [userList, setUserList] = useState(users);
+        await updateDoc(currentUserRef, { following: arrayUnion(targetUserUid) });
+        await updateDoc(targetUserRef, { followers: arrayUnion(currentUser.uid) });
 
-    const handleFollow = (username: string) => {
-        setUserList(userList.map(u => u.username === username ? {...u, isFollowing: true} : u));
+        toast({ title: 'Followed!', description: 'You are now following this user.' });
+        onAction(); // Re-fetch data
     }
-    const handleUnfollow = (username: string) => {
-        setUserList(userList.filter(u => u.username !== username));
+    
+    const handleUnfollow = async (targetUserUid: string) => {
+        if (!currentUser) return;
+
+        const currentUserRef = doc(db, "users", currentUser.uid);
+        const targetUserRef = doc(db, "users", targetUserUid);
+
+        await updateDoc(currentUserRef, { following: arrayRemove(targetUserUid) });
+        await updateDoc(targetUserRef, { followers: arrayRemove(currentUser.uid) });
+        
+        toast({ title: 'Unfollowed!', description: 'You are no longer following this user.' });
+        onAction(); // Re-fetch data
     }
 
+    const getButtonState = (userUid: string) => {
+        const isFollowing = currentUserData?.following?.includes(userUid);
+        if (type === 'follower') {
+            return isFollowing ? (
+                <Button variant="secondary" disabled><UserCheck /> Following</Button>
+            ) : (
+                <Button onClick={() => handleFollow(userUid)}><UserPlus /> Follow Back</Button>
+            );
+        }
+        if (type === 'following') {
+            return <Button variant="outline" onClick={() => handleUnfollow(userUid)}>Unfollow</Button>;
+        }
+        if (type === 'suggestion') {
+            return <Button onClick={() => handleFollow(userUid)}><UserPlus /> Follow</Button>;
+        }
+        return null;
+    }
+
+
+    if (!users.length) {
+        return <p className="text-muted-foreground text-center p-8">No users found.</p>;
+    }
 
     return (
         <div className="space-y-4">
-            {userList.map(user => (
-                <div key={user.username} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
-                    <Avatar className="w-12 h-12">
-                        <AvatarImage src={user.avatar} alt={user.name} data-ai-hint={user.hint} />
-                        <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-grow">
-                        <p className="font-semibold">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">@{user.username}</p>
+            {users.map(user => (
+                <div key={user.uid} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
+                    <Link href={`/profile/${user.username}`} className='contents'>
+                        <Avatar className="w-12 h-12">
+                            <AvatarImage src={user.photoURL} alt={user.displayName} data-ai-hint={user.hint} />
+                            <AvatarFallback>{user.displayName?.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-grow">
+                            <p className="font-semibold">{user.displayName}</p>
+                            <p className="text-sm text-muted-foreground">@{user.username}</p>
+                        </div>
+                    </Link>
+                    <div className="ml-auto">
+                        {getButtonState(user.uid)}
                     </div>
-                    {type === 'follower' && (
-                        user.isFollowing ? (
-                            <Button variant="secondary" disabled><UserCheck /> Following</Button>
-                        ) : (
-                            <Button onClick={() => handleFollow(user.username)}><UserPlus /> Follow Back</Button>
-                        )
-                    )}
-                    {type === 'following' && <Button variant="outline" onClick={() => handleUnfollow(user.username)}>Unfollow</Button>}
-                    {type === 'suggestion' && <Button onClick={() => handleFollow(user.username)}><UserPlus /> Follow</Button>}
                 </div>
             ))}
         </div>
@@ -65,6 +101,65 @@ const FriendList = ({ users, type }: { users: any[], type: 'follower' | 'followi
 
 
 export default function FriendsPage() {
+    const { user, userData, loading: authLoading } = useAuth();
+    const [followers, setFollowers] = useState<UserProfile[]>([]);
+    const [following, setFollowing] = useState<UserProfile[]>([]);
+    const [suggestions, setSuggestions] = useState<UserProfile[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+    const fetchData = async () => {
+        if (!user || !userData) return;
+        setLoading(true);
+
+        try {
+            // Fetch all users once
+            const usersRef = collection(db, "users");
+            const q = debouncedSearchTerm 
+                ? query(usersRef, where('displayName', '>=', debouncedSearchTerm), where('displayName', '<=', debouncedSearchTerm + '\uf8ff'))
+                : usersRef;
+            const querySnapshot = await getDocs(q);
+            const allUsers = querySnapshot.docs.map(doc => doc.data() as UserProfile & { followers?: string[], following?: string[] });
+
+            const currentUserDoc = allUsers.find(u => u.uid === user.uid);
+            const currentUserFollowing = currentUserDoc?.following || [];
+            
+            // Get profiles for followers
+            const followerProfiles = allUsers.filter(u => currentUserDoc?.followers?.includes(u.uid));
+            setFollowers(followerProfiles);
+
+            // Get profiles for following
+            const followingProfiles = allUsers.filter(u => currentUserFollowing.includes(u.uid));
+            setFollowing(followingProfiles);
+            
+            // Suggestions: everyone the user is NOT following, and not the user themselves
+            const suggestionProfiles = allUsers.filter(u => u.uid !== user.uid && !currentUserFollowing.includes(u.uid));
+            setSuggestions(suggestionProfiles);
+
+        } catch (error) {
+            console.error("Error fetching friends data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!authLoading) {
+            fetchData();
+        }
+    }, [user, userData, authLoading, debouncedSearchTerm]);
+
+
+    if (authLoading || loading) {
+        return (
+             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+                <h1 className="text-2xl font-bold font-headline text-primary">Loading Friends...</h1>
+            </div>
+        )
+    }
+
   return (
     <div className="bg-background min-h-screen">
       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
@@ -80,7 +175,7 @@ export default function FriendsPage() {
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
         <Card>
             <CardContent className="p-4">
-                <Tabs defaultValue="followers">
+                <Tabs defaultValue="suggestions">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <TabsList className="grid w-full sm:w-auto sm:grid-cols-3">
                             <TabsTrigger value="followers">Followers</TabsTrigger>
@@ -89,18 +184,31 @@ export default function FriendsPage() {
                         </TabsList>
                         <div className="relative w-full sm:w-64">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            <Input placeholder="Search friends..." className="pl-10" />
+                            <Input 
+                                placeholder="Search friends..." 
+                                className="pl-10" 
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
                         </div>
                     </div>
-                    <TabsContent value="followers">
-                        <FriendList users={followers} type="follower" />
-                    </TabsContent>
-                    <TabsContent value="following">
-                        <FriendList users={following} type="following" />
-                    </TabsContent>
-                    <TabsContent value="suggestions">
-                        <FriendList users={suggestions} type="suggestion" />
-                    </TabsContent>
+                    {loading ? (
+                        <div className="flex justify-center p-12">
+                            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : (
+                        <>
+                            <TabsContent value="followers">
+                                <FriendList users={followers} type="follower" onAction={fetchData} currentUserData={userData} />
+                            </TabsContent>
+                            <TabsContent value="following">
+                                <FriendList users={following} type="following" onAction={fetchData} currentUserData={userData} />
+                            </TabsContent>
+                            <TabsContent value="suggestions">
+                                <FriendList users={suggestions} type="suggestion" onAction={fetchData} currentUserData={userData} />
+                            </TabsContent>
+                        </>
+                    )}
                 </Tabs>
             </CardContent>
         </Card>
