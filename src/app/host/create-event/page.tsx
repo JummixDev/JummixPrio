@@ -1,6 +1,7 @@
 
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createEvent } from '@/app/actions';
@@ -8,9 +9,9 @@ import { createEventSchema, CreateEventInput } from '@/lib/schemas';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, Loader2, TrendingUp, Users, Goal, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +20,76 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { Progress } from '@/components/ui/progress';
+
+function ProfitabilityCalculator({ form }: { form: any }) {
+    const [minAttendees, setMinAttendees] = useState(0);
+    const [breakEvenRevenue, setBreakEvenRevenue] = useState(0);
+    const [potentialProfit, setPotentialProfit] = useState(0);
+
+    const price = form.watch('price');
+    const expenses = form.watch('expenses');
+    const capacity = form.watch('capacity');
+
+    useEffect(() => {
+        const priceNum = parseFloat(price) || 0;
+        const expensesNum = parseFloat(expenses) || 0;
+        const capacityNum = parseInt(capacity, 10) || 0;
+
+        if (priceNum > 0) {
+            const min = Math.ceil(expensesNum / priceNum);
+            setMinAttendees(min);
+            setBreakEvenRevenue(min * priceNum);
+        } else {
+            setMinAttendees(0);
+            setBreakEvenRevenue(0);
+        }
+        
+        if (capacityNum > 0) {
+            setPotentialProfit((capacityNum * priceNum) - expensesNum);
+        } else {
+            setPotentialProfit(0);
+        }
+
+    }, [price, expenses, capacity]);
+
+    if (!expenses || expenses <= 0) return null;
+
+    return (
+        <Card className="bg-secondary/50">
+            <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2"><TrendingUp /> Profitability Analysis</CardTitle>
+                <CardDescription>Real-time calculation based on your inputs.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                    <div className="bg-background p-3 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Min. Attendees</p>
+                        <p className="text-xl font-bold flex items-center justify-center gap-2"><Goal/>{minAttendees}</p>
+                    </div>
+                     <div className="bg-background p-3 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Break-Even</p>
+                        <p className="text-xl font-bold flex items-center justify-center gap-1"><DollarSign className="w-5 h-5"/>{breakEvenRevenue.toFixed(2)}</p>
+                    </div>
+                     <div className="bg-background p-3 rounded-lg">
+                        <p className="text-sm text-muted-foreground">Max. Profit</p>
+                        <p className={`text-xl font-bold flex items-center justify-center gap-1 ${potentialProfit > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                           <DollarSign className="w-5 h-5"/>{potentialProfit.toFixed(2)}
+                        </p>
+                    </div>
+                </div>
+                 <div>
+                    <Label className="text-xs">Capacity Fulfillment for Profit</Label>
+                    <Progress value={(minAttendees / (parseInt(capacity, 10) || 1)) * 100} className="h-2 mt-1" />
+                    <p className="text-xs text-muted-foreground mt-1">
+                        You need to sell {minAttendees} out of {parseInt(capacity, 10) || 0} tickets to cover your costs.
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
 
 export default function CreateEventPage() {
     const { user } = useAuth();
@@ -34,6 +105,8 @@ export default function CreateEventPage() {
             price: 0,
             image: '',
             hostUid: user?.uid,
+            capacity: 100,
+            expenses: 500,
         },
     });
 
@@ -167,20 +240,7 @@ export default function CreateEventPage() {
                                     )}
                                 />
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="price"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Ticket Price ($)</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" placeholder="Enter 0 for a free event" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
+                                     <FormField
                                         control={form.control}
                                         name="image"
                                         render={({ field }) => (
@@ -193,7 +253,51 @@ export default function CreateEventPage() {
                                             </FormItem>
                                         )}
                                     />
+                                     <FormField
+                                        control={form.control}
+                                        name="price"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Ticket Price (€)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" placeholder="Enter 0 for a free event" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                     <FormField
+                                        control={form.control}
+                                        name="expenses"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Total Expenses (€)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" placeholder="e.g., 1500" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                     <FormField
+                                        control={form.control}
+                                        name="capacity"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Max. Capacity</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" placeholder="e.g., 200" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <ProfitabilityCalculator form={form} />
+
                                 <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
                                     {form.formState.isSubmitting ? (
                                         <>
