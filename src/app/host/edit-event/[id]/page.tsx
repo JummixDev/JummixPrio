@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateEvent } from '@/app/actions';
@@ -9,7 +9,7 @@ import { updateEventSchema, UpdateEventInput } from '@/lib/schemas';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter, useParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar as CalendarIcon, Loader2, TrendingUp, Goal, DollarSign } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, Loader2, TrendingUp, Goal, DollarSign, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 type EventData = {
   id: string;
@@ -92,6 +93,66 @@ function ProfitabilityCalculator({ form }: { form: any }) {
                         You need to sell {minAttendees} out of {parseInt(capacity, 10) || 0} tickets to cover your costs.
                     </p>
                 </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+function CheckInScanner() {
+    const { toast } = useToast();
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const getCameraPermission = async () => {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({video: true});
+            setHasCameraPermission(true);
+
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+            }
+          } catch (error) {
+            console.error('Error accessing camera:', error);
+            setHasCameraPermission(false);
+            toast({
+              variant: 'destructive',
+              title: 'Camera Access Denied',
+              description: 'Please enable camera permissions in your browser settings to use the scanner.',
+            });
+          }
+        };
+
+        getCameraPermission();
+        
+        return () => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [toast]);
+    
+    return (
+        <Card className="bg-secondary/50">
+            <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2"><QrCode /> Live Check-in Scanner</CardTitle>
+                <CardDescription>Scan attendee QR codes at the event entrance.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <div className="aspect-video bg-muted rounded-lg overflow-hidden relative flex items-center justify-center">
+                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                    {hasCameraPermission === false && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                            <Alert variant="destructive" className="m-4">
+                                <AlertTitle>Camera Access Required</AlertTitle>
+                                <AlertDescription>
+                                    Please allow camera access in your browser settings to use this feature.
+                                </AlertDescription>
+                            </Alert>
+                        </div>
+                    )}
+                 </div>
             </CardContent>
         </Card>
     )
@@ -183,7 +244,7 @@ export default function EditEventPage() {
 
     return (
         <div className="bg-secondary/20 min-h-screen flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-3xl">
+            <div className="w-full max-w-3xl space-y-6">
                 <Button variant="ghost" size="sm" asChild className="mb-4">
                     <Link href="/host/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -353,8 +414,9 @@ export default function EditEventPage() {
                         </Form>
                     </CardContent>
                 </Card>
+
+                <CheckInScanner />
             </div>
         </div>
     );
 }
-    

@@ -283,7 +283,6 @@ function ReviewManagement() {
 }
 
 function Ticketing() {
-    const { toast } = useToast();
     return (
         <Card>
             <CardHeader>
@@ -291,10 +290,13 @@ function Ticketing() {
                 <CardDescription>Scan attendee tickets and manage event check-ins.</CardDescription>
             </CardHeader>
             <CardContent className="text-center p-8 border-2 border-dashed rounded-lg">
-                <p className="text-muted-foreground">Use the Jummix mobile app to scan QR codes at the door.</p>
-                <Button className="mt-4" onClick={() => toast({title: "Coming Soon!", description: "The QR code scanner will be available in the mobile app."})}>
-                    <QrCode className="mr-2" />
-                    Open QR Code Scanner
+                <p className="text-muted-foreground">Select an event from the 'Events' tab to access its check-in scanner.</p>
+                <Button className="mt-4" asChild>
+                    {/* This button will be more useful if it directs to the events tab */}
+                    <Link href="#events">
+                        <Calendar className="mr-2" />
+                        Go to My Events
+                    </Link>
                 </Button>
             </CardContent>
         </Card>
@@ -306,28 +308,31 @@ function StoryManagement() {
     <Card>
         <CardHeader>
             <CardTitle>Story Management</CardTitle>
-            <CardDescription>Manage your active and archived stories. Boost your events with promotional stories.</CardDescription>
+            <CardDescription>Manage your active stories, view your archive, and boost your events with promotional stories.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-            <Card className="bg-secondary/50">
-                <CardContent className="p-6 text-center">
-                    <p className="text-muted-foreground">View and manage your past stories.</p>
-                     <Button asChild className="mt-4">
-                        <Link href="/story/archive">
-                            <Archive className="mr-2"/> View Story Archive
-                        </Link>
-                    </Button>
-                </CardContent>
-            </Card>
-            <Card className="bg-secondary/50">
-                 <CardContent className="p-6 text-center">
-                    <p className="text-muted-foreground">Create a new story to engage your followers.</p>
-                     <Button asChild className="mt-4">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-secondary/50 flex flex-col items-center justify-center p-6 text-center">
+                 <h3 className="font-bold mb-2">Create & Archive</h3>
+                <p className="text-muted-foreground text-sm mb-4">Engage your followers with new stories or look back at your past successes.</p>
+                 <div className="flex gap-2">
+                    <Button asChild>
                         <Link href="/story/create">
-                            <ImageIcon className="mr-2"/> Create New Story
+                            <ImageIcon className="mr-2"/> Create New
                         </Link>
                     </Button>
-                </CardContent>
+                    <Button asChild variant="outline">
+                        <Link href="/story/archive">
+                            <Archive className="mr-2"/> View Archive
+                        </Link>
+                    </Button>
+                 </div>
+            </Card>
+            <Card className="bg-gradient-to-br from-primary/20 to-secondary/50 flex flex-col items-center justify-center p-6 text-center">
+                <h3 className="font-bold mb-2 flex items-center gap-2"><Zap className="text-primary"/> Promote an Event</h3>
+                <p className="text-muted-foreground text-sm mb-4">Feature your event in the main story feed to maximize visibility and ticket sales.</p>
+                <Button className="bg-primary/90 hover:bg-primary">
+                    <Zap className="mr-2"/> Boost an Event
+                </Button>
             </Card>
         </CardContent>
     </Card>
@@ -468,5 +473,3 @@ export default function HostDashboardPage() {
         </div>
     )
 }
-
-    
