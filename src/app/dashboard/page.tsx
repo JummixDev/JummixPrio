@@ -145,7 +145,6 @@ export default function DashboardPage() {
                 <GlobalSearch />
             </div>
             <EventReels />
-            <UserPostsFeed />
              <div>
                 <Tabs defaultValue="upcoming" className="w-full">
                   <TabsList className="grid w-full grid-cols-3 mb-4">
@@ -179,6 +178,7 @@ export default function DashboardPage() {
 
           <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start">
             <LiveActivityFeed />
+            <UserPostsFeed />
             <AIRecommender />
           </aside>
 
