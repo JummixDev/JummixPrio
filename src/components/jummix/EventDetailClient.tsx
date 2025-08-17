@@ -27,31 +27,52 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from '../ui/separator';
 import Link from 'next/link';
 import { EventCard } from './EventCard';
+import { Timestamp } from 'firebase/firestore';
 
 type Event = {
     id: string;
     name: string;
-    date: string;
+    date: Timestamp | string; // Can be a Timestamp from Firestore or a string
     location: string;
     price: number;
     isFree: boolean;
     image: string;
     hint: string;
     description: string;
-    organizer: {
+    organizer?: {
       name: string;
       avatar: string;
       hint: string;
       username: string;
     };
-    attendees: { name: string; avatar: string; hint: string, username: string }[];
-    gallery: { src: string; hint: string }[];
+    attendees?: { name: string; avatar: string; hint: string, username: string }[];
+    gallery?: { src: string; hint: string }[];
 };
 
 
 type EventDetailClientProps = {
   event: Event;
 };
+
+// Helper function to format date from string or Timestamp
+const formatDate = (date: Timestamp | string) => {
+    if (typeof date === 'string') {
+        return new Date(date).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            timeZone: 'UTC',
+        });
+    }
+    if (date && typeof date.toDate === 'function') {
+        return date.toDate().toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    }
+    return 'Date not available';
+}
 
 
 export function EventDetailClient({ event }: EventDetailClientProps) {
@@ -72,6 +93,9 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
             description: `You are now attending ${event.name}.`,
         });
     }
+    
+    const formattedDate = formatDate(event.date);
+
 
   return (
     <div>
@@ -96,7 +120,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         <CardHeader>
                             <CardTitle className="text-4xl font-headline">{event.name}</CardTitle>
                             <CardDescription className="flex flex-wrap items-center gap-x-4 gap-y-2 text-base pt-2">
-                                <span className="flex items-center gap-2"><Calendar className="w-5 h-5 text-primary"/>{event.date}</span>
+                                <span className="flex items-center gap-2"><Calendar className="w-5 h-5 text-primary"/>{formattedDate}</span>
                                 <span className="flex items-center gap-2"><MapPin className="w-5 h-5 text-primary"/>{event.location}</span>
                             </CardDescription>
                         </CardHeader>
@@ -239,4 +263,3 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
-
