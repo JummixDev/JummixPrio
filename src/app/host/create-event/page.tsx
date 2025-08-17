@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
+import { Label } from '@/components/ui/label';
 
 function ProfitabilityCalculator({ form }: { form: any }) {
     const [minAttendees, setMinAttendees] = useState(0);
