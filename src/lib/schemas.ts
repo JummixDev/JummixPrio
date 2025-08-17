@@ -8,7 +8,13 @@ export const createEventSchema = z.object({
   location: z.string().min(3, "Location is required."),
   description: z.string().min(10, "Description must be at least 10 characters long."),
   price: z.preprocess(
-    (val) => (typeof val === 'string' ? parseFloat(val) : val),
+    (val) => {
+        if (typeof val === 'string') {
+            const num = parseFloat(val);
+            return isNaN(num) ? 0 : num; // Return 0 if parsing fails (e.g., for an empty string)
+        }
+        return val;
+    },
     z.number().min(0, "Price must be a positive number.")
   ),
   image: z.string().url("Please enter a valid image URL."),
