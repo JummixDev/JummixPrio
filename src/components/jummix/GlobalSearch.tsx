@@ -4,9 +4,10 @@
 
 import * as React from 'react';
 import {
-  CommandDialog,
+  Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
@@ -16,7 +17,8 @@ import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { getAISearchResults } from '@/app/actions';
-import { Input } from '../ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Button } from '../ui/button';
 
 type Result = {
     id: string;
@@ -110,51 +112,56 @@ export function GlobalSearch() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-2 text-sm text-muted-foreground bg-background border rounded-md px-3 py-2 w-full hover:bg-muted transition-colors"
-      >
-        <Wand2 className="h-4 w-4 text-primary" />
-        <span className="flex-grow text-left">Search with AI...</span>
-        <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 sm:flex">
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-            <Wand2 className="mr-2 h-4 w-4 shrink-0 text-primary" />
-            <Input
-                placeholder='Try "a relaxed jazz event for this weekend"'
-                className="flex h-12 w-full rounded-md bg-transparent py-3 text-base resize-none border-0 shadow-none focus-visible:ring-0"
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="flex items-center gap-2 text-sm text-muted-foreground bg-background px-3 py-2 w-full hover:bg-muted transition-colors justify-between"
+            onClick={() => setOpen(true)}
+          >
+            <div className='flex items-center gap-2'>
+              <Wand2 className="h-4 w-4 text-primary" />
+              <span className="flex-grow text-left">Search with AI...</span>
+            </div>
+            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 sm:flex">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          <Command shouldFilter={false}>
+              <CommandInput 
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
-        </div>
-        <CommandList>
-          {loading && (
-            <CommandEmpty>
-                <div className="flex items-center justify-center p-4">
+                onValueChange={setSearchTerm}
+                placeholder='Try "a relaxed jazz event for this weekend"'
+              />
+            <CommandList>
+              {loading && (
+                <div className="p-4 flex items-center justify-center text-sm">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin"/> Searching with AI...
                 </div>
-            </CommandEmpty>
-          )}
-          {!loading && !results.length && debouncedSearchTerm.length > 2 && <CommandEmpty>No results found.</CommandEmpty>}
-          
-          {results.length > 0 && (
-            <CommandGroup heading="AI Recommendations">
-                {results.map((res) => (
-                    <CommandItem key={res.id} onSelect={() => handleSelect(res)}>
-                        {res.type === 'event' && <Calendar className="mr-2 h-4 w-4" />}
-                        {res.type === 'user' && <User className="mr-2 h-4 w-4" />}
-                        {res.type === 'host' && <Building className="mr-2 h-4 w-4" />}
-                        <span>{res.name}</span>
-                        {res.type === 'event' && <span className="text-xs text-muted-foreground ml-auto">{res.detail}</span>}
-                    </CommandItem>
-                ))}
-            </CommandGroup>
-          )}
-        </CommandList>
-      </CommandDialog>
+              )}
+              {!loading && !results.length && debouncedSearchTerm.length > 2 && <CommandEmpty>No results found.</CommandEmpty>}
+              
+              {results.length > 0 && (
+                <CommandGroup heading="AI Recommendations">
+                    {results.map((res) => (
+                        <CommandItem key={res.id} onSelect={() => handleSelect(res)} value={res.name}>
+                            {res.type === 'event' && <Calendar className="mr-2 h-4 w-4" />}
+                            {res.type === 'user' && <User className="mr-2 h-4 w-4" />}
+                            {res.type === 'host' && <Building className="mr-2 h-4 w-4" />}
+                            <span>{res.name}</span>
+                            {res.type === 'event' && <span className="text-xs text-muted-foreground ml-auto">{res.detail}</span>}
+                        </CommandItem>
+                    ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </>
   );
 }
