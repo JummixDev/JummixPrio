@@ -27,6 +27,7 @@ import { GlobalSearch } from "@/components/jummix/GlobalSearch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPostsFeed } from "@/components/jummix/UserPostsFeed";
 import { PeopleNearby } from "@/components/jummix/PeopleNearby";
+import { NotificationCenter } from "@/components/jummix/NotificationCenter";
 
 
 type Event = {
@@ -179,6 +180,7 @@ export default function DashboardPage() {
 
           <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start">
             <LiveActivityFeed />
+             <NotificationCenter />
             <div className="space-y-8">
                 <PeopleNearby />
                 <UserPostsFeed />
