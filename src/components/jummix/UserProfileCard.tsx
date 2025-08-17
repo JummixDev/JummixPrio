@@ -8,9 +8,6 @@ import { Button } from "../ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 export function UserProfileCard() {
   const { user, signOut, loading: authLoading, userData } = useAuth();

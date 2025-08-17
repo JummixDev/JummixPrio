@@ -111,24 +111,27 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     async function fetchUserProfile() {
-        if (!username || authLoading) return;
-
+        if (!username) return;
         setLoading(true);
+        
         try {
-            const isMe = username === 'me';
-            let userToQuery = isMe ? loggedInUser?.uid : username;
+            let userToQuery: string;
+            let queryField: 'uid' | 'username';
 
-            if (!userToQuery) {
-                setProfileUser(null);
-                setLoading(false);
-                return;
+            if (username === 'me') {
+                if (!loggedInUser) {
+                    setLoading(false);
+                    return; // Wait for loggedInUser to be available
+                }
+                userToQuery = loggedInUser.uid;
+                queryField = 'uid';
+            } else {
+                userToQuery = username;
+                queryField = 'username';
             }
             
             const usersRef = collection(db, "users");
-            const q = isMe 
-                ? query(usersRef, where("uid", "==", userToQuery), limit(1))
-                : query(usersRef, where("username", "==", userToQuery), limit(1));
-
+            const q = query(usersRef, where(queryField, "==", userToQuery), limit(1));
             const querySnapshot = await getDocs(q);
 
             if (!querySnapshot.empty) {
@@ -153,8 +156,10 @@ export default function UserProfilePage() {
             setLoading(false);
         }
     }
-
-    fetchUserProfile();
+    // Run fetch only when loggedInUser is resolved or username is not 'me'
+    if (!authLoading) {
+      fetchUserProfile();
+    }
   }, [username, loggedInUser, authLoading]);
 
   if (loading || authLoading) {

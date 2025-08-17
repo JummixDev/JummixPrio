@@ -113,7 +113,7 @@ function ProfileSettings() {
 }
 
 function PhotoSettings() {
-    const { userData, updateUserProfileImage } = useAuth();
+    const { userData, updateUserProfileImage, loading } = useAuth();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState<'profile' | 'banner' | null>(null);
 
@@ -143,6 +143,20 @@ function PhotoSettings() {
         }
     };
     
+    if (loading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Profile Photos</CardTitle>
+                    <CardDescription>Manage your profile picture and banner image.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center p-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <Card>
             <CardHeader>

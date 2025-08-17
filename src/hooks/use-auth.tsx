@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setLoading(true); // Start loading when auth state changes
       setUser(user);
       if (!user) {
           setUserData(null);
@@ -90,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: serverTimestamp()
       };
       await setDoc(userDocRef, newUserData);
-      setUserData(newUserData); // Immediately set user data in state
+      // No need to set user data here, the onSnapshot listener will handle it
     }
   };
 
@@ -105,6 +106,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // If the doc doesn't exist for some reason, create it.
           createUserDocument(user);
         }
+        setLoading(false);
+      }, (error) => {
+        console.error("Error with onSnapshot:", error);
         setLoading(false);
       });
       return () => unsubscribe();
