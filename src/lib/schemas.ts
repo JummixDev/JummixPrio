@@ -14,6 +14,7 @@ export const createEventSchema = z.object({
             const num = parseFloat(val);
             return isNaN(num) ? val : num; // Let Zod handle the NaN case
         }
+        if (val === undefined || val === null) return 0; // Treat undefined/null as 0
         return val;
     },
     z.number({ invalid_type_error: "Price must be a number." }).min(0, "Price must be a positive number.")
