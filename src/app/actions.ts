@@ -166,6 +166,19 @@ export async function submitReview(reviewData: ReviewInput) {
 
 
 export async function createCheckoutSession(userId: string, eventId: string) {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    // 0. Check for necessary environment variables
+    if (!stripeSecretKey) {
+        console.error("Stripe secret key is not set in .env file.");
+        return { success: false, error: "Payment system is not configured. Please contact support." };
+    }
+    if (!baseUrl) {
+        console.error("NEXT_PUBLIC_BASE_URL is not set in .env file.");
+        return { success: false, error: "Application base URL is not configured." };
+    }
+    
     // 1. Validate inputs
     if (!userId || !eventId) {
         return { success: false, error: 'User ID and Event ID are required.' };
@@ -189,9 +202,7 @@ export async function createCheckoutSession(userId: string, eventId: string) {
         const user = userDoc.data();
 
         // 3. Initialize Stripe
-        // IMPORTANT: Add your Stripe Secret Key to a .env.local file
-        // e.g., STRIPE_SECRET_KEY=sk_test_...
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+        const stripe = new Stripe(stripeSecretKey, {
             apiVersion: '2024-06-20',
         });
         
@@ -213,8 +224,8 @@ export async function createCheckoutSession(userId: string, eventId: string) {
                 },
             ],
             mode: 'payment',
-            success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/event/${eventId}?payment_success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/event/${eventId}`,
+            success_url: `${baseUrl}/event/${eventId}?payment_success=true`,
+            cancel_url: `${baseUrl}/event/${eventId}`,
             // We pass metadata to identify the user and event after the payment is successful
             metadata: {
                 userId,
