@@ -116,12 +116,12 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {event.gallery.map((photo, index) => (
+                                {event.gallery && event.gallery.map((photo, index) => (
                                     <div key={index} className="aspect-square relative rounded-lg overflow-hidden">
                                         <Image src={photo.src} alt={`Gallery photo ${index + 1}`} layout='fill' objectFit='cover' data-ai-hint={photo.hint} />
                                     </div>
                                 ))}
-                                { event.gallery.length === 0 && <p className='text-muted-foreground text-sm'>No photos yet. Be the first to add one!</p>}
+                                {(!event.gallery || event.gallery.length === 0) && <p className='text-muted-foreground text-sm'>No photos yet. Be the first to add one!</p>}
                             </div>
                         </CardContent>
                     </Card>
