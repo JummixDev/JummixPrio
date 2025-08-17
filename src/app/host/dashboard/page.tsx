@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, QrCode, ShieldAlert, Star, Users, Loader2, Ticket, Archive, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, BarChart, Calendar, DollarSign, MessageCircle, PieChart, Star, Users, Loader2, Ticket, Archive, Image as ImageIcon, Zap, QrCode, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,7 +13,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { Bar, Pie, Cell, ResponsiveContainer, BarChart as RechartsBarChart, PieChart as RechartsPieChart } from 'recharts';
+import { Bar, Pie, ResponsiveContainer, BarChart as RechartsBarChart, PieChart as RechartsPieChart } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -55,7 +56,7 @@ const pieChartData = [
 ];
 
 
-function Overview() {
+export function Overview() {
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -145,7 +146,7 @@ function Overview() {
     )
 }
 
-function EventManagement() {
+export function EventManagement() {
     const { user } = useAuth();
     const [events, setEvents] = useState<EventData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -167,7 +168,6 @@ function EventManagement() {
                         name: data.name,
                         date: eventDate.toLocaleDateString(),
                         status: eventDate > new Date() ? 'Upcoming' : 'Past',
-                        // Mock data for now, replace with real data when available
                         bookings: data.attendees?.length || 0, 
                         revenue: (data.attendees?.length || 0) * data.price,
                     } as EventData;
@@ -251,7 +251,7 @@ function EventManagement() {
     )
 }
 
-function ReviewManagement() {
+export function ReviewManagement() {
      return (
         <Card>
             <CardHeader>
@@ -282,7 +282,7 @@ function ReviewManagement() {
     )
 }
 
-function Ticketing() {
+export function Ticketing() {
     return (
         <Card>
             <CardHeader>
@@ -292,7 +292,6 @@ function Ticketing() {
             <CardContent className="text-center p-8 border-2 border-dashed rounded-lg">
                 <p className="text-muted-foreground">Select an event from the 'Events' tab to access its check-in scanner.</p>
                 <Button className="mt-4" asChild>
-                    {/* This button will be more useful if it directs to the events tab */}
                     <Link href="#events">
                         <Calendar className="mr-2" />
                         Go to My Events
@@ -303,7 +302,7 @@ function Ticketing() {
     )
 }
 
-function StoryManagement() {
+export function StoryManagement() {
   return (
     <Card>
         <CardHeader>
@@ -340,7 +339,7 @@ function StoryManagement() {
 }
 
 
-function Communication() {
+export function Communication() {
     const { toast } = useToast();
     const [message, setMessage] = useState('');
 
@@ -371,7 +370,7 @@ function Communication() {
         </Card>
     )
 }
-function Finances() {
+export function Finances() {
     return (
         <Card>
             <CardHeader>
@@ -386,7 +385,7 @@ function Finances() {
     )
 }
 
-function AccessDenied() {
+export function AccessDenied() {
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] bg-background text-center p-4 rounded-lg border-2 border-dashed">
             <ShieldAlert className="w-16 h-16 mb-4 text-destructive" />
@@ -406,13 +405,10 @@ export default function HostDashboardPage() {
     const [isAuthorized, setIsAuthorized] = useState(false);
     
     useEffect(() => {
-        // Wait until loading is false and we have user data.
         if (!loading && userData !== undefined) {
             if (!user) {
-                // Not logged in, redirect to home.
                 router.push('/');
             } else {
-                // Check for admin or verified host status once we have userData.
                 const isAdmin = user.email === 'service@jummix.com';
                 const isVerifiedHost = userData?.isVerifiedHost || false;
                 if (isAdmin || isVerifiedHost) {
@@ -424,7 +420,6 @@ export default function HostDashboardPage() {
         }
     }, [user, userData, loading, router]);
     
-    // Show a loading state while we verify auth.
     if (loading || userData === undefined) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
