@@ -410,6 +410,7 @@ export function AccessDenied() {
 export default function HostDashboardPage() {
     const { user, userData, loading } = useAuth();
     const router = useRouter();
+    const [activeSection, setActiveSection] = useState('overview');
     const [isAuthorized, setIsAuthorized] = useState(false);
     
     useEffect(() => {
@@ -427,6 +428,16 @@ export default function HostDashboardPage() {
             }
         }
     }, [user, userData, loading, router]);
+
+    const navItems = [
+        { id: 'overview', label: 'Overview', icon: BarChart },
+        { id: 'events', label: 'Events', icon: Calendar },
+        { id: 'stories', label: 'Stories', icon: ImageIcon },
+        { id: 'ticketing', label: 'Ticketing', icon: Ticket },
+        { id: 'reviews', label: 'Reviews', icon: Star },
+        { id: 'communication', label: 'Communication', icon: MessageCircle },
+        { id: 'finances', label: 'Finances', icon: DollarSign },
+    ];
     
     if (loading || userData === undefined) {
         return (
@@ -451,24 +462,32 @@ export default function HostDashboardPage() {
             </header>
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                 {isAuthorized ? (
-                    <Tabs defaultValue="overview">
-                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 mb-6">
-                            <TabsTrigger value="overview"><BarChart className="mr-2 hidden md:block"/>Overview</TabsTrigger>
-                            <TabsTrigger value="events"><Calendar className="mr-2 hidden md:block"/>Events</TabsTrigger>
-                             <TabsTrigger value="stories"><ImageIcon className="mr-2 hidden md:block"/>Stories</TabsTrigger>
-                            <TabsTrigger value="ticketing"><Ticket className="mr-2 hidden md:block"/>Ticketing</TabsTrigger>
-                            <TabsTrigger value="reviews"><Star className="mr-2 hidden md:block"/>Reviews</TabsTrigger>
-                            <TabsTrigger value="communication"><MessageCircle className="mr-2 hidden md:block"/>Communication</TabsTrigger>
-                            <TabsTrigger value="finances"><DollarSign className="mr-2 hidden md:block"/>Finances</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="overview"><Overview/></TabsContent>
-                        <TabsContent value="events"><EventManagement/></TabsContent>
-                        <TabsContent value="stories"><StoryManagement /></TabsContent>
-                        <TabsContent value="ticketing"><Ticketing /></TabsContent>
-                        <TabsContent value="reviews"><ReviewManagement/></TabsContent>
-                        <TabsContent value="communication"><Communication/></TabsContent>
-                        <TabsContent value="finances"><Finances/></TabsContent>
-                    </Tabs>
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                        <aside className="lg:col-span-1 lg:sticky top-40">
+                             <nav className="flex flex-col space-y-2">
+                                {navItems.map(item => (
+                                    <Button 
+                                        key={item.id}
+                                        variant={activeSection === item.id ? "secondary" : "ghost"}
+                                        className="justify-start"
+                                        onClick={() => setActiveSection(item.id)}
+                                    >
+                                        <item.icon className="mr-2 h-4 w-4"/>
+                                        {item.label}
+                                    </Button>
+                                ))}
+                            </nav>
+                        </aside>
+                        <section className="lg:col-span-3 space-y-8">
+                            {activeSection === 'overview' && <Overview />}
+                            {activeSection === 'events' && <EventManagement />}
+                            {activeSection === 'stories' && <StoryManagement />}
+                            {activeSection === 'ticketing' && <Ticketing />}
+                            {activeSection === 'reviews' && <ReviewManagement />}
+                            {activeSection === 'communication' && <Communication />}
+                            {activeSection === 'finances' && <Finances />}
+                        </section>
+                    </div>
                 ) : (
                     <AccessDenied />
                 )}
@@ -476,5 +495,3 @@ export default function HostDashboardPage() {
         </div>
     )
 }
-
-    
