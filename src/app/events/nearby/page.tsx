@@ -112,35 +112,6 @@ export default function NearbyEventsPage() {
           </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
-        <div className="mb-8">
-          {(status === 'loading' || isLoadingEvents) && (
-             <Alert>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <AlertTitle>{isLoadingEvents ? 'Loading Events...' : 'Finding your location...'}</AlertTitle>
-                <AlertDescription>
-                  {isLoadingEvents ? 'Just a moment while we fetch all available events.' : "Please grant permission if prompted. We're looking for events near you."}
-                </AlertDescription>
-              </Alert>
-          )}
-          {status === 'error' && (
-             <Alert variant="destructive">
-                <WifiOff className="h-4 w-4" />
-                <AlertTitle>Could not determine location</AlertTitle>
-                <AlertDescription>
-                  {error}
-                </AlertDescription>
-              </Alert>
-          )}
-           {status === 'success' && (
-             <Alert variant="default" className="bg-green-50 border-green-200 text-green-800">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertTitle>Standort erfolgreich erkannt!</AlertTitle>
-                <AlertDescription>
-                  Die folgenden Events sind nach ihrer Entfernung zu Ihnen sortiert.
-                </AlertDescription>
-              </Alert>
-          )}
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
                 <EventCard key={event.id} event={event} />

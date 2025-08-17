@@ -65,7 +65,6 @@ const formatDate = (date: Timestamp | string) => {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
-        timeZone: 'UTC'
     });
 }
 
@@ -232,8 +231,15 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             <CardTitle className="font-headline">Location</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center">
-                                <p className="text-muted-foreground">Map placeholder</p>
+                            <div className="aspect-video bg-secondary rounded-lg overflow-hidden">
+                                <iframe
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0 }}
+                                    loading="lazy"
+                                    allowFullScreen
+                                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(event.location)}`}>
+                                </iframe>
                             </div>
                         </CardContent>
                     </Card>
