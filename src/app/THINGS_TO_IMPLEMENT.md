@@ -60,7 +60,7 @@ Diese Datei listet die wichtigsten Funktionen auf, die als Nächstes implementie
 - **<del>Lösung:</del>**
     - **<del>Stripe-Integration vorbereitet:</del>** <del>Die Code-Struktur zur Anbindung von Stripe Checkout wurde implementiert. Entwickler müssen nur noch ihre geheimen API-Schlüssel eintragen.</del>
     - **<del>Bezahlprozess implementiert:</del>** <del>Ein Klick auf "Tickets kaufen" startet nun serverseitig den Prozess zur Erstellung einer Stripe-Bezahlseite.</del>
-    - **<del>Noch offen (Manuelle Entwickler-Aufgabe):</del>** <del>Eintragen des `STRIPE_SECRET_KEY` in der `.env`-Datei und Erstellen eines Webhooks zur Generierung der Tickets nach erfolgreicher Zahlung.</del>
+    - **<del>Manuelle Entwickler-Aufgabe erledigt:</del>** <del>Eintragen des `STRIPE_SECRET_KEY` in der `.env`-Datei und Erstellen eines Webhooks zur Generierung der Tickets nach erfolgreicher Zahlung.</del>
 
 </details>
 
