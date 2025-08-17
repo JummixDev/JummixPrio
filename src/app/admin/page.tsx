@@ -322,7 +322,7 @@ export default function AdminPage() {
 
     return (
         <div className="bg-secondary/20 min-h-screen">
-            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
+            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
                      <Button variant="ghost" size="icon" asChild>
                         <Link href="/dashboard">
@@ -334,7 +334,7 @@ export default function AdminPage() {
             </header>
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                    <aside className="lg:col-span-1 lg:sticky top-24">
+                    <aside className="lg:col-span-1 lg:sticky top-40">
                         <nav className="flex flex-col space-y-2">
                              {navItems.map(item => (
                                 <Button 

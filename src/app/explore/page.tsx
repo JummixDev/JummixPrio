@@ -114,7 +114,7 @@ export default function ExplorePage() {
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
-      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
+      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16 gap-4">
               <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
                   <Link href="/dashboard">
