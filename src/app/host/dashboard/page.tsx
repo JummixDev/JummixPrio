@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, ShieldAlert, Star, Users, Loader2 } from 'lucide-react';
+import { ArrowLeft, BarChart, Calendar, CheckSquare, DollarSign, MessageCircle, PieChart, QrCode, ShieldAlert, Star, Users, Loader2, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -282,6 +282,26 @@ function ReviewManagement() {
     )
 }
 
+function Ticketing() {
+    const { toast } = useToast();
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Ticketing & Check-in</CardTitle>
+                <CardDescription>Scan attendee tickets and manage event check-ins.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-center p-8 border-2 border-dashed rounded-lg">
+                <p className="text-muted-foreground">Use the Jummix mobile app to scan QR codes at the door.</p>
+                <Button className="mt-4" onClick={() => toast({title: "Coming Soon!", description: "The QR code scanner will be available in the mobile app."})}>
+                    <QrCode className="mr-2" />
+                    Open QR Code Scanner
+                </Button>
+            </CardContent>
+        </Card>
+    )
+}
+
+
 function Communication() {
     const { toast } = useToast();
     const [message, setMessage] = useState('');
@@ -391,15 +411,17 @@ export default function HostDashboardPage() {
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                 {isAuthorized ? (
                     <Tabs defaultValue="overview">
-                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
+                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-6">
                             <TabsTrigger value="overview"><BarChart className="mr-2 hidden md:block"/>Overview</TabsTrigger>
                             <TabsTrigger value="events"><Calendar className="mr-2 hidden md:block"/>Events</TabsTrigger>
+                            <TabsTrigger value="ticketing"><Ticket className="mr-2 hidden md:block"/>Ticketing</TabsTrigger>
                             <TabsTrigger value="reviews"><Star className="mr-2 hidden md:block"/>Reviews</TabsTrigger>
                             <TabsTrigger value="communication"><MessageCircle className="mr-2 hidden md:block"/>Communication</TabsTrigger>
                             <TabsTrigger value="finances"><DollarSign className="mr-2 hidden md:block"/>Finances</TabsTrigger>
                         </TabsList>
                         <TabsContent value="overview"><Overview/></TabsContent>
                         <TabsContent value="events"><EventManagement/></TabsContent>
+                        <TabsContent value="ticketing"><Ticketing /></TabsContent>
                         <TabsContent value="reviews"><ReviewManagement/></TabsContent>
                         <TabsContent value="communication"><Communication/></TabsContent>
                         <TabsContent value="finances"><Finances/></TabsContent>
