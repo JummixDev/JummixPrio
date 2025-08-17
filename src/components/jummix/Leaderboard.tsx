@@ -25,7 +25,7 @@ const rankColors: { [key: number]: string } = {
 export function Leaderboard() {
 
   return (
-    <Card>
+    <Card className="transition-transform hover:scale-105">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="font-headline flex items-center gap-2">
             <Trophy className="text-primary" /> Leaderboard

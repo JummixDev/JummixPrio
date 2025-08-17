@@ -46,7 +46,7 @@ const activities = [
 
 export function LiveActivityFeed() {
   return (
-    <Card>
+    <Card className="transition-transform hover:scale-105">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
             <CardTitle className="font-headline">My Activities</CardTitle>

@@ -15,7 +15,7 @@ const badges = [
 
 export function Badges() {
   return (
-    <Card>
+    <Card className="transition-transform hover:scale-105">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="font-headline">My Badges</CardTitle>
          <Button variant="ghost" size="icon" className="w-8 h-8" asChild>

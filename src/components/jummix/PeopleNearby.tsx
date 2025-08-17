@@ -17,7 +17,7 @@ const mockUsers = [
 
 export function PeopleNearby() {
   return (
-    <Card>
+    <Card className="transition-transform hover:scale-105">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
             <CardTitle className="font-headline flex items-center gap-2"><Users /> People Nearby</CardTitle>
