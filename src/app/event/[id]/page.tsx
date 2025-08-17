@@ -76,7 +76,7 @@ export default function EventDetailPage() {
        <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
               <Button variant="ghost" size="icon" asChild>
-                  <Link href="/explore">
+                  <Link href="/dashboard">
                       <ArrowLeft />
                   </Link>
               </Button>

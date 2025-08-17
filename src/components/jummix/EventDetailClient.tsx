@@ -79,7 +79,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     const [isLiked, setIsLiked] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    const isStripeConfigured = !!process.env.NEXT_PUBLIC_STRIPE_CONFIGURED;
+    const isStripeConfigured = process.env.NEXT_PUBLIC_STRIPE_CONFIGURED === 'true';
     
     useEffect(() => {
         if (userData) {
@@ -382,5 +382,3 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
-
-    
