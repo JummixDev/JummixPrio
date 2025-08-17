@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, BarChart, Calendar, DollarSign, MessageCircle, PieChart, Star, Users, Loader2, Ticket, Archive, Image as ImageIcon, Zap, QrCode, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, BarChart, Calendar, DollarSign, MessageCircle, PieChart, Star, Users, Loader2, Ticket, Archive, Image as ImageIcon, Zap, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -293,7 +293,7 @@ export function Ticketing() {
                 <p className="text-muted-foreground">Select an event from the 'Events' tab to access its check-in scanner.</p>
                 <Button className="mt-4" asChild>
                     <Link href="#events">
-                        <Calendar className="mr-2" />
+                        <Calendar className="mr-2"/>
                         Go to My Events
                     </Link>
                 </Button>
@@ -457,7 +457,7 @@ export default function HostDashboardPage() {
                         <TabsContent value="events"><EventManagement/></TabsContent>
                         <TabsContent value="stories"><StoryManagement /></TabsContent>
                         <TabsContent value="ticketing"><Ticketing /></TabsContent>
-                        <TabsContent value="reviews"><ReviewManagement/></TabsContent>
+                        <TabsContent value="reviews"><ReviewManagement/></Tabs_Content>
                         <TabsContent value="communication"><Communication/></TabsContent>
                         <TabsContent value="finances"><Finances/></TabsContent>
                     </Tabs>
@@ -468,3 +468,5 @@ export default function HostDashboardPage() {
         </div>
     )
 }
+
+    
