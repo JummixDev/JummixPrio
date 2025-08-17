@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { collection, getDocs, limit, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GlobalSearch } from "@/components/jummix/GlobalSearch";
 
 type Event = {
   id: string;
@@ -84,10 +85,7 @@ export default function DashboardPage() {
               <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
             </Link>
             <div className="flex-1 max-w-sm mx-4 hidden md:block">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input placeholder="Search events or friends..." className="pl-10" />
-              </div>
+              <GlobalSearch />
             </div>
             <div className="flex items-center gap-1">
               <Button asChild variant="ghost" size="icon">
@@ -183,6 +181,9 @@ export default function DashboardPage() {
           </aside>
 
           <div className="lg:col-span-6 space-y-8">
+            <div className="md:hidden">
+                <GlobalSearch />
+            </div>
             <EventReels />
             <LiveActivityFeed />
             <div>
