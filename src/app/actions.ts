@@ -5,6 +5,8 @@
 import "dotenv/config";
 import { personalizedEventRecommendations, PersonalizedEventRecommendationsInput } from "@/ai/flows/event-recommendations";
 import type { PersonalizedEventRecommendationsOutput } from "@/ai/flows/event-recommendations";
+import { searchEventsWithAI, EventSearchInput } from "@/ai/flows/event-search";
+import type { EventSearchOutput } from "@/ai/flows/event-search";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove, getDoc } from "firebase/firestore";
 import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput } from "@/lib/schemas";
@@ -23,6 +25,17 @@ export async function getAIRecommendations(input: PersonalizedEventRecommendatio
     return { error: "Failed to get recommendations. Please try again.", eventRecommendations: [] };
   }
 }
+
+export async function getAISearchResults(input: EventSearchInput): Promise<EventSearchOutput> {
+  try {
+    const result = await searchEventsWithAI(input);
+    return result;
+  } catch (error) {
+    console.error("AI search error:", error);
+    return { matchingEventIds: [] };
+  }
+}
+
 
 export async function createEvent(eventData: CreateEventInput) {
     const validation = createEventSchema.safeParse(eventData);
