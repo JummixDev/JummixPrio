@@ -7,7 +7,7 @@ import { getStorage } from "firebase/storage";
 const firebaseConfig = {
     projectId: "jummix-yp2lc",
     appId: "1:323209838698:web:abd5771ad9c6b71c8eca13",
-    storageBucket: "jummix-yp2lc.appspot.com",
+    storageBucket: "jummix-yp2lc.firebasestorage.app",
     apiKey: "AIzaSyCYGt2gIFzmHhjWLs_FdIoxcrOb9C0lk0s",
     authDomain: "jummix-yp2lc.firebaseapp.com",
     messagingSenderId: "323209838698",
