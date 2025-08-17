@@ -218,7 +218,7 @@ export async function createCheckoutSession(userId: string, eventId: string) {
                             images: [event.image],
                             description: event.description,
                         },
-                        unit_amount: event.price * 100, // Price in cents
+                        unit_amount: Math.round(event.price * 100), // Price in cents, rounded to the nearest integer
                     },
                     quantity: 1,
                 },
