@@ -349,7 +349,7 @@ export default function HostDashboardPage() {
     
     useEffect(() => {
         // Wait until loading is false and we have user data.
-        if (!loading) {
+        if (!loading && userData !== undefined) {
             if (!user) {
                 // Not logged in, redirect to home.
                 router.push('/');
@@ -367,10 +367,11 @@ export default function HostDashboardPage() {
     }, [user, userData, loading, router]);
     
     // Show a loading state while we verify auth.
-    if (loading) {
+    if (loading || userData === undefined) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="w-8 h-8 animate-spin" />
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+                <h1 className="text-2xl font-bold font-headline text-primary">Lade Ihr Erlebnis mit Jummix</h1>
             </div>
         );
     }

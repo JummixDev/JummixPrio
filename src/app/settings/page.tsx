@@ -492,7 +492,12 @@ export default function SettingsPage() {
   }, [user, loading, router]);
   
   if (loading || !user) {
-    return <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+            <h1 className="text-2xl font-bold font-headline text-primary">Lade Ihr Erlebnis mit Jummix</h1>
+        </div>
+    );
   }
 
   const navItems = [

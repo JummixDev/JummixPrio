@@ -69,8 +69,9 @@ export default function DashboardPage() {
 
   if (loading || !user) {
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <Loader2 className="w-8 h-8 animate-spin" />
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+            <h1 className="text-2xl font-bold font-headline text-primary">Lade Ihr Erlebnis mit Jummix</h1>
         </div>
     );
   }
@@ -119,7 +120,7 @@ export default function DashboardPage() {
                           </Link>
                         </Button>
                         
-                        {isAdmin && (
+                         {isAdmin && (
                             <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                                <Link href="/admin">
                                 <Shield className="mr-2 h-5 w-5" /> Admin Dashboard
@@ -127,20 +128,20 @@ export default function DashboardPage() {
                             </Button>
                         )}
                         
-                        {(isVerifiedHost || isAdmin) ? (
-                          <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
-                            <Link href="/host/dashboard">
-                              <LayoutDashboard className="mr-2 h-5 w-5" /> Host Dashboard
-                            </Link>
-                          </Button>
+                        {isVerifiedHost || isAdmin ? (
+                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                                <Link href="/host/dashboard">
+                                <LayoutDashboard className="mr-2 h-5 w-5" /> Host Dashboard
+                                </Link>
+                            </Button>
                         ) : (
-                          <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
-                            <Link href="/host/apply-verification">
-                              <LayoutDashboard className="mr-2 h-5 w-5" /> Als Host bewerben
-                            </Link>
-                          </Button>
+                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                                <Link href="/host/apply-verification">
+                                <LayoutDashboard className="mr-2 h-5 w-5" /> Als Host bewerben
+                                </Link>
+                            </Button>
                         )}
-                        
+
                         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                            <Link href="/settings">
                             <Settings className="mr-2 h-5 w-5" /> Settings

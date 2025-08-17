@@ -131,8 +131,9 @@ export default function ChatsPage() {
     
     if (authLoading || loading) {
         return (
-            <div className="flex h-screen w-full items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+                <h1 className="text-2xl font-bold font-headline text-primary">Lade Ihr Erlebnis mit Jummix</h1>
             </div>
         )
     }
