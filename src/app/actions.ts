@@ -238,6 +238,10 @@ export async function createCheckoutSession(userId: string, eventId: string) {
 
     } catch (error: any) {
         console.error('Stripe session creation failed:', error);
+        // Provide a more specific error message if available
+        if (error instanceof Stripe.errors.StripeError) {
+             return { success: false, error: `Stripe Error: ${error.message}` };
+        }
         return { success: false, error: 'Could not create payment session.' };
     }
 }
