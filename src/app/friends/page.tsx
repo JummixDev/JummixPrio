@@ -59,16 +59,16 @@ const FriendList = ({ users, type, onAction, currentUserData }: { users: UserPro
         const isFollowing = currentUserData?.following?.includes(userUid);
         if (type === 'follower') {
             return isFollowing ? (
-                <Button variant="secondary" disabled><UserCheck /> Following</Button>
+                <Button variant="secondary" disabled><UserCheck className="mr-2" /> Following</Button>
             ) : (
-                <Button onClick={() => handleFollow(userUid)}><UserPlus /> Follow Back</Button>
+                <Button onClick={() => handleFollow(userUid)}><UserPlus className="mr-2" /> Follow Back</Button>
             );
         }
         if (type === 'following') {
             return <Button variant="outline" onClick={() => handleUnfollow(userUid)}>Unfollow</Button>;
         }
         if (type === 'suggestion') {
-            return <Button onClick={() => handleFollow(userUid)}><UserPlus /> Follow</Button>;
+            return <Button onClick={() => handleFollow(userUid)}><UserPlus className="mr-2" /> Follow</Button>;
         }
         return null;
     }
