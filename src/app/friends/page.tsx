@@ -124,7 +124,9 @@ export default function FriendsPage() {
             const querySnapshot = await getDocs(q);
             const allUsers = querySnapshot.docs.map(doc => doc.data() as UserProfile);
 
-            const currentUserDoc = allUsers.find(u => u.uid === user.uid);
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            const currentUserDoc = userDocSnap.data();
             
             // Ensure properties are arrays before using them
             const currentUserFollowers = Array.isArray(currentUserDoc?.followers) ? currentUserDoc.followers : [];
