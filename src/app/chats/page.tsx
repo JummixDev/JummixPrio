@@ -3,18 +3,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, Paperclip, Send, Camera, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Paperclip, Send, Camera, MessageSquare, Loader2, Image as ImageIcon, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
 import { sendMessage } from '../actions';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Define types for our data for better safety
 type Conversation = {
@@ -138,7 +143,8 @@ export default function ChatsPage() {
         )
     }
     
-    const getConversationDisplay = (convo: Conversation) => {
+    const getConversationDisplay = (convo: Conversation | null) => {
+        if (!convo) return { name: 'Chats', avatar: '', hint: '', username: '', online: false };
         if (convo.isGroup) {
             return {
                 name: convo.groupName || 'Group Chat',
@@ -158,6 +164,8 @@ export default function ChatsPage() {
         }
     }
 
+    const currentChatPartner = getConversationDisplay(selectedConversation);
+
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
@@ -168,7 +176,19 @@ export default function ChatsPage() {
                       <ArrowLeft />
                   </Link>
               </Button>
-              <h1 className="text-xl font-bold ml-4">Chats</h1>
+               {selectedConversation && (
+                <Link href={`/profile/${currentChatPartner.username}`} className="flex items-center gap-3 ml-2 group">
+                    <Avatar className="w-10 h-10">
+                        <AvatarImage src={currentChatPartner.avatar} alt={currentChatPartner.name} data-ai-hint={currentChatPartner.hint} />
+                        <AvatarFallback>{currentChatPartner.name.substring(0,2)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-grow">
+                        <h1 className="text-lg font-bold group-hover:underline">{currentChatPartner.name}</h1>
+                        {currentChatPartner.online && <p className="text-xs text-green-500 -mt-1">Online</p>}
+                    </div>
+                </Link>
+              )}
+              {!selectedConversation && <h1 className="text-xl font-bold ml-4">Chats</h1>}
           </div>
       </header>
        <main className="flex-grow container mx-auto p-0 md:p-4">
@@ -222,20 +242,6 @@ export default function ChatsPage() {
              <section className="col-span-12 md:col-span-8 lg:col-span-9 flex flex-col h-full">
                 {selectedConversation ? (
                     <>
-                        {/* Chat Header */}
-                        <div className="flex items-center gap-4 p-4 border-b">
-                           <Link href={`/profile/${getConversationDisplay(selectedConversation).username}`}>
-                                <Avatar className="w-10 h-10">
-                                    <AvatarImage src={getConversationDisplay(selectedConversation).avatar} alt={getConversationDisplay(selectedConversation).name} data-ai-hint={getConversationDisplay(selectedConversation).hint} />
-                                    <AvatarFallback>{getConversationDisplay(selectedConversation).name.substring(0,2)}</AvatarFallback>
-                                </Avatar>
-                           </Link>
-                            <Link href={`/profile/${getConversationDisplay(selectedConversation).username}`} className="hover:underline">
-                                <p className="font-semibold">{getConversationDisplay(selectedConversation).name}</p>
-                                {getConversationDisplay(selectedConversation).online && <p className="text-xs text-green-500">Online</p>}
-                            </Link>
-                        </div>
-
                         {/* Messages */}
                         <ScrollArea className="flex-grow" ref={scrollAreaRef}>
                             <div className="space-y-4 p-4">
@@ -269,20 +275,28 @@ export default function ChatsPage() {
                                   onChange={(e) => setMessageText(e.target.value)}
                                 />
                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                                     <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                 <Button type="button" variant="ghost" size="icon"><Camera className="w-5 h-5"/></Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent><p>Use Camera</p></TooltipContent>
-                                        </Tooltip>
-                                         <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button type="button" variant="ghost" size="icon"><Paperclip className="w-5 h-5"/></Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent><p>Attach File</p></TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button type="button" variant="ghost" size="icon">
+                                                <Paperclip className="w-5 h-5"/>
+                                                <span className="sr-only">Attach Content</span>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem>
+                                                <Camera className="mr-2 h-4 w-4" />
+                                                Foto aufnehmen
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <ImageIcon className="mr-2 h-4 w-4" />
+                                                Aus Galerie wählen
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <Share2 className="mr-2 h-4 w-4" />
+                                                Event teilen
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                     <Button type="submit" size="icon" className="ml-2 w-10 h-8 rounded-full">
                                         <Send className="w-5 h-5"/>
                                         <span className="sr-only">Send</span>
@@ -306,3 +320,5 @@ export default function ChatsPage() {
     </div>
   );
 }
+
+    
