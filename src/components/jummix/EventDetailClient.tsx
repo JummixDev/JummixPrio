@@ -2,7 +2,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import {
   Card,
@@ -22,6 +22,7 @@ import {
   PlusCircle,
   Ticket,
   CheckCircle,
+  Loader2,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +30,8 @@ import { Separator } from '../ui/separator';
 import Link from 'next/link';
 import { EventCard } from './EventCard';
 import { Timestamp } from 'firebase/firestore';
+import { useAuth } from '@/hooks/use-auth';
+import { createCheckoutSession } from '@/app/actions';
 
 type Event = {
     id: string;
@@ -81,8 +84,10 @@ const formatDate = (date: Timestamp | string) => {
 
 
 export function EventDetailClient({ event }: EventDetailClientProps) {
+    const { user } = useAuth();
     const { toast } = useToast();
     const [isAttending, setIsAttending] = React.useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const handleActionClick = (action: string) => {
         toast({
@@ -91,12 +96,37 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         });
     };
 
-    const handleAttendClick = () => {
-        setIsAttending(true);
-        toast({
-            title: "You're going!",
-            description: `You are now attending ${event.name}.`,
-        });
+    const handleAttendClick = async () => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Not logged in', description: 'Please log in to purchase tickets.' });
+            return;
+        }
+
+        setIsProcessing(true);
+
+        if (event.isFree) {
+            // For free events, just simulate RSVP
+            setIsAttending(true);
+            toast({
+                title: "You're going!",
+                description: `You are now attending ${event.name}.`,
+            });
+            setIsProcessing(false);
+        } else {
+            // For paid events, create a Stripe checkout session
+            const result = await createCheckoutSession(user.uid, event.id);
+            if (result.success && result.url) {
+                // Redirect user to Stripe's checkout page
+                window.location.href = result.url;
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: 'Payment Error',
+                    description: result.error || 'Could not initiate the payment process. Please try again.',
+                });
+                setIsProcessing(false);
+            }
+        }
     }
     
     const formattedDate = formatDate(event.date);
@@ -206,7 +236,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {isAttending ? (
+                             {isAttending ? (
                                 <div className='space-y-2'>
                                     <Button disabled className="w-full">
                                         <CheckCircle className="mr-2" /> Attending
@@ -215,13 +245,16 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         Go to Group Chat
                                     </Button>
                                 </div>
-                            ) : event.isFree ? (
-                                 <Button onClick={handleAttendClick} className="w-full transition-transform active:scale-95">
-                                    <PlusCircle className="mr-2" /> RSVP Now
-                                </Button>
                             ) : (
-                                <Button onClick={handleAttendClick} className="w-full transition-transform active:scale-95">
-                                    <Ticket className="mr-2" /> Get Tickets
+                                <Button onClick={handleAttendClick} disabled={isProcessing} className="w-full transition-transform active:scale-95">
+                                    {isProcessing ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : event.isFree ? (
+                                        <PlusCircle className="mr-2" />
+                                    ) : (
+                                        <Ticket className="mr-2" />
+                                    )}
+                                    {isProcessing ? 'Processing...' : (event.isFree ? 'RSVP Now' : 'Get Tickets')}
                                 </Button>
                             )}
                         </CardContent>
@@ -268,4 +301,3 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
-    

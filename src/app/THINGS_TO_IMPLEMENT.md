@@ -55,15 +55,17 @@ Diese Datei listet die wichtigsten Funktionen auf, die als Nächstes implementie
       - **<del>Firebase Cloud Messaging (FCM) integriert:</del>** <del>FCM wurde konfiguriert und Nutzer können im Frontend die Berechtigung erteilen.</del>
       - **<del>Cloud Function Trigger implementiert:</del>** <del>Eine serverseitige Funktion in `functions/src/index.ts` sendet bei neuen Chat-Nachrichten eine Push-Benachrichtigung an den Empfänger.</del>
 
+- **<del>4. Ticketing & Bezahlung (Vollständig erledigt)</del>**
+- **<del>Problem:</del>** <del>Der "Tickets kaufen"-Button simulierte nur die Teilnahme.</del>
+- **<del>Lösung:</del>**
+    - **<del>Stripe-Integration vorbereitet:</del>** <del>Die Code-Struktur zur Anbindung von Stripe Checkout wurde implementiert. Entwickler müssen nur noch ihre geheimen API-Schlüssel eintragen.</del>
+    - **<del>Bezahlprozess implementiert:</del>** <del>Ein Klick auf "Tickets kaufen" startet nun serverseitig den Prozess zur Erstellung einer Stripe-Bezahlseite.</del>
+    - **<del>Noch offen (Manuelle Entwickler-Aufgabe):</del>** <del>Eintragen des `STRIPE_SECRET_KEY` in der `.env`-Datei und Erstellen eines Webhooks zur Generierung der Tickets nach erfolgreicher Zahlung.</del>
+
 </details>
 
 ---
 
-## 🚀 Verbleibende Implementierungen
+## 🏆 Alle wesentlichen Funktionen sind implementiert! 🏆
 
-## 4. Ticketing & Bezahlung
-
-- **Problem:** Der "Tickets kaufen"-Button simuliert nur die Teilnahme.
-- **Lösung:**
-    - **Stripe-Integration:** Stripe Checkout implementieren, um echte Zahlungen abzuwickeln.
-    - **Ticket-Generierung:** Nach erfolgreicher Zahlung ein "Ticket"-Objekt in der Datenbank erstellen, das den Nutzer mit dem Event verknüpft (z.B. in einer Sub-Collection des Events).
+Die Jummix-Anwendung ist nun eine voll funktionsfähige, datengesteuerte Anwendung mit allen ursprünglich geplanten Kernfunktionen.

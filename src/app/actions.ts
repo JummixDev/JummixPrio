@@ -4,9 +4,9 @@
 import { personalizedEventRecommendations, PersonalizedEventRecommendationsInput } from "@/ai/flows/event-recommendations";
 import type { PersonalizedEventRecommendationsOutput } from "@/ai/flows/event-recommendations";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove, getDoc } from "firebase/firestore";
 import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput } from "@/lib/schemas";
-
+import Stripe from 'stripe';
 
 interface AIResult extends PersonalizedEventRecommendationsOutput {
   error?: string;
@@ -119,8 +119,8 @@ export async function toggleEventInteraction(userId: string, eventId: string, ty
 
     try {
         const userRef = doc(db, 'users', userId);
-        const userDoc = await getDocs(query(collection(db, 'users'), where('uid', '==', userId)));
-        const userData = userDoc.docs[0]?.data();
+        const userDoc = await getDoc(userRef); // Use getDoc with a direct ref for efficiency
+        const userData = userDoc.data();
         
         if (!userData) {
             return { success: false, error: 'User not found.' };
@@ -163,4 +163,69 @@ export async function submitReview(reviewData: ReviewInput) {
         return { success: false, errors: ["Failed to submit review."] };
     }
 }
-    
+
+
+export async function createCheckoutSession(userId: string, eventId: string) {
+    // 1. Validate inputs
+    if (!userId || !eventId) {
+        return { success: false, error: 'User ID and Event ID are required.' };
+    }
+
+    try {
+        // 2. Fetch event and user data from Firestore
+        const eventRef = doc(db, 'events', eventId);
+        const userRef = doc(db, 'users', userId);
+
+        const [eventDoc, userDoc] = await Promise.all([getDoc(eventRef), getDoc(userRef)]);
+
+        if (!eventDoc.exists()) {
+            return { success: false, error: 'Event not found.' };
+        }
+        if (!userDoc.exists()) {
+            return { success: false, error: 'User not found.' };
+        }
+
+        const event = eventDoc.data();
+        const user = userDoc.data();
+
+        // 3. Initialize Stripe
+        // IMPORTANT: Add your Stripe Secret Key to a .env.local file
+        // e.g., STRIPE_SECRET_KEY=sk_test_...
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+            apiVersion: '2024-06-20',
+        });
+        
+        // 4. Create a Stripe Checkout Session
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: event.name,
+                            images: [event.image],
+                            description: event.description,
+                        },
+                        unit_amount: event.price * 100, // Price in cents
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: 'payment',
+            success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/event/${eventId}?payment_success=true`,
+            cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/event/${eventId}`,
+            // We pass metadata to identify the user and event after the payment is successful
+            metadata: {
+                userId,
+                eventId,
+            },
+        });
+
+        return { success: true, sessionId: session.id, url: session.url };
+
+    } catch (error: any) {
+        console.error('Stripe session creation failed:', error);
+        return { success: false, error: 'Could not create payment session.' };
+    }
+}
