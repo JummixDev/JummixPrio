@@ -6,7 +6,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users } from 'lucide-react';
 import Link from 'next/link';
-import { EventCard } from '@/components/jummix/EventCard';
 import { Footer } from '@/components/jummix/Footer';
 import { Input } from '@/components/ui/input';
 import {
@@ -45,7 +44,7 @@ const EventTile = ({ event }: { event: Event }) => (
     <Link href={`/event/${event.id}`} className="block group relative aspect-square overflow-hidden rounded-lg">
         <Image 
             src={event.image || 'https://placehold.co/600x400.png'} 
-            alt={event.name} 
+            alt={event.name || 'Event image'} 
             layout="fill" 
             objectFit="cover" 
             className="transition-transform duration-300 ease-in-out group-hover:scale-110"
@@ -262,3 +261,4 @@ export default function ExplorePage() {
     </div>
   );
 }
+
