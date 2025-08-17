@@ -116,12 +116,15 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {event.gallery && event.gallery.map((photo, index) => (
-                                    <div key={index} className="aspect-square relative rounded-lg overflow-hidden">
-                                        <Image src={photo.src} alt={`Gallery photo ${index + 1}`} layout='fill' objectFit='cover' data-ai-hint={photo.hint} />
-                                    </div>
-                                ))}
-                                {(!event.gallery || event.gallery.length === 0) && <p className='text-muted-foreground text-sm'>No photos yet. Be the first to add one!</p>}
+                                {event.gallery && event.gallery.length > 0 ? (
+                                    event.gallery.map((photo, index) => (
+                                        <div key={index} className="aspect-square relative rounded-lg overflow-hidden">
+                                            <Image src={photo.src} alt={`Gallery photo ${index + 1}`} layout='fill' objectFit='cover' data-ai-hint={photo.hint} />
+                                        </div>
+                                    ))
+                                ) : (
+                                  <p className='text-muted-foreground text-sm'>No photos yet. Be the first to add one!</p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -197,9 +200,9 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         <Separator className="my-4"/>
 
                         <CardContent>
-                             <h3 className="font-semibold text-center mb-4">{event.attendees.length} people are going</h3>
+                             <h3 className="font-semibold text-center mb-4">{event.attendees ? event.attendees.length : 0} people are going</h3>
                              <div className="flex justify-center -space-x-2">
-                                {event.attendees.map(friend => (
+                                {event.attendees && event.attendees.map(friend => (
                                     <Link key={friend.username} href={`/profile/${friend.username}`}>
                                         <Avatar className="h-12 w-12 border-2 border-background hover:ring-2 hover:ring-primary transition-all">
                                             <AvatarImage src={friend.avatar} alt={friend.name} data-ai-hint={friend.hint}/>
