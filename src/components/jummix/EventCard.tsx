@@ -69,7 +69,7 @@ export function EventCard({ event }: EventCardProps) {
         <CardHeader className="p-0 relative">
             <Image
             src={event.image || 'https://placehold.co/400x200.png'}
-            alt={event.name}
+            alt={event.name || 'Event image'}
             width={400}
             height={200}
             data-ai-hint={event.hint}
