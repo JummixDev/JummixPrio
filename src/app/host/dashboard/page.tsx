@@ -303,6 +303,14 @@ export function Ticketing() {
 }
 
 export function StoryManagement() {
+  const { toast } = useToast();
+  const handleBoostEvent = () => {
+    toast({
+        title: "Feature in Kürze verfügbar",
+        description: "Die Möglichkeit, Events zu bewerben, wird bald implementiert.",
+    })
+  }
+
   return (
     <Card>
         <CardHeader>
@@ -329,7 +337,7 @@ export function StoryManagement() {
             <Card className="bg-gradient-to-br from-primary/20 to-secondary/50 flex flex-col items-center justify-center p-6 text-center">
                 <h3 className="font-bold mb-2 flex items-center gap-2"><Zap className="text-primary"/> Promote an Event</h3>
                 <p className="text-muted-foreground text-sm mb-4">Feature your event in the main story feed to maximize visibility and ticket sales.</p>
-                <Button className="bg-primary/90 hover:bg-primary">
+                <Button onClick={handleBoostEvent} className="bg-primary/90 hover:bg-primary">
                     <Zap className="mr-2"/> Boost an Event
                 </Button>
             </Card>
