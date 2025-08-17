@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Award, ShieldCheck, Star, Trophy, Zap } from "lucide-react";
+import { Award, ShieldCheck, Star, Trophy, Zap, ArrowUpRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 const badges = [
   { icon: <Trophy className="w-8 h-8 text-yellow-500" />, name: "Top Contributor" },
@@ -14,8 +16,13 @@ const badges = [
 export function Badges() {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="font-headline">My Badges</CardTitle>
+         <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
+            <Link href="/profile/me">
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <TooltipProvider>

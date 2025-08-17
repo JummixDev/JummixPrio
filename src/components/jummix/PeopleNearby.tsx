@@ -4,7 +4,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
-import { Users } from "lucide-react";
+import { ArrowUpRight, Users } from "lucide-react";
+import { Button } from "../ui/button";
 
 const mockUsers = [
   { name: "Carlos Ray", username: "carlosray", avatar: "https://placehold.co/100x100.png", hint: "man portrait" },
@@ -17,9 +18,16 @@ const mockUsers = [
 export function PeopleNearby() {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="font-headline flex items-center gap-2"><Users /> People Nearby</CardTitle>
-        <CardDescription>Discover new people in your area.</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle className="font-headline flex items-center gap-2"><Users /> People Nearby</CardTitle>
+            <CardDescription>Discover new people in your area.</CardDescription>
+        </div>
+         <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
+            <Link href="/friends">
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-4 overflow-x-auto pb-4">

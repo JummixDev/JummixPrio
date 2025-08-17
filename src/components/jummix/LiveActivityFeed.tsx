@@ -47,9 +47,16 @@ const activities = [
 export function LiveActivityFeed() {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="font-headline">My Activities</CardTitle>
-        <CardDescription>Recent activities from you and your friends.</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle className="font-headline">My Activities</CardTitle>
+            <CardDescription>Recent activities from you and your friends.</CardDescription>
+        </div>
+        <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
+            <Link href="/profile/me">
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <ul className="space-y-6">

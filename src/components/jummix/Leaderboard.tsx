@@ -26,10 +26,15 @@ export function Leaderboard() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="font-headline flex items-center gap-2">
             <Trophy className="text-primary" /> Leaderboard
         </CardTitle>
+        <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
+            <Link href="/friends">
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">

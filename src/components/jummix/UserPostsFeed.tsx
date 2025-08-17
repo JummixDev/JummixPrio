@@ -2,8 +2,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { Heart, MessageCircle } from "lucide-react";
+import { ArrowUpRight, Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const mockPost = {
     user: {
@@ -25,9 +26,16 @@ const mockPost = {
 export function UserPostsFeed() {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="font-headline">Community Feed</CardTitle>
-        <CardDescription>See what's happening in your community.</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle className="font-headline">Community Feed</CardTitle>
+            <CardDescription>See what's happening in your community.</CardDescription>
+        </div>
+         <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
+            <Link href="/feed">
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <Card>

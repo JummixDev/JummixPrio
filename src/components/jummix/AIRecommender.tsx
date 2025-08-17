@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Wand2, Loader2, Sparkles } from "lucide-react";
+import { Wand2, Loader2, Sparkles, ArrowUpRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 const formSchema = z.object({
   userInterests: z.string().min(3, "Please list at least one interest."),
@@ -63,13 +64,19 @@ export function AIRecommender() {
     <Card>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-                <CardHeader>
-                    <CardTitle className="font-headline flex items-center gap-2">
-                        <Wand2 className="text-primary" /> AI Event Recommendations
-                    </CardTitle>
-                    <CardDescription>
-                        Tell us about yourself and we'll suggest events you'll love.
-                    </CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Wand2 className="text-primary" />
+                        <div>
+                            <CardTitle className="font-headline">AI Recommendations</CardTitle>
+                            <CardDescription>Get personalized suggestions.</CardDescription>
+                        </div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
+                        <Link href="/explore">
+                            <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+                        </Link>
+                    </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <FormField
@@ -80,19 +87,6 @@ export function AIRecommender() {
                                 <FormLabel>Interests (comma-separated)</FormLabel>
                                 <FormControl>
                                     <Input placeholder="e.g. indie rock, pottery, coding" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="location"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Your Location (Optional)</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="e.g. Brooklyn, NY" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

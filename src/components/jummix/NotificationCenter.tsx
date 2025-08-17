@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Bell, CalendarCheck, MessageSquare, UserPlus } from "lucide-react";
+import { ArrowUpRight, Bell, CalendarCheck, MessageSquare, UserPlus } from "lucide-react";
 import Link from "next/link";
 
 const notifications = [
@@ -38,11 +38,19 @@ const notifications = [
 export function NotificationCenter() {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="font-headline flex items-center gap-2">
-            <Bell className="text-primary"/> Notifications
-        </CardTitle>
-        <CardDescription>Recent updates and mentions.</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex items-center gap-2">
+            <Bell className="text-primary"/>
+            <div>
+                <CardTitle className="font-headline">Notifications</CardTitle>
+                <CardDescription>Recent updates and mentions.</CardDescription>
+            </div>
+        </div>
+         <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
+            <Link href="/notifications">
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">
