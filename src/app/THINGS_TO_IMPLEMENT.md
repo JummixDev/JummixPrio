@@ -49,11 +49,15 @@ Diese Datei listet die wichtigsten Funktionen auf, die als Nächstes implementie
       - **<del>Browser-Geolocation-API nutzen:</del>** <del>Der Nutzer wird erfolgreich um die Freigabe seines Standorts gebeten.</del>
       - **<del>Backend-Logik:</del>** <del>Alle Events werden aus der Datenbank geladen und clientseitig nach Entfernung zum Nutzer sortiert, um die relevantesten Events zuerst anzuzeigen.</del>
 
-- **8. Benachrichtigungssystem (UI erledigt)**
-  - **Problem:** Benachrichtigungen werden nur simuliert.
+- **8. Benachrichtigungssystem (Backend-Implementierung ausstehend)**
+  - **Problem:** Benachrichtigungen werden nur simuliert und nicht serverseitig ausgelöst.
   - **Lösung (Frontend erledigt):**
       - Die Benutzeroberfläche für Benachrichtigungen ist vorhanden.
-      - **Noch offen (Backend):** Integration von **Firebase Cloud Messaging (FCM)** und Implementierung der serverseitigen Logik, die bei bestimmten Aktionen (z.B. Erhalt einer neuen Nachricht) eine Benachrichtigung auslöst und versendet.
+      - **Noch offen (Backend):** 
+        - **Firebase Cloud Messaging (FCM) integrieren:** Einrichten und Konfigurieren von FCM im Firebase-Projekt.
+        - **Cloud Functions Trigger implementieren:** Eine serverseitige Funktion (z.B. in `functions/src/index.ts`) erstellen, die bei relevanten Ereignissen ausgelöst wird.
+        - **Beispiel-Trigger:** Eine `onWrite`-Funktion für die `chats/{chatId}/messages/{messageId}`-Collection. Wenn eine neue Nachricht geschrieben wird, soll die Funktion den Empfänger identifizieren, dessen FCM-Token aus der `users`-Collection abrufen und eine Benachrichtigung über FCM an dessen Gerät senden.
+        - **Payload definieren:** Die Benachrichtigung sollte relevante Informationen enthalten, z.B. den Namen des Absenders und den Nachrichtentext.
 
 </details>
 
