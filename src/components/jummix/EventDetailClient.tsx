@@ -201,32 +201,37 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
 
                         <CardContent>
                              <h3 className="font-semibold text-center mb-4">{event.attendees ? event.attendees.length : 0} people are going</h3>
-                             <div className="flex justify-center -space-x-2">
-                                {event.attendees && event.attendees.map(friend => (
-                                    <Link key={friend.username} href={`/profile/${friend.username}`}>
-                                        <Avatar className="h-12 w-12 border-2 border-background hover:ring-2 hover:ring-primary transition-all">
-                                            <AvatarImage src={friend.avatar} alt={friend.name} data-ai-hint={friend.hint}/>
-                                            <AvatarFallback>{friend.name.substring(0,1)}</AvatarFallback>
-                                        </Avatar>
-                                    </Link>
-                                ))}
-                            </div>
+                             {event.attendees && event.attendees.length > 0 && (
+                                <div className="flex justify-center -space-x-2">
+                                    {event.attendees.map(friend => (
+                                        <Link key={friend.username} href={`/profile/${friend.username}`}>
+                                            <Avatar className="h-12 w-12 border-2 border-background hover:ring-2 hover:ring-primary transition-all">
+                                                <AvatarImage src={friend.avatar} alt={friend.name} data-ai-hint={friend.hint}/>
+                                                <AvatarFallback>{friend.name.substring(0,1)}</AvatarFallback>
+                                            </Avatar>
+                                        </Link>
+                                    ))}
+                                </div>
+                             )}
                         </CardContent>
 
-                         <Separator className="my-4"/>
-
-                         <CardContent>
-                            <Link href={`/profile/${event.organizer.username}`} className="flex items-center gap-4 group">
-                                <Avatar className="w-12 h-12">
-                                    <AvatarImage src={event.organizer.avatar} data-ai-hint={event.organizer.hint} />
-                                    <AvatarFallback>{event.organizer.name.substring(0,2)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Organized by</p>
-                                    <p className="font-bold group-hover:underline group-hover:text-primary transition-colors">{event.organizer.name}</p>
-                                </div>
-                            </Link>
-                         </CardContent>
+                        {event.organizer && (
+                            <>
+                            <Separator className="my-4"/>
+                            <CardContent>
+                                <Link href={`/profile/${event.organizer.username}`} className="flex items-center gap-4 group">
+                                    <Avatar className="w-12 h-12">
+                                        <AvatarImage src={event.organizer.avatar} data-ai-hint={event.organizer.hint} />
+                                        <AvatarFallback>{event.organizer.name.substring(0,2)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Organized by</p>
+                                        <p className="font-bold group-hover:underline group-hover:text-primary transition-colors">{event.organizer.name}</p>
+                                    </div>
+                                </Link>
+                            </CardContent>
+                            </>
+                        )}
                     </Card>
                 </div>
             </div>
@@ -234,3 +239,4 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
+
