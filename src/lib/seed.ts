@@ -15,8 +15,20 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Helper function to get a date in the future
-const futureDate = (days: number) => new Date(new Date().setDate(new Date().getDate() + days));
-const pastDate = (days: number) => new Date(new Date().setDate(new Date().getDate() - days));
+const futureDate = (days: number, time: string) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    const [hours, minutes] = time.split(':');
+    date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    return date;
+};
+const pastDate = (days: number, time: string) => {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    const [hours, minutes] = time.split(':');
+    date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    return date;
+};
 
 const users = [
     { 
@@ -48,7 +60,7 @@ const users = [
         displayName: 'Alex Doe', 
         photoURL: 'https://placehold.co/128x128.png', 
         photoHint: 'person portrait',
-        isVerifiedHost: false,
+        isVerifiedHost: true,
         bio: 'Art student and gallery explorer. Always looking for the next inspiration.',
         interests: ['Art', 'Design', 'Photography'],
     },
@@ -90,42 +102,42 @@ const users = [
 const events = [
     {
         id: "summer-music-fest",
-        name: "Summer Music Fest",
-        date: futureDate(30).toISOString().split('T')[0],
-        location: "Lakeside Park",
-        description: "An unforgettable weekend of live music under the stars. Featuring top indie bands, food trucks, and art installations. Don't miss the biggest music event of the summer!",
-        price: 75,
+        name: "Summer Music Fest 2024",
+        date: futureDate(30, '18:00').toISOString(),
+        location: "Golden Gate Park, San Francisco, CA",
+        description: "An unforgettable weekend of live music under the stars, kicking off at 6:00 PM. Featuring top indie bands like 'The Wandering Echoes', a variety of gourmet food trucks, and mesmerizing art installations. Your perfect summer escape!",
+        price: 75.00,
         image: "https://placehold.co/600x400.png",
         hint: "concert crowd",
         hostUid: users[0].uid, // Carlos Ray
-        attendeeUids: [users[1].uid, users[2].uid], // Jenna, Alex
+        attendeeUids: [users[1].uid, users[2].uid, users[4].uid], // Jenna, Alex, David
         gallery: [
             { src: 'https://placehold.co/600x400.png', hint: 'band on stage' },
             { src: 'https://placehold.co/600x400.png', hint: 'festival lights' },
         ],
-        lat: 37.7749, lon: -122.4194 // San Francisco
+        lat: 37.7694, lon: -122.4862
     },
     {
         id: "tech-innovators-summit",
         name: "Tech Innovators Summit",
-        date: futureDate(45).toISOString().split('T')[0],
-        location: "Convention Center",
-        description: "Join the brightest minds in tech for a day of inspiring talks, hands-on workshops, and networking. Discover the future of AI, blockchain, and sustainable tech.",
+        date: futureDate(45, '09:00').toISOString(),
+        location: "Moscone Center, San Francisco, CA",
+        description: "Join the brightest minds in tech for a full day of inspiring talks, starting at 9:00 AM. Keynotes from industry leaders on AI, blockchain, and sustainable tech. Includes hands-on workshops and extensive networking opportunities.",
         price: 0,
         image: "https://placehold.co/600x400.png",
         hint: "conference speaker",
         hostUid: users[0].uid, // Carlos Ray
         attendeeUids: [users[3].uid], // Aisha
         gallery: [],
-        lat: 37.8044, lon: -122.2712 // Oakland
+        lat: 37.7841, lon: -122.4012
     },
     {
         id: "downtown-art-walk",
         name: "Downtown Art Walk",
-        date: pastDate(10).toISOString().split('T')[0],
-        location: "Arts District",
-        description: "Explore the vibrant art scene of our city. Galleries open their doors for a night of art, music, and community. A perfect evening for art lovers.",
-        price: 0,
+        date: pastDate(10, '19:00').toISOString(),
+        location: "The Mission District, San Francisco, CA",
+        description: "Explore the vibrant art scene of the city. Starting at 7:00 PM, local galleries open their doors for a special night of exhibitions, live music, and community engagement. A perfect evening for art lovers and creators.",
+        price: 15.00,
         image: "https://placehold.co/600x400.png",
         hint: "art gallery",
         hostUid: users[2].uid, // Alex Doe
@@ -135,21 +147,21 @@ const events = [
              { src: 'https://placehold.co/600x400.png', hint: 'people looking at art' },
              { src: 'https://placehold.co/600x400.png', hint: 'sculpture' },
         ],
-        lat: 34.0522, lon: -118.2437 // Los Angeles
+        lat: 37.7599, lon: -122.4148
     },
     {
         id: "culinary-workshop",
         name: "Culinary Workshop: Pasta Making",
-        date: futureDate(7).toISOString().split('T')[0],
-        location: "The Epicurean Hub",
-        description: "Learn the art of fresh pasta from scratch with renowned chef Aisha Khan. This hands-on workshop will teach you everything from dough to delicious sauces.",
-        price: 50,
+        date: futureDate(7, '17:30').toISOString(),
+        location: "1 Ferry Building, San Francisco, CA",
+        description: "Learn the art of fresh pasta from scratch with renowned chef Aisha Khan. This intimate, hands-on workshop starts at 5:30 PM and will teach you everything from making the perfect dough to crafting delicious, classic Italian sauces.",
+        price: 50.00,
         image: "https://placehold.co/600x400.png",
         hint: "pasta making class",
         hostUid: users[3].uid, // Aisha Khan
-        attendeeUids: [users[0].uid, users[1].uid], // Carlos, Jenna
+        attendeeUids: [users[0].uid, users[1].uid, users[2].uid], // Carlos, Jenna, Alex
         gallery: [],
-        lat: 40.7128, lon: -74.0060 // New York
+        lat: 37.7955, lon: -122.3937
     },
 ];
 
