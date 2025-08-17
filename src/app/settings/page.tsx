@@ -30,6 +30,10 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getMessaging, getToken } from 'firebase/messaging';
+import { app } from '@/lib/firebase';
+import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 
 function ProfileSettings() {
@@ -252,6 +256,7 @@ function PrivacySettings() {
 }
 
 function NotificationSettings() {
+    const { user } = useAuth();
     const { toast } = useToast();
     const [notifications, setNotifications] = useState({
         friendRequest: { email: false, push: true },
@@ -283,46 +288,49 @@ function NotificationSettings() {
     };
 
     const handleGlobalPushToggle = async (checked: boolean) => {
-        if (!("Notification" in window)) {
-            toast({ variant: "destructive", title: "Unsupported Browser", description: "This browser does not support push notifications." });
+        if (typeof window === 'undefined' || !("Notification" in window) || !user) {
+            toast({ variant: "destructive", title: "Unsupported", description: "This browser does not support push notifications or you are not logged in." });
             return;
         }
 
-        // If the user is trying to enable notifications
         if (checked) {
-            // Check if permission is already denied
             if (Notification.permission === "denied") {
-                 toast({ 
-                    variant: "destructive", 
-                    title: "Permission Denied", 
-                    description: "You have previously blocked notifications. Please enable them in your browser settings." 
-                });
+                 toast({ variant: "destructive", title: "Permission Denied", description: "You have previously blocked notifications. Please enable them in your browser settings." });
                 return;
             }
             
-            // Request permission
             const permission = await Notification.requestPermission();
 
             if (permission === 'granted') {
-                setGlobalPushEnabled(true);
-                toast({ title: "Push Notifications Enabled", description: "You will now receive push notifications." });
-                // --- BACKEND-LOGIC REQUIRED ---
-                // 1. Get the FCM token for this device.
-                //    e.g., const token = await getFCMToken();
-                // 2. Save this token to Firestore under the current user's document.
-                //    e.g., await saveTokenToDB(token);
-                // -----------------------------
+                try {
+                    const messaging = getMessaging(app);
+                    // IMPORTANT: Replace with your actual VAPID key from Firebase Console
+                    const VAPID_KEY = "YOUR_VAPID_KEY_FROM_FIREBASE_CONSOLE"; 
+                    const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+                    
+                    if (currentToken) {
+                        console.log('FCM Token:', currentToken);
+                        const userDocRef = doc(db, 'users', user.uid);
+                        // Using arrayUnion to avoid duplicate tokens
+                        await updateDoc(userDocRef, {
+                            fcmTokens: arrayUnion(currentToken)
+                        });
+                        setGlobalPushEnabled(true);
+                        toast({ title: "Push Notifications Enabled", description: "You will now receive push notifications." });
+                    } else {
+                        console.log('No registration token available. Request permission to generate one.');
+                         setGlobalPushEnabled(false);
+                        toast({ variant: "destructive", title: "Could not get token", description: "Failed to retrieve notification token." });
+                    }
+                } catch(err) {
+                    console.error('An error occurred while retrieving token. ', err);
+                    toast({ variant: "destructive", title: "Token Error", description: "An error occurred while retrieving the notification token." });
+                }
             } else {
                 setGlobalPushEnabled(false);
-                toast({ 
-                    variant: "destructive", 
-                    title: "Permission Not Granted", 
-                    description: "You have not granted permission for notifications." 
-                });
+                toast({ variant: "destructive", title: "Permission Not Granted", description: "You have not granted permission for notifications." });
             }
         } else {
-            // If the user is disabling notifications, we just update the state.
-            // In a real app, you might want to remove the FCM token from the DB.
             setGlobalPushEnabled(false);
             toast({ title: "Push Notifications Disabled", description: "You will no longer receive push notifications on this device." });
         }
