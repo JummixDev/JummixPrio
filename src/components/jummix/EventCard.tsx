@@ -68,7 +68,7 @@ export function EventCard({ event }: EventCardProps) {
         <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 h-full flex flex-col">
         <CardHeader className="p-0 relative">
             <Image
-            src={event.image}
+            src={event.image || 'https://placehold.co/400x200.png'}
             alt={event.name}
             width={400}
             height={200}
