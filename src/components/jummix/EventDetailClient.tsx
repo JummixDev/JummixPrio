@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Card,
@@ -31,7 +31,7 @@ import Link from 'next/link';
 import { EventCard } from './EventCard';
 import { Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
-import { createCheckoutSession } from '@/app/actions';
+import { createCheckoutSession, toggleEventInteraction } from '@/app/actions';
 
 type Event = {
     id: string;
@@ -65,22 +65,68 @@ const formatDate = (date: Timestamp | string) => {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
-        timeZone: 'UTC',
     });
 }
 
 
 export function EventDetailClient({ event }: EventDetailClientProps) {
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const { toast } = useToast();
     const [isAttending, setIsAttending] = React.useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    
+    useEffect(() => {
+        if (userData) {
+          setIsLiked(userData.likedEvents?.includes(event.id));
+          setIsSaved(userData.savedEvents?.includes(event.id));
+        }
+    }, [userData, event.id]);
 
-    const handleActionClick = (action: string) => {
-        toast({
-            title: `${action}!`,
-            description: `You've ${action.toLowerCase().slice(0,-1)}ed ${event.name}.`,
-        });
+
+    const handleInteraction = async (type: 'liked' | 'saved') => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Please sign in', description: 'You must be logged in to interact with events.' });
+            return;
+        }
+        
+        const result = await toggleEventInteraction(user.uid, event.id, type);
+
+        if (result.success) {
+            const actionVerb = type === 'liked' ? 'Liked' : 'Saved';
+            const pastTenseVerb = type === 'liked' ? 'liked' : 'saved';
+            
+            if (type === 'liked') setIsLiked(result.newState);
+            if (type === 'saved') setIsSaved(result.newState);
+
+            toast({
+                title: `Event ${result.newState ? actionVerb : 'Un' + pastTenseVerb}!`,
+                description: `You've ${result.newState ? '' : 'un'}${pastTenseVerb} ${event.name}.`,
+            });
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: result.error });
+        }
+    };
+    
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: event.name,
+                    text: `Check out this event: ${event.name}`,
+                    url: window.location.href,
+                });
+                toast({ title: "Shared successfully!" });
+            } catch (error) {
+                console.error('Error sharing:', error);
+                toast({ variant: "destructive", title: "Could not share", description: "Something went wrong while trying to share."});
+            }
+        } else {
+            // Fallback for browsers that don't support the Web Share API
+            navigator.clipboard.writeText(window.location.href);
+            toast({ title: "Link Copied!", description: "The event link has been copied to your clipboard." });
+        }
     };
 
     const handleAttendClick = async () => {
@@ -203,13 +249,13 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                      <Card>
                         <CardContent className="p-4">
                             <div className="flex justify-around">
-                                <Button variant="ghost" onClick={() => handleActionClick('Liked')} className="transition-transform active:scale-90">
+                                <Button variant="ghost" onClick={() => handleInteraction('liked')} className={`transition-transform active:scale-90 ${isLiked ? 'text-red-500' : ''}`}>
                                     <Heart className="mr-2" /> Like
                                 </Button>
-                                <Button variant="ghost" onClick={() => handleActionClick('Saved')} className="transition-transform active:scale-90">
+                                <Button variant="ghost" onClick={() => handleInteraction('saved')} className={`transition-transform active:scale-90 ${isSaved ? 'text-blue-500' : ''}`}>
                                     <Bookmark className="mr-2" /> Save
                                 </Button>
-                                <Button variant="ghost" onClick={() => handleActionClick('Shared')} className="transition-transform active:scale-90">
+                                <Button variant="ghost" onClick={handleShare} className="transition-transform active:scale-90">
                                     <Share2 className="mr-2" /> Share
                                 </Button>
                             </div>
@@ -288,5 +334,3 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
-
-    
