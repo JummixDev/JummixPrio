@@ -16,6 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetClose,
 } from "@/components/ui/sheet"
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -26,15 +27,17 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalSearch } from '@/components/jummix/GlobalSearch';
 import { useRouter } from 'next/navigation';
+import { Separator } from '@/components/ui/separator';
 
 
 const categories = ["Music", "Sports", "Art", "Tech", "Food", "Outdoors", "Comedy", "Workshops"];
+const interests = ["Reading", "Gaming", "Yoga", "Coding", "Dancing", "Politics"];
 
-type SortOption = 'relevance' | 'date' | 'popularity' | 'price';
+type SortOption = 'relevance' | 'newest' | 'popularity' | 'date_asc' | 'date_desc' | 'rating' | 'price_asc' | 'price_desc' | 'distance';
 type DateFilter = 'all' | 'today' | 'weekend' | 'month';
 type Event = {
   id: string;
-  [key: string]: any;
+  [key:string]: any;
 };
 
 export default function ExplorePage() {
@@ -91,14 +94,21 @@ export default function ExplorePage() {
 
     // Sort events
     switch (sortBy) {
-      case 'date':
+      case 'date_asc':
         filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        break;
+      case 'date_desc':
+      case 'newest':
+        filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         break;
       case 'popularity':
         filtered.sort((a, b) => (b.attendees?.length || 0) - (a.attendees?.length || 0));
         break;
-      case 'price':
+      case 'price_asc':
         filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price_desc':
+        filtered.sort((a, b) => b.price - a.price);
         break;
       case 'relevance':
       default:
@@ -133,67 +143,71 @@ export default function ExplorePage() {
                         Filters
                     </Button>
                 </SheetTrigger>
-                <SheetContent>
+                <SheetContent className="flex flex-col">
                     <SheetHeader>
-                        <SheetTitle>Filter Events</SheetTitle>
+                        <SheetTitle>Filter & Sort Events</SheetTitle>
                         <SheetDescription>
                             Refine your search to find the perfect event.
                         </SheetDescription>
                     </SheetHeader>
-                    <div className="py-4 space-y-6">
+                    <div className="py-4 space-y-6 overflow-y-auto flex-grow pr-6">
+                        {/* Sort by */}
                         <div className="space-y-4">
                             <Label className="font-semibold">Sort by</Label>
                              <RadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="relevance" id="r1" />
-                                    <Label htmlFor="r1">Relevance</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="date" id="r2" />
-                                    <Label htmlFor="r2">Date</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="popularity" id="r3" />
-                                    <Label htmlFor="r3">Popularity</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="price" id="r4" />
-                                    <Label htmlFor="r4">Price</Label>
-                                </div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="s1" /><Label htmlFor="s1">Relevance</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="newest" id="s2" /><Label htmlFor="s2">Newest First</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="popularity" id="s3" /><Label htmlFor="s3">Popularity</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="rating" id="s4" /><Label htmlFor="s4">Best Rating</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="distance" id="s5" /><Label htmlFor="s5">Distance</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="date_asc" id="s6" /><Label htmlFor="s6">Date (Ascending)</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="date_desc" id="s7" /><Label htmlFor="s7">Date (Descending)</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="price_asc" id="s8" /><Label htmlFor="s8">Price (Ascending)</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="price_desc" id="s9" /><Label htmlFor="s9">Price (Descending)</Label></div>
                              </RadioGroup>
                         </div>
-                        <div className="space-y-4">
-                            <Label className="font-semibold">Price</Label>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/>
-                                <Label htmlFor="price-free">Free</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} />
-                                <Label htmlFor="price-paid">Paid</Label>
-                            </div>
-                        </div>
+                        <Separator />
+                        {/* Date */}
                          <div className="space-y-4">
                             <Label className="font-semibold">Date</Label>
                              <RadioGroup value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="all" id="d1" />
-                                    <Label htmlFor="d1">Anytime</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="today" id="d2" />
-                                    <Label htmlFor="d2">Today</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="weekend" id="d3" />
-                                    <Label htmlFor="d3">This Weekend</Label>
-                                </div>
-                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="month" id="d4" />
-                                    <Label htmlFor="d4">This Month</Label>
-                                </div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="d1" /><Label htmlFor="d1">Anytime</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="today" id="d2" /><Label htmlFor="d2">Today</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="weekend" id="d3" /><Label htmlFor="d3">This Weekend</Label></div>
+                                 <div className="flex items-center space-x-2"><RadioGroupItem value="month" id="d4" /><Label htmlFor="d4">This Month</Label></div>
                              </RadioGroup>
                         </div>
+                        <Separator />
+                        {/* Price */}
+                        <div className="space-y-4">
+                            <Label className="font-semibold">Price</Label>
+                            <div className="flex items-center space-x-2"><Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/><Label htmlFor="price-free">Free</Label></div>
+                            <div className="flex items-center space-x-2"><Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} /><Label htmlFor="price-paid">Paid</Label></div>
+                        </div>
+                        <Separator />
+                         {/* Other Filters */}
+                        <div className="space-y-4">
+                            <Label className="font-semibold">Other Filters</Label>
+                             <div className="flex items-center space-x-2"><Checkbox id="woman-only"/><Label htmlFor="woman-only">Woman Only</Label></div>
+                        </div>
+                        <Separator />
+                         {/* Interests */}
+                        <div className="space-y-4">
+                            <Label className="font-semibold">Interests & Topics</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {interests.map(interest => (
+                                     <div key={interest} className="flex items-center space-x-2">
+                                        <Checkbox id={`interest-${interest}`} />
+                                        <Label htmlFor={`interest-${interest}`}>{interest}</Label>
+                                     </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-4 border-t">
+                        <SheetClose asChild>
+                            <Button className="w-full">Apply Filters</Button>
+                        </SheetClose>
                     </div>
                 </SheetContent>
               </Sheet>
