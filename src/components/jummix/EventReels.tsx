@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -33,16 +33,17 @@ export function EventReels() {
     <Card>
         <CardHeader>
             <CardTitle className="font-headline">Event Stories</CardTitle>
-            <CardDescription>Exklusive Highlights von verifizierten Hosts. Bewirb dein Event hier!</CardDescription>
+            <CardDescription>Exclusive highlights from verified hosts. Promote your event here!</CardDescription>
         </CardHeader>
         <CardContent>
             <div className="flex items-center gap-4 overflow-x-auto pb-4">
                  {(isVerifiedHost || isAdmin) && (
-                    <Link href="/story/create" className="flex flex-col items-center gap-2 cursor-pointer text-primary hover:text-primary/80">
+                    <Link href="/story/create" className="flex flex-col items-center gap-2 cursor-pointer text-center text-primary hover:text-primary/80 w-20 flex-shrink-0">
                         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-dashed border-primary">
                             <PlusCircle className="w-8 h-8" />
                         </div>
                         <span className="text-xs font-semibold">Add Story</span>
+                        <p className="text-xs text-muted-foreground -mt-1">Promote your event to thousands of users.</p>
                     </Link>
                 )}
                 {mockReels.map((reel, index) => (
@@ -62,5 +63,3 @@ export function EventReels() {
     </Card>
   );
 }
-
-    
