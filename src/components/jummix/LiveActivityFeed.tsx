@@ -1,7 +1,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowUpRight, CalendarCheck, Share2, UserPlus } from "lucide-react";
 import Link from "next/link";
 
@@ -47,13 +47,9 @@ const activities = [
 export function LiveActivityFeed() {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader>
         <CardTitle className="font-headline">My Activities</CardTitle>
-        <Button variant="ghost" size="icon" className="w-8 h-8 group" asChild>
-            <Link href="/profile/me">
-                <ArrowUpRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-transform group-hover:scale-110"/>
-            </Link>
-        </Button>
+        <CardDescription>Recent activities from you and your friends.</CardDescription>
       </CardHeader>
       <CardContent>
         <ul className="space-y-6">
