@@ -4,7 +4,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { EventCard } from '@/components/jummix/EventCard';
 import { Footer } from '@/components/jummix/Footer';
@@ -25,6 +25,7 @@ import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalSearch } from '@/components/jummix/GlobalSearch';
+import { useRouter } from 'next/navigation';
 
 
 const categories = ["Music", "Sports", "Art", "Tech", "Food", "Outdoors", "Comedy", "Workshops"];
@@ -44,6 +45,7 @@ export default function ExplorePage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchEvents() {
@@ -198,9 +200,15 @@ export default function ExplorePage() {
           </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
-        <div className="mb-8">
-            <h1 className="text-3xl font-bold font-headline mb-2">Discover Events</h1>
-            <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
+        <div className="flex justify-between items-center mb-8">
+            <div>
+                <h1 className="text-3xl font-bold font-headline mb-2">Discover Events</h1>
+                <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
+            </div>
+            <Button onClick={() => router.push('/friends')}>
+                <Users className="mr-2 h-4 w-4" />
+                Zu Freunden
+            </Button>
         </div>
         
         <div className="mb-8">
