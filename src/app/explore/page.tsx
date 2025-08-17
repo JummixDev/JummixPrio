@@ -44,12 +44,12 @@ type Event = {
 const EventTile = ({ event }: { event: Event }) => (
     <Link href={`/event/${event.id}`} className="block group relative aspect-square overflow-hidden rounded-lg">
         <Image 
-            src={event.image} 
+            src={event.image || 'https://placehold.co/600x400.png'} 
             alt={event.name} 
             layout="fill" 
             objectFit="cover" 
             className="transition-transform duration-300 ease-in-out group-hover:scale-110"
-            data-ai-hint={event.hint}
+            data-ai-hint={event.hint || 'event photo'}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="absolute bottom-0 left-0 p-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
