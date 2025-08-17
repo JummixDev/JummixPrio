@@ -28,6 +28,8 @@ import { GlobalSearch } from '@/components/jummix/GlobalSearch';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
+import FriendsPageContent from '../friends/page';
+import { cn } from '@/lib/utils';
 
 
 const categories = ["Music", "Sports", "Art", "Tech", "Food", "Outdoors", "Comedy", "Workshops"];
@@ -44,7 +46,7 @@ const EventTile = ({ event }: { event: Event }) => (
     <Link href={`/event/${event.id}`} className="block group relative aspect-square overflow-hidden rounded-lg">
         <Image 
             src={event.image || 'https://placehold.co/600x400.png'} 
-            alt={event.name || 'Event image'} 
+            alt={event.name || 'Event image'}
             layout="fill" 
             objectFit="cover" 
             className="transition-transform duration-300 ease-in-out group-hover:scale-110"
@@ -66,7 +68,7 @@ export default function ExplorePage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const router = useRouter();
+  const [view, setView] = useState<'explore' | 'friends'>('explore');
 
   useEffect(() => {
     async function fetchEvents() {
@@ -144,10 +146,10 @@ export default function ExplorePage() {
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
-      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16 gap-4">
-              <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
-                  <Link href="/dashboard">
+              <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex" onClick={() => view === 'friends' ? setView('explore') : null}>
+                   <Link href={view === 'explore' ? "/dashboard" : '#'}>
                       <ArrowLeft />
                   </Link>
               </Button>
@@ -231,34 +233,38 @@ export default function ExplorePage() {
               </Sheet>
           </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
-        <div className="flex justify-between items-center mb-8">
-            <div>
-                <h1 className="text-3xl font-bold font-headline mb-2">Discover Events</h1>
-                <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
+       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden">
+        <div className={cn("transition-transform duration-500 ease-in-out", view === 'friends' && '-translate-x-full')}>
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold font-headline mb-2">Discover Events</h1>
+                    <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
+                </div>
+                <Button onClick={() => setView('friends')}>
+                    <Users className="mr-2 h-4 w-4" />
+                    Zu Freunden
+                </Button>
             </div>
-            <Button onClick={() => router.push('/friends')}>
-                <Users className="mr-2 h-4 w-4" />
-                Zu Freunden
-            </Button>
+            
+            {loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                        <Skeleton key={i} className="h-auto aspect-square w-full" />
+                    ))}
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {filteredAndSortedEvents.map((event) => (
+                        <EventTile key={event.id} event={event} />
+                    ))}
+                </div>
+            )}
         </div>
-        
-        {loading ? (
-             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {Array.from({ length: 10 }).map((_, i) => (
-                    <Skeleton key={i} className="h-auto aspect-square w-full" />
-                ))}
-             </div>
-        ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {filteredAndSortedEvents.map((event) => (
-                    <EventTile key={event.id} event={event} />
-                ))}
-            </div>
-        )}
+         <div className={cn("transition-transform duration-500 ease-in-out -mt-[100vh] h-full", view === 'friends' ? 'translate-x-0' : 'translate-x-full')}>
+             <FriendsPageContent />
+        </div>
       </main>
       <Footer />
     </div>
   );
 }
-

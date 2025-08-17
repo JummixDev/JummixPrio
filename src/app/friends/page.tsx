@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -116,8 +117,7 @@ const FriendList = ({ users, type, onAction, currentUserData }: { users: UserPro
     );
 };
 
-
-export default function FriendsPage() {
+export default function FriendsPageContent() {
     const { user, userData, loading: authLoading } = useAuth();
     const [followers, setFollowers] = useState<UserProfile[]>([]);
     const [following, setFollowing] = useState<UserProfile[]>([]);
@@ -198,18 +198,9 @@ export default function FriendsPage() {
     }
 
   return (
-    <div className="bg-background min-h-screen">
-      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/dashboard">
-              <ArrowLeft />
-            </Link>
-          </Button>
-          <h1 className="text-xl font-bold ml-4">Friends</h1>
-        </div>
-      </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
+    <main className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold font-headline mb-2">Freunde finden</h1>
+        <p className="text-muted-foreground mb-8">Vernetze dich mit anderen, entdecke gemeinsame Interessen und Erlebnisse.</p>
         <Card>
             <CardContent className="p-4">
                 <Tabs defaultValue="suggestions">
@@ -297,6 +288,5 @@ export default function FriendsPage() {
             </CardContent>
         </Card>
       </main>
-    </div>
   );
 }
