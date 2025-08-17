@@ -10,6 +10,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Calendar, User, MapPin } from 'lucide-react';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -120,6 +121,9 @@ export function GlobalSearch() {
         </kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
+        <DialogHeader className="sr-only">
+            <DialogTitle>Global Search</DialogTitle>
+        </DialogHeader>
         <CommandInput 
             placeholder="Type to search for events, people, or locations..."
             value={searchTerm}
