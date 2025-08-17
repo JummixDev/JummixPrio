@@ -77,8 +77,8 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     <div>
         <div className="relative w-full h-[40vh] max-h-[500px]">
             <Image
-                src={event.image}
-                alt={event.name}
+                src={event.image || 'https://placehold.co/1200x400.png'}
+                alt={event.name || 'Event banner image'}
                 layout="fill"
                 objectFit="cover"
                 data-ai-hint={event.hint}
