@@ -457,7 +457,7 @@ export default function HostDashboardPage() {
                         <TabsContent value="events"><EventManagement/></TabsContent>
                         <TabsContent value="stories"><StoryManagement /></TabsContent>
                         <TabsContent value="ticketing"><Ticketing /></TabsContent>
-                        <TabsContent value="reviews"><ReviewManagement/></Tabs_Content>
+                        <TabsContent value="reviews"><ReviewManagement/></TabsContent>
                         <TabsContent value="communication"><Communication/></TabsContent>
                         <TabsContent value="finances"><Finances/></TabsContent>
                     </Tabs>
