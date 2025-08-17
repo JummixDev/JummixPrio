@@ -1,6 +1,7 @@
 
 "use server";
 
+import "dotenv/config";
 import { personalizedEventRecommendations, PersonalizedEventRecommendationsInput } from "@/ai/flows/event-recommendations";
 import type { PersonalizedEventRecommendationsOutput } from "@/ai/flows/event-recommendations";
 import { db } from "@/lib/firebase";
