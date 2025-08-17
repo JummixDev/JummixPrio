@@ -46,11 +46,6 @@ export function NotificationCenter() {
                 <CardDescription>Recent updates and mentions.</CardDescription>
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
-            <Link href="/notifications">
-                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-            </Link>
-        </Button>
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">
