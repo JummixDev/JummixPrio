@@ -60,26 +60,13 @@ type EventDetailClientProps = {
 
 // Helper function to format date from string or Timestamp
 const formatDate = (date: Timestamp | string) => {
-    if (typeof date === 'string') {
-        // Attempt to parse ISO string, which is what we get from Firestore now
-        const d = new Date(date);
-        // Add a day to correct for timezone issues if date is just 'YYYY-MM-DD'
-        d.setUTCDate(d.getUTCDate() + 1);
-        return d.toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-            timeZone: 'UTC',
-        });
-    }
-    if (date && typeof date.toDate === 'function') {
-        return date.toDate().toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-        });
-    }
-    return 'Date not available';
+    const d = new Date(date as string);
+    return d.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC',
+    });
 }
 
 
@@ -301,3 +288,5 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
+
+    
