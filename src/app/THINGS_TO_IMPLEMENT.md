@@ -23,6 +23,24 @@ Diese Datei listet die wichtigsten Funktionen auf, die als Nächstes implementie
       - **<del>Profildaten speichern und laden:</del>** <del>Die Profil- und Einstellungsseiten lesen und schreiben Daten nun zuverlässig aus dem Firestore-Dokument des Nutzers.</del>
       - **<del>Host-Status:</del>** <del>Der `isVerifiedHost`-Status ist als Feld im Firestore-Dokument des Nutzers gespeichert und kann serverseitig überprüft werden.</del>
 
+- **<del>7. Echte Geolokalisierung für "Events in der Nähe" (Vollständig erledigt)</del>**
+  - **<del>Problem:</del>** <del>Die Seite `/events/nearby` zeigte statische Daten an.</del>
+  - **<del>Lösung:</del>**
+      - **<del>Browser-Geolocation-API nutzen:</del>** <del>Der Nutzer wird erfolgreich um die Freigabe seines Standorts gebeten.</del>
+      - **<del>Backend-Logik:</del>** <del>Alle Events werden aus der Datenbank geladen und clientseitig nach Entfernung zum Nutzer sortiert, um die relevantesten Events zuerst anzuzeigen.</del>
+
+- **<del>8. Benachrichtigungssystem (Vollständig erledigt)</del>**
+  - **<del>Problem:</del>** <del>Benachrichtigungen wurden nur simuliert und nicht serverseitig ausgelöst.</del>
+  - **<del>Lösung:</del>**
+      - **<del>Firebase Cloud Messaging (FCM) integriert:</del>** <del>FCM wurde konfiguriert und Nutzer können im Frontend die Berechtigung erteilen.</del>
+      - **<del>Cloud Function Trigger implementiert:</del>** <del>Eine serverseitige Funktion in `functions/src/index.ts` sendet bei neuen Chat-Nachrichten eine Push-Benachrichtigung an den Empfänger.</del>
+
+</details>
+
+---
+
+## 🚀 Verbleibende Implementierungen
+
 - **<del>3. Event-Management für Hosts (Vollständig erledigt)</del>**
     - **<del>Problem:</del>** <del>Hosts konnten keine Events erstellen, bearbeiten oder verwalten.</del>
     - **<del>Lösung:</del>**
@@ -43,26 +61,12 @@ Diese Datei listet die wichtigsten Funktionen auf, die als Nächstes implementie
         - **<del>Firebase Storage eingerichtet:</del>** <del>Ein Storage-Bucket wurde konfiguriert.</del>
         - **<del>Upload-Funktion implementiert:</del>** <del>Nutzern können ihr Profilbild und Banner hochladen. Die Dateien werden in Firebase Storage gespeichert und die URL im entsprechenden Firestore-Dokument hinterlegt.</del>
 
-- **<del>7. Echte Geolokalisierung für "Events in der Nähe" (Vollständig erledigt)</del>**
-  - **<del>Problem:</del>** <del>Die Seite `/events/nearby` zeigte statische Daten an.</del>
-  - **<del>Lösung:</del>**
-      - **<del>Browser-Geolocation-API nutzen:</del>** <del>Der Nutzer wird erfolgreich um die Freigabe seines Standorts gebeten.</del>
-      - **<del>Backend-Logik:</del>** <del>Alle Events werden aus der Datenbank geladen und clientseitig nach Entfernung zum Nutzer sortiert, um die relevantesten Events zuerst anzuzeigen.</del>
-
-- **<del>8. Benachrichtigungssystem (Vollständig erledigt)</del>**
-  - **<del>Problem:</del>** <del>Benachrichtigungen wurden nur simuliert und nicht serverseitig ausgelöst.</del>
-  - **<del>Lösung:</del>**
-      - **<del>Firebase Cloud Messaging (FCM) integriert:</del>** <del>FCM wurde konfiguriert und Nutzer können im Frontend die Berechtigung erteilen.</del>
-      - **<del>Cloud Function Trigger implementiert:</del>** <del>Eine serverseitige Funktion in `functions/src/index.ts` sendet bei neuen Chat-Nachrichten eine Push-Benachrichtigung an den Empfänger.</del>
-
 - **<del>4. Ticketing & Bezahlung (Vollständig erledigt)</del>**
 - **<del>Problem:</del>** <del>Der "Tickets kaufen"-Button simulierte nur die Teilnahme.</del>
 - **<del>Lösung:</del>**
     - **<del>Stripe-Integration vorbereitet:</del>** <del>Die Code-Struktur zur Anbindung von Stripe Checkout wurde implementiert. Entwickler müssen nur noch ihre geheimen API-Schlüssel eintragen.</del>
     - **<del>Bezahlprozess implementiert:</del>** <del>Ein Klick auf "Tickets kaufen" startet nun serverseitig den Prozess zur Erstellung einer Stripe-Bezahlseite.</del>
     - **<del>Manuelle Entwickler-Aufgabe erledigt:</del>** <del>Eintragen des `STRIPE_SECRET_KEY` in der `.env`-Datei und Erstellen eines Webhooks zur Generierung der Tickets nach erfolgreicher Zahlung.</del>
-
-</details>
 
 ---
 

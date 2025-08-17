@@ -45,7 +45,7 @@ export function LiveActivityFeed() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Activity Feed</CardTitle>
+        <CardTitle className="font-headline">My Activities</CardTitle>
       </CardHeader>
       <CardContent>
         <ul className="space-y-6">

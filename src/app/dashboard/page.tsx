@@ -25,6 +25,7 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalSearch } from "@/components/jummix/GlobalSearch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserPostsFeed } from "@/components/jummix/UserPostsFeed";
 
 
 type Event = {
@@ -136,6 +137,7 @@ export default function DashboardPage() {
           <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start hidden lg:block">
             <UserProfileCard />
             <Badges />
+            <Leaderboard />
           </aside>
 
           <div className="lg:col-span-6 space-y-8">
@@ -143,7 +145,7 @@ export default function DashboardPage() {
                 <GlobalSearch />
             </div>
             <EventReels />
-            <LiveActivityFeed />
+            <UserPostsFeed />
              <div>
                 <Tabs defaultValue="upcoming" className="w-full">
                   <TabsList className="grid w-full grid-cols-3 mb-4">
@@ -176,7 +178,7 @@ export default function DashboardPage() {
           </div>
 
           <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start">
-            <Leaderboard />
+            <LiveActivityFeed />
             <AIRecommender />
           </aside>
 
