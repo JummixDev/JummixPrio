@@ -20,6 +20,7 @@ export default function CreateStoryPage() {
     const { toast } = useToast();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -71,6 +72,17 @@ export default function CreateStoryPage() {
             context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
             const dataUrl = canvas.toDataURL('image/png');
             setCapturedImage(dataUrl);
+        }
+    };
+
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setCapturedImage(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
         }
     };
     
@@ -136,7 +148,13 @@ export default function CreateStoryPage() {
                          </>
                     )}
                 </div>
-
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/png, image/jpeg, image/gif"
+                    onChange={handleFileSelect}
+                />
                 {capturedImage ? (
                     <div className="mt-4 space-y-4">
                         <Textarea placeholder="Add a caption... (optional)" />
@@ -147,7 +165,9 @@ export default function CreateStoryPage() {
                     </div>
                 ) : (
                     <div className="mt-4 flex justify-between items-center">
-                        <Button variant="outline" size="icon"><Upload/></Button>
+                        <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
+                            <Upload/>
+                        </Button>
                         <Button size="icon" className="w-16 h-16 rounded-full" onClick={handleCapture} disabled={!hasCameraPermission}>
                             <Camera className="w-8 h-8"/>
                         </Button>
@@ -160,4 +180,3 @@ export default function CreateStoryPage() {
     </div>
   );
 }
-
