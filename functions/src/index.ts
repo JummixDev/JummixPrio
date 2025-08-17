@@ -22,7 +22,7 @@ const db = admin.firestore();
 functions.setGlobalOptions({maxInstances: 10});
 
 /**
- * Cloud Function to send a notification when a new message is created in a chat.
+ * Cloud Function to send a notification when a new message is created in a chat
  */
 export const sendChatNotification = onDocumentCreated("chats/{chatId}/messages/{messageId}", async (event) => {
   const snapshot = event.data;
