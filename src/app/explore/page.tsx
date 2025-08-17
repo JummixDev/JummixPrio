@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Search, SlidersHorizontal, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { EventCard } from '@/components/jummix/EventCard';
 import { Footer } from '@/components/jummix/Footer';
@@ -19,104 +19,53 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { collection, getDocs, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
-
-const exploreEvents = [
-  {
-    id: "summer-music-fest",
-    name: "Summer Music Fest",
-    date: "2024-08-15",
-    location: "Lakeside Park",
-    image: "https://placehold.co/400x200.png",
-    hint: "concert crowd",
-    price: 75,
-    isFree: false,
-    friendsAttending: [
-      { name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait" },
-      { name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses" },
-    ],
-  },
-  {
-    id: "tech-innovators-summit",
-    name: "Tech Innovators Summit",
-    date: "2024-09-05",
-    location: "Convention Center",
-    image: "https://placehold.co/400x200.png",
-    hint: "conference speaker",
-    price: 0,
-    isFree: true,
-    friendsAttending: [
-      { name: "Carlos", avatar: "https://placehold.co/40x40.png", hint: "man portrait" },
-    ],
-  },
-  {
-    id: "downtown-art-walk",
-    name: "Downtown Art Walk",
-    date: "2024-07-25",
-    location: "Arts District",
-    image: "https://placehold.co/400x200.png",
-    hint: "art gallery",
-    price: 0,
-    isFree: true,
-    friendsAttending: [],
-  },
-   {
-    id: "live-jazz-night",
-    name: "Live Jazz Night",
-    date: "2024-07-19", // A specific date for sorting
-    location: "The Blue Note Cafe",
-    image: "https://placehold.co/400x200.png",
-    hint: "jazz club",
-    price: 25,
-    isFree: false,
-    friendsAttending: [
-      { name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses" },
-    ],
-  },
-  {
-    id: "farmers-market",
-    name: "Farmer's Market",
-    date: "2024-07-20", // A specific date for sorting
-    location: "City Square",
-    image: "https://placehold.co/400x200.png",
-    hint: "market stall",
-    price: 0,
-    isFree: true,
-    friendsAttending: [
-       { name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait" },
-    ],
-  },
-  {
-    id: "outdoor-yoga",
-    name: "Outdoor Yoga Session",
-    date: "2024-07-21", // A specific date for sorting
-    location: "Lakeside Park",
-    image: "https://placehold.co/400x200.png",
-    hint: "yoga park",
-    price: 15,
-    isFree: false,
-    friendsAttending: [],
-  },
-];
 
 const categories = ["Music", "Sports", "Art", "Tech", "Food", "Outdoors", "Comedy", "Workshops"];
 
 type SortOption = 'relevance' | 'date' | 'popularity' | 'price';
 type DateFilter = 'all' | 'today' | 'weekend' | 'month';
-
+type Event = {
+  id: string;
+  [key: string]: any;
+};
 
 export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [priceFilter, setPriceFilter] = useState({ free: false, paid: false });
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchEvents() {
+        try {
+            const q = query(collection(db, "events"));
+            const querySnapshot = await getDocs(q);
+            const fetchedEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[];
+            setEvents(fetchedEvents);
+        } catch (error) {
+            console.error("Error fetching events:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch events.' });
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchEvents();
+  }, [toast]);
   
   const filteredAndSortedEvents = useMemo(() => {
-    let events = [...exploreEvents];
+    let filtered = [...events];
 
     // Filter by search term
     if (searchTerm) {
-      events = events.filter(event => 
+      filtered = filtered.filter(event => 
         event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.location.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -124,28 +73,28 @@ export default function ExplorePage() {
 
     // Filter by price
     if (priceFilter.free && !priceFilter.paid) {
-      events = events.filter(event => event.isFree);
+      filtered = filtered.filter(event => event.isFree);
     } else if (!priceFilter.free && priceFilter.paid) {
-      events = events.filter(event => !event.isFree);
+      filtered = filtered.filter(event => !event.isFree);
     } // if both are true or false, no price filter is applied
 
     // Filter by date (simplified example)
     const today = new Date();
     if (dateFilter === 'today') {
-       events = events.filter(event => new Date(event.date).toDateString() === today.toDateString());
+       filtered = filtered.filter(event => new Date(event.date).toDateString() === today.toDateString());
     }
     // Note: More complex date logic for 'weekend' and 'month' would be needed for a real app.
 
     // Sort events
     switch (sortBy) {
       case 'date':
-        events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         break;
       case 'popularity':
-        events.sort((a, b) => b.friendsAttending.length - a.friendsAttending.length);
+        filtered.sort((a, b) => (b.attendees?.length || 0) - (a.attendees?.length || 0));
         break;
       case 'price':
-        events.sort((a, b) => a.price - b.price);
+        filtered.sort((a, b) => a.price - b.price);
         break;
       case 'relevance':
       default:
@@ -153,8 +102,8 @@ export default function ExplorePage() {
         break;
     }
 
-    return events;
-  }, [searchTerm, sortBy, priceFilter, dateFilter]);
+    return filtered;
+  }, [searchTerm, sortBy, priceFilter, dateFilter, events]);
 
   const handlePriceChange = (filter: 'free' | 'paid') => {
     setPriceFilter(prev => ({ ...prev, [filter]: !prev[filter] }));
@@ -266,12 +215,19 @@ export default function ExplorePage() {
                 ))}
             </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAndSortedEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
-            ))}
-        </div>
+        {loading ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+             </div>
+        ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredAndSortedEvents.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                ))}
+            </div>
+        )}
       </main>
       <Footer />
     </div>

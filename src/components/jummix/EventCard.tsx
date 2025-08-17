@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,12 +19,14 @@ type EventCardProps = {
     location: string;
     image: string;
     hint: string;
-    friendsAttending: { name: string; avatar: string, hint: string }[];
+    // This is now coming from the DB and can be optional
+    attendees?: { name: string; avatar: string, hint: string, username: string }[];
   };
 };
 
 export function EventCard({ event }: EventCardProps) {
   const { toast } = useToast();
+  const friendsAttending = event.attendees || [];
 
   const handleLikeClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,7 +58,8 @@ export function EventCard({ event }: EventCardProps) {
   const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'UTC', // Ensure date is not affected by client's timezone
   });
 
 
@@ -82,19 +86,19 @@ export function EventCard({ event }: EventCardProps) {
             </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-4 bg-black/50 backdrop-blur-sm">
                 <div className="text-center text-white">
-                    {event.friendsAttending.length > 0 ? (
+                    {friendsAttending.length > 0 ? (
                     <>
                         <p className="font-semibold mb-2">Friends Attending</p>
                         <div className="flex justify-center -space-x-2">
-                            {event.friendsAttending.slice(0, 3).map(friend => (
-                                <Avatar key={friend.name} className="h-10 w-10 border-2 border-primary">
+                            {friendsAttending.slice(0, 3).map(friend => (
+                                <Avatar key={friend.username} className="h-10 w-10 border-2 border-primary">
                                     <AvatarImage src={friend.avatar} alt={friend.name} data-ai-hint={friend.hint}/>
                                     <AvatarFallback>{friend.name.substring(0,1)}</AvatarFallback>
                                 </Avatar>
                             ))}
-                            {event.friendsAttending.length > 3 && (
+                            {friendsAttending.length > 3 && (
                                 <Avatar className="h-10 w-10 border-2 border-primary">
-                                    <AvatarFallback>+{event.friendsAttending.length - 3}</AvatarFallback>
+                                    <AvatarFallback>+{friendsAttending.length - 3}</AvatarFallback>
                                 </Avatar>
                             )}
                         </div>

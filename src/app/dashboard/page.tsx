@@ -20,37 +20,14 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/jummix/Footer";
 import { Separator } from "@/components/ui/separator";
+import { collection, getDocs, limit, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock data for upcoming events - will be replaced by backend data
-const events = [
-  {
-    id: "summer-music-fest",
-    name: "Summer Music Fest",
-    date: "August 15-17, 2024",
-    location: "Lakeside Park",
-    image: "https://placehold.co/400x200.png",
-    hint: "concert crowd",
-    friendsAttending: [
-      { name: "Jenna", avatar: "https://placehold.co/40x40.png", hint: "woman portrait" },
-      { name: "Mike", avatar: "https://placehold.co/40x40.png", hint: "man glasses" },
-    ],
-  },
-  {
-    id: "tech-innovators-summit",
-    name: "Tech Innovators Summit",
-    date: "September 5, 2024",
-    location: "Convention Center",
-    image: "https://placehold.co/400x200.png",
-    hint: "conference speaker",
-    friendsAttending: [
-      { name: "Carlos", avatar: "https://placehold.co/40x40.png", hint: "man portrait" },
-      { name: "Aisha", avatar: "https://placehold.co/40x40.png", hint: "woman face" },
-      { name: "David", avatar: "https://placehold.co/40x40.png", hint: "man face" },
-      { name: "Alex", avatar: "https://placehold.co/40x40.png", hint: "person portrait" },
-    ],
-  },
-];
-
+type Event = {
+  id: string;
+  [key: string]: any;
+};
 
 export default function DashboardPage() {
   const { user, loading, signOut, userData } = useAuth();
@@ -59,6 +36,26 @@ export default function DashboardPage() {
   
   const isAdmin = user?.email === 'service@jummix.com';
   const isVerifiedHost = userData?.isVerifiedHost || false;
+  
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+
+  useEffect(() => {
+    async function fetchEvents() {
+        try {
+            const q = query(collection(db, "events"), limit(4));
+            const querySnapshot = await getDocs(q);
+            const fetchedEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[];
+            setEvents(fetchedEvents);
+        } catch (error) {
+            console.error("Error fetching events:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch events.' });
+        } finally {
+            setLoadingEvents(false);
+        }
+    }
+    fetchEvents();
+  }, [toast]);
 
 
   useEffect(() => {
@@ -190,11 +187,18 @@ export default function DashboardPage() {
             <LiveActivityFeed />
             <div>
               <h2 className="text-2xl font-bold font-headline mb-4">Upcoming Events</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {events.map((event, index) => (
-                  <EventCard key={index} event={event} />
-                ))}
-              </div>
+              {loadingEvents ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Skeleton className="h-96 w-full" />
+                    <Skeleton className="h-96 w-full" />
+                 </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {events.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                    ))}
+                </div>
+              )}
             </div>
           </div>
 
