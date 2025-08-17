@@ -123,12 +123,16 @@ export async function toggleEventInteraction(userId: string, eventId: string, ty
         const userDoc = await getDoc(userRef);
         
         if (!userDoc.exists()) {
+            console.error(`User document not found for userId: ${userId}`);
             return { success: false, error: 'User not found.' };
         }
 
         const userData = userDoc.data();
         const field = type === 'liked' ? 'likedEvents' : 'savedEvents';
-        const isInteracted = userData[field]?.includes(eventId);
+        
+        // Ensure the field exists before trying to access it
+        const currentList = userData[field] || [];
+        const isInteracted = currentList.includes(eventId);
 
         await updateDoc(userRef, {
             [field]: isInteracted ? arrayRemove(eventId) : arrayUnion(eventId)

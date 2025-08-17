@@ -180,8 +180,9 @@ const seedDatabase = async () => {
 
   // --- 1. Seed Users ---
   for (const user of users) {
-    const userRef = db.collection('users').doc(user.uid);
-    const { uid, photoHint, ...userData } = user;
+    // IMPORTANT: Use the specified UID as the document ID
+    const userRef = db.collection('users').doc(user.uid); 
+    const { photoHint, ...userData } = user; // Exclude uid and photoHint from the data payload
     batch.set(userRef, {
       ...userData,
       bannerURL: 'https://placehold.co/1000x300.png',
@@ -189,6 +190,8 @@ const seedDatabase = async () => {
       friendsCount: Math.floor(Math.random() * 100),
       eventsCount: 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      likedEvents: [],
+      savedEvents: [],
     });
     console.log(`- Prepared User: ${user.displayName} (${user.uid})`);
   }
