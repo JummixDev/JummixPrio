@@ -38,12 +38,12 @@ export function EventReels() {
         <CardContent>
             <div className="flex items-center gap-4 overflow-x-auto pb-4">
                  {(isVerifiedHost || isAdmin) && (
-                    <div className="flex flex-col items-center gap-2 cursor-pointer text-primary hover:text-primary/80" onClick={handleAddStory}>
+                    <Link href="/story/create" className="flex flex-col items-center gap-2 cursor-pointer text-primary hover:text-primary/80">
                         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-dashed border-primary">
                             <PlusCircle className="w-8 h-8" />
                         </div>
                         <span className="text-xs font-semibold">Add Story</span>
-                    </div>
+                    </Link>
                 )}
                 {mockReels.map((reel, index) => (
                     <div key={index} className="flex flex-col items-center gap-2 text-center flex-shrink-0 cursor-pointer group">
