@@ -207,6 +207,13 @@ export async function createCheckoutSession(userId: string, eventId: string) {
             apiVersion: '2024-06-20',
         });
         
+        // Final safety check for price
+        const priceInCents = Math.round((event.price || 0) * 100);
+        if (isNaN(priceInCents)) {
+             console.error(`Invalid price for event ${eventId}: ${event.price}. Cannot create checkout session.`);
+             return { success: false, error: 'Event price is invalid. Cannot proceed with payment.' };
+        }
+        
         // 4. Create a Stripe Checkout Session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -219,7 +226,7 @@ export async function createCheckoutSession(userId: string, eventId: string) {
                             images: [event.image],
                             description: event.description,
                         },
-                        unit_amount: Math.round(event.price * 100), // Price in cents, rounded to the nearest integer
+                        unit_amount: priceInCents,
                     },
                     quantity: 1,
                 },

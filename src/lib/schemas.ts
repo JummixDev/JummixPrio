@@ -10,12 +10,13 @@ export const createEventSchema = z.object({
   price: z.preprocess(
     (val) => {
         if (typeof val === 'string') {
+            if (val.trim() === '') return 0; // Treat empty string as 0
             const num = parseFloat(val);
-            return isNaN(num) ? 0 : num; // Return 0 if parsing fails (e.g., for an empty string)
+            return isNaN(num) ? val : num; // Let Zod handle the NaN case
         }
         return val;
     },
-    z.number().min(0, "Price must be a positive number.")
+    z.number({ invalid_type_error: "Price must be a number." }).min(0, "Price must be a positive number.")
   ),
   image: z.string().url("Please enter a valid image URL."),
   hostUid: z.string(),
