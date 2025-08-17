@@ -3,14 +3,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Heart, Bookmark, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { EventCard } from '@/components/jummix/EventCard';
 import { Footer } from '@/components/jummix/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, documentId } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -19,42 +19,73 @@ type Event = {
   [key: string]: any;
 };
 
-export default function MyEventsPage() {
-    const { user } = useAuth();
+const EventList = ({ eventIds, emptyText, filter }: { eventIds: string[], emptyText: string, filter?: 'upcoming' | 'past' }) => {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // This is a simplified fetch. A real app would need more complex queries
-    // for liked/saved events, likely involving subcollections or array fields.
     useEffect(() => {
-        if (!user) return;
-        async function fetchMyEvents() {
+        const fetchEvents = async () => {
+            if (!eventIds || eventIds.length === 0) {
+                setLoading(false);
+                setEvents([]);
+                return;
+            }
             setLoading(true);
             try {
-                // Fetching all events and filtering client-side for this example
-                // A real app should use queries like: where('attendeeUids', 'array-contains', user.uid)
-                const querySnapshot = await getDocs(collection(db, 'events'));
-                const allEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Event }));
+                // Firestore 'in' query is limited to 30 elements. Paginate if needed for larger lists.
+                const eventsRef = collection(db, "events");
+                const q = query(eventsRef, where(documentId(), "in", eventIds.slice(0, 30)));
+                const querySnapshot = await getDocs(q);
+                let fetchedEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[];
                 
-                // This is a MOCK implementation of filtering.
-                // Replace with actual user data fields later.
-                const userEvents = allEvents.filter(event => 
-                    event.attendees.some((attendee: any) => attendee.username === 'jennasmith' || attendee.username === 'carlosray')
-                );
-                setEvents(userEvents);
-
+                if (filter) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Normalize to start of day
+                    if (filter === 'upcoming') {
+                        fetchedEvents = fetchedEvents.filter(e => new Date(e.date) >= today);
+                    } else { // past
+                        fetchedEvents = fetchedEvents.filter(e => new Date(e.date) < today);
+                    }
+                }
+                
+                setEvents(fetchedEvents);
             } catch (error) {
-                console.error("Error fetching events:", error);
+                console.error("Error fetching event list:", error);
             } finally {
                 setLoading(false);
             }
-        }
-        fetchMyEvents();
-    }, [user]);
+        };
+        fetchEvents();
+    }, [eventIds, filter]);
 
-    const today = new Date();
-    const upcomingEvents = events.filter(e => new Date(e.date) >= today);
-    const pastEvents = events.filter(e => new Date(e.date) < today);
+    if (loading) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+            </div>
+        );
+    }
+    
+    if (events.length === 0) {
+        return <p className="text-muted-foreground text-center py-16">{emptyText}</p>
+    }
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+                <EventCard key={event.id} event={event} />
+            ))}
+        </div>
+    );
+};
+
+
+export default function MyEventsPage() {
+    const { user, userData } = useAuth();
+    
+    // This is a mock. Real implementation would fetch events user has RSVP'd to.
+    const attendedEventIds = ['summer-music-fest', 'culinary-workshop'];
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
@@ -71,60 +102,42 @@ export default function MyEventsPage() {
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
         <Tabs defaultValue="upcoming">
             <TabsList className="mb-6 grid w-full grid-cols-2 sm:w-auto sm:grid-cols-4">
-                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                <TabsTrigger value="past">Past</TabsTrigger>
-                <TabsTrigger value="liked">Liked</TabsTrigger>
-                <TabsTrigger value="saved">Saved</TabsTrigger>
+                <TabsTrigger value="upcoming" className="gap-2"><Calendar/>Upcoming</TabsTrigger>
+                <TabsTrigger value="past" className="gap-2"><Calendar/>Past</TabsTrigger>
+                <TabsTrigger value="liked" className="gap-2"><Heart/>Liked</TabsTrigger>
+                <TabsTrigger value="saved" className="gap-2"><Bookmark/>Saved</TabsTrigger>
             </TabsList>
-            
-            {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Skeleton className="h-96 w-full" />
-                    <Skeleton className="h-96 w-full" />
-                </div>
-            ) : (
-                <>
-                <TabsContent value="upcoming">
-                    {upcomingEvents.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {upcomingEvents.map((event) => (
-                                <EventCard key={event.id} event={event} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center text-muted-foreground py-16">
-                            <p>You have no upcoming events.</p>
-                        </div>
-                    )}
-                </TabsContent>
-                <TabsContent value="past">
-                     {pastEvents.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {pastEvents.map((event) => (
-                                <EventCard key={event.id} event={event} />
-                            ))}
-                        </div>
-                     ) : (
-                        <div className="text-center text-muted-foreground py-16">
-                            <p>You have no past events.</p>
-                        </div>
-                     )}
-                </TabsContent>
-                <TabsContent value="liked">
-                    <div className="text-center text-muted-foreground py-16">
-                        <p>You haven't liked any events yet.</p>
-                    </div>
-                </TabsContent>
-                <TabsContent value="saved">
-                    <div className="text-center text-muted-foreground py-16">
-                        <p>You haven't saved any events yet.</p>
-                    </div>
-                </TabsContent>
-                </>
-            )}
+
+            <TabsContent value="upcoming">
+                <EventList 
+                    eventIds={attendedEventIds} 
+                    filter="upcoming"
+                    emptyText="You have no upcoming events." 
+                />
+            </TabsContent>
+            <TabsContent value="past">
+                <EventList 
+                    eventIds={attendedEventIds} 
+                    filter="past"
+                    emptyText="You have no past events." 
+                />
+            </TabsContent>
+            <TabsContent value="liked">
+                <EventList 
+                    eventIds={userData?.likedEvents || []} 
+                    emptyText="You haven't liked any events yet." 
+                />
+            </TabsContent>
+            <TabsContent value="saved">
+                 <EventList 
+                    eventIds={userData?.savedEvents || []} 
+                    emptyText="You haven't saved any events yet." 
+                />
+            </TabsContent>
         </Tabs>
       </main>
       <Footer />
     </div>
   );
 }
+    

@@ -21,4 +21,12 @@ export const updateEventSchema = createEventSchema.extend({
 
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 
+export const reviewSchema = z.object({
+  hostId: z.string(),
+  reviewerId: z.string(),
+  rating: z.number().min(1).max(5),
+  comment: z.string().min(10, "Review must be at least 10 characters long.").max(500, "Review must not exceed 500 characters."),
+});
+
+export type ReviewInput = z.infer<typeof reviewSchema>;
     

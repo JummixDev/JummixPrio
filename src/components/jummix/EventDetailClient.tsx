@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React from 'react';
@@ -57,7 +58,11 @@ type EventDetailClientProps = {
 // Helper function to format date from string or Timestamp
 const formatDate = (date: Timestamp | string) => {
     if (typeof date === 'string') {
-        return new Date(date).toLocaleDateString('en-US', {
+        // Attempt to parse ISO string, which is what we get from Firestore now
+        const d = new Date(date);
+        // Add a day to correct for timezone issues if date is just 'YYYY-MM-DD'
+        d.setUTCDate(d.getUTCDate() + 1);
+        return d.toLocaleDateString('en-US', {
             month: 'long',
             day: 'numeric',
             year: 'numeric',
@@ -102,7 +107,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         <div className="relative w-full h-[40vh] max-h-[500px]">
             <Image
                 src={event.image || 'https://placehold.co/1200x400.png'}
-                alt={event.name || 'Event banner image'}
+                alt={event.name || 'Event image'}
                 layout="fill"
                 objectFit="cover"
                 data-ai-hint={event.hint}
@@ -243,7 +248,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             <>
                             <Separator className="my-4"/>
                             <CardContent>
-                                <Link href={`/profile/${event.organizer.username}`} className="flex items-center gap-4 group">
+                                <Link href={`/hosts/${event.organizer.username}`} className="flex items-center gap-4 group">
                                     <Avatar className="w-12 h-12">
                                         <AvatarImage src={event.organizer.avatar} data-ai-hint={event.organizer.hint} />
                                         <AvatarFallback>{event.organizer.name.substring(0,2)}</AvatarFallback>
@@ -263,3 +268,4 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
+    

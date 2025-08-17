@@ -10,7 +10,7 @@ import { EventCard } from "@/components/jummix/EventCard";
 import { Leaderboard } from "@/components/jummix/Leaderboard";
 import { AIRecommender } from "@/components/jummix/AIRecommender";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2 } from "lucide-react";
+import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Heart, Bookmark, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -20,14 +20,66 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/jummix/Footer";
 import { Separator } from "@/components/ui/separator";
-import { collection, getDocs, limit, query } from 'firebase/firestore';
+import { collection, getDocs, limit, query, where, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalSearch } from "@/components/jummix/GlobalSearch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 type Event = {
   id: string;
   [key: string]: any;
+};
+
+const EventList = ({ eventIds, emptyText }: { eventIds: string[], emptyText: string }) => {
+    const [events, setEvents] = useState<Event[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            if (!eventIds || eventIds.length === 0) {
+                setLoading(false);
+                setEvents([]);
+                return;
+            }
+            setLoading(true);
+            try {
+                // Firestore 'in' query is limited to 30 elements. Paginate if needed for larger lists.
+                const eventsRef = collection(db, "events");
+                const q = query(eventsRef, where(documentId(), "in", eventIds.slice(0, 30)));
+                const querySnapshot = await getDocs(q);
+                const fetchedEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[];
+                setEvents(fetchedEvents);
+            } catch (error) {
+                console.error("Error fetching event list:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEvents();
+    }, [eventIds]);
+
+    if (loading) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+            </div>
+        );
+    }
+    
+    if (events.length === 0) {
+        return <p className="text-muted-foreground text-center py-8">{emptyText}</p>
+    }
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {events.map((event) => (
+                <EventCard key={event.id} event={event} />
+            ))}
+        </div>
+    );
 };
 
 export default function DashboardPage() {
@@ -38,8 +90,8 @@ export default function DashboardPage() {
   const isAdmin = user?.email === 'service@jummix.com';
   const isVerifiedHost = userData?.isVerifiedHost || false;
   
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [loadingUpcoming, setLoadingUpcoming] = useState(true);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -47,12 +99,12 @@ export default function DashboardPage() {
             const q = query(collection(db, "events"), limit(4));
             const querySnapshot = await getDocs(q);
             const fetchedEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[];
-            setEvents(fetchedEvents);
+            setUpcomingEvents(fetchedEvents);
         } catch (error) {
             console.error("Error fetching events:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch events.' });
         } finally {
-            setLoadingEvents(false);
+            setLoadingUpcoming(false);
         }
     }
     fetchEvents();
@@ -186,20 +238,34 @@ export default function DashboardPage() {
             </div>
             <EventReels />
             <LiveActivityFeed />
-            <div>
-              <h2 className="text-2xl font-bold font-headline mb-4">Upcoming Events</h2>
-              {loadingEvents ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Skeleton className="h-96 w-full" />
-                    <Skeleton className="h-96 w-full" />
-                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {events.map((event) => (
-                    <EventCard key={event.id} event={event} />
-                    ))}
-                </div>
-              )}
+             <div>
+                <Tabs defaultValue="upcoming" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-4">
+                    <TabsTrigger value="upcoming" className="gap-2"><Calendar/>Upcoming</TabsTrigger>
+                    <TabsTrigger value="liked" className="gap-2"><Heart/>Liked</TabsTrigger>
+                    <TabsTrigger value="saved" className="gap-2"><Bookmark/>Saved</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="upcoming">
+                    {loadingUpcoming ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <Skeleton className="h-96 w-full" />
+                          <Skeleton className="h-96 w-full" />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {upcomingEvents.map((event) => (
+                          <EventCard key={event.id} event={event} />
+                          ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="liked">
+                      <EventList eventIds={userData?.likedEvents || []} emptyText="You haven't liked any events yet." />
+                  </TabsContent>
+                  <TabsContent value="saved">
+                      <EventList eventIds={userData?.savedEvents || []} emptyText="You haven't saved any events yet." />
+                  </TabsContent>
+                </Tabs>
             </div>
           </div>
 
@@ -225,3 +291,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+    

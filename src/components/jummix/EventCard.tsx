@@ -9,6 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Bookmark, Calendar, Heart, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
+import { toggleEventInteraction } from "@/app/actions";
+import { useState, useEffect } from "react";
 
 
 type EventCardProps = {
@@ -26,25 +29,45 @@ type EventCardProps = {
 
 export function EventCard({ event }: EventCardProps) {
   const { toast } = useToast();
+  const { user, userData } = useAuth();
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  
+  useEffect(() => {
+    if (userData) {
+      setIsLiked(userData.likedEvents?.includes(event.id));
+      setIsSaved(userData.savedEvents?.includes(event.id));
+    }
+  }, [userData, event.id]);
+
   const friendsAttending = event.attendees || [];
 
-  const handleLikeClick = (e: React.MouseEvent) => {
+  const handleInteraction = async (e: React.MouseEvent, type: 'liked' | 'saved') => {
     e.preventDefault();
     e.stopPropagation();
-    toast({
-        title: "Event Liked!",
-        description: `You've liked ${event.name}.`,
-    });
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Please sign in', description: 'You must be logged in to interact with events.' });
+        return;
+    }
+    
+    const result = await toggleEventInteraction(user.uid, event.id, type);
+
+    if (result.success) {
+        const actionVerb = type === 'liked' ? 'Liked' : 'Saved';
+        const pastTenseVerb = type === 'liked' ? 'liked' : 'saved';
+        
+        if (type === 'liked') setIsLiked(result.newState);
+        if (type === 'saved') setIsSaved(result.newState);
+
+        toast({
+            title: `Event ${result.newState ? actionVerb : 'Un' + pastTenseVerb}!`,
+            description: `You've ${result.newState ? '' : 'un'}${pastTenseVerb} ${event.name}.`,
+        });
+    } else {
+        toast({ variant: 'destructive', title: 'Error', description: result.error });
+    }
   }
   
-  const handleBookmarkClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toast({
-        title: "Event Saved!",
-        description: `${event.name} has been added to your bookmarks.`,
-    });
-  }
 
   const handleRsvpClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -77,10 +100,10 @@ export function EventCard({ event }: EventCardProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent group-hover:from-black/70 transition-colors" />
             <div className="absolute top-2 right-2 flex gap-2">
-                <Button onClick={handleLikeClick} size="icon" variant="ghost" className="text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110">
+                <Button onClick={(e) => handleInteraction(e, 'liked')} size="icon" variant="ghost" className={`text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110 ${isLiked ? 'bg-red-500/80' : ''}`}>
                     <Heart className="w-4 h-4" />
                 </Button>
-                <Button onClick={handleBookmarkClick} size="icon" variant="ghost" className="text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110">
+                <Button onClick={(e) => handleInteraction(e, 'saved')} size="icon" variant="ghost" className={`text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110 ${isSaved ? 'bg-blue-500/80' : ''}`}>
                     <Bookmark className="w-4 h-4" />
                 </Button>
             </div>
@@ -123,3 +146,4 @@ export function EventCard({ event }: EventCardProps) {
     </Link>
   );
 }
+    

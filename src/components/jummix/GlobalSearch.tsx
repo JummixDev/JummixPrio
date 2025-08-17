@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -11,7 +12,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Calendar, User, MapPin } from 'lucide-react';
+import { Search, Calendar, User, Building } from 'lucide-react';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -19,7 +20,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 
 type UserResult = {
     id: string;
-    type: 'user';
+    type: 'user' | 'host';
     name: string;
     username: string;
 };
@@ -65,15 +66,18 @@ export function GlobalSearch() {
           usersRef,
           where('displayName', '>=', debouncedSearchTerm),
           where('displayName', '<=', debouncedSearchTerm + '\uf8ff'),
-          limit(3)
+          limit(5)
         );
         const userDocs = await getDocs(userQuery);
-        const userResults: UserResult[] = userDocs.docs.map(doc => ({
-            id: doc.id,
-            type: 'user',
-            name: doc.data().displayName,
-            username: doc.data().username,
-        }));
+        const userResults: UserResult[] = userDocs.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                type: data.isVerifiedHost ? 'host' : 'user',
+                name: data.displayName,
+                username: data.username,
+            }
+        });
         
         // Search events
         const eventsRef = collection(db, 'events');
@@ -103,9 +107,15 @@ export function GlobalSearch() {
   }, [debouncedSearchTerm]);
   
   const handleSelect = (result: SearchResult) => {
-    const url = result.type === 'event' ? `/event/${result.id}` : `/profile/${result.username}`;
-    router.push(url);
-    setOpen(false);
+    let url = '';
+    if (result.type === 'event') url = `/event/${result.id}`;
+    if (result.type === 'user') url = `/profile/${result.username}`;
+    if (result.type === 'host') url = `/hosts/${result.username}`;
+    
+    if (url) {
+      router.push(url);
+      setOpen(false);
+    }
   }
 
   return (
@@ -137,11 +147,9 @@ export function GlobalSearch() {
             <CommandGroup heading="Results">
                 {results.map((res) => (
                     <CommandItem key={res.id} onSelect={() => handleSelect(res)}>
-                        {res.type === 'event' ? (
-                            <Calendar className="mr-2 h-4 w-4" />
-                        ) : (
-                            <User className="mr-2 h-4 w-4" />
-                        )}
+                        {res.type === 'event' && <Calendar className="mr-2 h-4 w-4" />}
+                        {res.type === 'user' && <User className="mr-2 h-4 w-4" />}
+                        {res.type === 'host' && <Building className="mr-2 h-4 w-4" />}
                         <span>{res.name}</span>
                         {res.type === 'event' && <span className="text-xs text-muted-foreground ml-auto">{res.location}</span>}
                     </CommandItem>
@@ -153,3 +161,4 @@ export function GlobalSearch() {
     </>
   );
 }
+    

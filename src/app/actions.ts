@@ -4,8 +4,8 @@
 import { personalizedEventRecommendations, PersonalizedEventRecommendationsInput } from "@/ai/flows/event-recommendations";
 import type { PersonalizedEventRecommendationsOutput } from "@/ai/flows/event-recommendations";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy } from "firebase/firestore";
-import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput } from "@/lib/schemas";
+import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove } from "firebase/firestore";
+import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput } from "@/lib/schemas";
 
 
 interface AIResult extends PersonalizedEventRecommendationsOutput {
@@ -109,6 +109,58 @@ export async function sendMessage(conversationId: string, senderUid: string, tex
     } catch (error) {
         console.error("Error sending message:", error);
         return { success: false, error: 'Failed to send message.' };
+    }
+}
+
+export async function toggleEventInteraction(userId: string, eventId: string, type: 'liked' | 'saved') {
+    if (!userId || !eventId || !type) {
+        return { success: false, error: 'Invalid data provided.' };
+    }
+
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDocs(query(collection(db, 'users'), where('uid', '==', userId)));
+        const userData = userDoc.docs[0]?.data();
+        
+        if (!userData) {
+            return { success: false, error: 'User not found.' };
+        }
+
+        const field = type === 'liked' ? 'likedEvents' : 'savedEvents';
+        const isInteracted = userData[field]?.includes(eventId);
+
+        await updateDoc(userRef, {
+            [field]: isInteracted ? arrayRemove(eventId) : arrayUnion(eventId)
+        });
+
+        return { success: true, newState: !isInteracted };
+    } catch (error) {
+        console.error(`Error toggling ${type} event:`, error);
+        return { success: false, error: `Failed to update your ${type} list.` };
+    }
+}
+
+export async function submitReview(reviewData: ReviewInput) {
+    const validation = reviewSchema.safeParse(reviewData);
+
+    if (!validation.success) {
+        return {
+            success: false,
+            errors: validation.error.errors.map(e => e.message),
+        };
+    }
+
+    try {
+        const reviewsRef = collection(db, 'users', validation.data.hostId, 'reviews');
+        await addDoc(reviewsRef, {
+            ...validation.data,
+            createdAt: serverTimestamp()
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error submitting review:", error);
+        return { success: false, errors: ["Failed to submit review."] };
     }
 }
     

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -32,6 +33,8 @@ interface UserProfileData {
   bio?: string;
   bannerURL?: string;
   interests?: string[];
+  likedEvents?: string[];
+  savedEvents?: string[];
 }
 interface AuthContextType {
   user: User | null;
@@ -88,6 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         followers: 0,
         friendsCount: 0,
         eventsCount: 0,
+        likedEvents: [],
+        savedEvents: [],
         createdAt: serverTimestamp()
       };
       await setDoc(userDocRef, newUserData);
@@ -157,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("No user is signed in to update profile.");
     }
 
-    const { bio, bannerURL, interests, ...authProfileData } = profileData;
+    const { bio, bannerURL, interests, likedEvents, savedEvents, ...authProfileData } = profileData;
 
     // Update Firebase Auth profile (displayName, photoURL)
     if (Object.keys(authProfileData).length > 0) {
@@ -172,6 +177,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (bio !== undefined) dataToUpdate.bio = bio;
     if (bannerURL !== undefined) dataToUpdate.bannerURL = bannerURL;
     if (interests !== undefined) dataToUpdate.interests = interests;
+    if (likedEvents !== undefined) dataToUpdate.likedEvents = likedEvents;
+    if (savedEvents !== undefined) dataToUpdate.savedEvents = savedEvents;
     
     if (Object.keys(dataToUpdate).length > 0) {
         await updateDoc(userDocRef, dataToUpdate);
@@ -218,3 +225,4 @@ export const useAuth = () => {
   }
   return context;
 };
+    
