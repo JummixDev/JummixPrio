@@ -32,6 +32,7 @@ import { EventCard } from './EventCard';
 import { Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
 import { createCheckoutSession, toggleEventInteraction } from '@/app/actions';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 type Event = {
     id: string;
@@ -60,11 +61,12 @@ type EventDetailClientProps = {
 
 // Helper function to format date from string or Timestamp
 const formatDate = (date: Timestamp | string) => {
-    const d = new Date(date as string);
+    const d = typeof date === 'string' ? new Date(date) : date.toDate();
     return d.toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
+        timeZone: 'UTC'
     });
 }
 
@@ -76,6 +78,8 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const isStripeConfigured = !!process.env.NEXT_PUBLIC_STRIPE_CONFIGURED;
     
     useEffect(() => {
         if (userData) {
@@ -167,6 +171,51 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     }
     
     const formattedDate = formatDate(event.date);
+    
+    const AttendButton = () => {
+        if (isAttending) {
+            return (
+                <div className='space-y-2'>
+                    <Button disabled className="w-full">
+                        <CheckCircle className="mr-2" /> Attending
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={() => {}}>
+                        Go to Group Chat
+                    </Button>
+                </div>
+            );
+        }
+
+        if (!event.isFree && !isStripeConfigured) {
+             return (
+                 <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger className="w-full">
+                           <Button disabled className="w-full">
+                                <Ticket className="mr-2" /> Get Tickets
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>The payment system is not yet configured by the administrator.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+             )
+        }
+
+        return (
+            <Button onClick={handleAttendClick} disabled={isProcessing} className="w-full transition-transform active:scale-95">
+                {isProcessing ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : event.isFree ? (
+                    <PlusCircle className="mr-2" />
+                ) : (
+                    <Ticket className="mr-2" />
+                )}
+                {isProcessing ? 'Processing...' : (event.isFree ? 'RSVP Now' : 'Get Tickets')}
+            </Button>
+        );
+    };
 
 
   return (
@@ -231,15 +280,19 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             <CardTitle className="font-headline">Location</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="aspect-video bg-secondary rounded-lg overflow-hidden">
-                                <iframe
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 0 }}
-                                    loading="lazy"
-                                    allowFullScreen
-                                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(event.location)}`}>
-                                </iframe>
+                            <div className="aspect-video bg-secondary rounded-lg overflow-hidden flex items-center justify-center">
+                               {mapsApiKey ? (
+                                    <iframe
+                                        width="100%"
+                                        height="100%"
+                                        style={{ border: 0 }}
+                                        loading="lazy"
+                                        allowFullScreen
+                                        src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${encodeURIComponent(event.location)}`}>
+                                    </iframe>
+                                ) : (
+                                    <p className="text-muted-foreground">Google Maps API key is missing. Map cannot be displayed.</p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -280,27 +333,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                             {isAttending ? (
-                                <div className='space-y-2'>
-                                    <Button disabled className="w-full">
-                                        <CheckCircle className="mr-2" /> Attending
-                                    </Button>
-                                    <Button variant="outline" className="w-full" onClick={() => {}}>
-                                        Go to Group Chat
-                                    </Button>
-                                </div>
-                            ) : (
-                                <Button onClick={handleAttendClick} disabled={isProcessing} className="w-full transition-transform active:scale-95">
-                                    {isProcessing ? (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ) : event.isFree ? (
-                                        <PlusCircle className="mr-2" />
-                                    ) : (
-                                        <Ticket className="mr-2" />
-                                    )}
-                                    {isProcessing ? 'Processing...' : (event.isFree ? 'RSVP Now' : 'Get Tickets')}
-                                </Button>
-                            )}
+                             <AttendButton />
                         </CardContent>
 
                         <Separator className="my-4"/>

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useRef } from 'react';
@@ -264,6 +265,7 @@ function NotificationSettings() {
         newMessages: { email: false, push: true },
     });
     const [globalPushEnabled, setGlobalPushEnabled] = useState(false);
+    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
 
     // Check current permission status on component mount
     useEffect(() => {
@@ -305,8 +307,12 @@ function NotificationSettings() {
                 try {
                     const messaging = getMessaging(app);
                     // IMPORTANT: Replace with your actual VAPID key from Firebase Console
-                    const VAPID_KEY = "YOUR_VAPID_KEY_FROM_FIREBASE_CONSOLE"; 
-                    const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+                    if (!vapidKey) {
+                        console.error("VAPID key is not configured in .env file.");
+                        toast({ variant: "destructive", title: "Configuration Error", description: "Push notification service is not configured." });
+                        return;
+                    }
+                    const currentToken = await getToken(messaging, { vapidKey: vapidKey });
                     
                     if (currentToken) {
                         console.log('FCM Token:', currentToken);
@@ -354,8 +360,11 @@ function NotificationSettings() {
                     <div>
                         <Label htmlFor="global-push-switch" className="text-base">Enable Push Notifications</Label>
                         <p className="text-sm text-muted-foreground">Receive push notifications on this device.</p>
+                         {!vapidKey && (
+                            <p className="text-xs text-destructive mt-1">Push notification service is not configured by the administrator.</p>
+                        )}
                     </div>
-                     <Switch id="global-push-switch" checked={globalPushEnabled} onCheckedChange={handleGlobalPushToggle} />
+                     <Switch id="global-push-switch" checked={globalPushEnabled} onCheckedChange={handleGlobalPushToggle} disabled={!vapidKey} />
                 </div>
                 <div className={cn("divide-y transition-opacity", !globalPushEnabled && "opacity-50 pointer-events-none")}>
                     {notificationItems.map(item => (
