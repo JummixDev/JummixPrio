@@ -4,7 +4,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users, ArrowRight, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { Footer } from '@/components/jummix/Footer';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import FriendsPageContent from '../friends/page';
+import ChatsPageContent from '../chats/page';
 import { cn } from '@/lib/utils';
 
 
@@ -68,7 +69,7 @@ export default function ExplorePage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const [view, setView] = useState<'explore' | 'friends'>('explore');
+  const [view, setView] = useState<'explore' | 'friends' | 'chats'>('explore');
 
   useEffect(() => {
     async function fetchEvents() {
@@ -143,15 +144,31 @@ export default function ExplorePage() {
     setPriceFilter(prev => ({ ...prev, [filter]: !prev[filter] }));
   }
 
+ const handleBackClick = () => {
+    if (view === 'chats') {
+        setView('friends');
+    } else if (view === 'friends') {
+        setView('explore');
+    }
+ };
+
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
        <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16 gap-4">
-              <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex" onClick={() => view === 'friends' ? setView('explore') : null}>
-                   <Link href={view === 'explore' ? "/dashboard" : '#'}>
-                      <ArrowLeft />
-                  </Link>
+              <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  asChild={view === 'explore'} 
+                  onClick={view !== 'explore' ? handleBackClick : undefined}
+                  className="hidden sm:inline-flex"
+               >
+                   {view === 'explore' ? (
+                       <Link href="/dashboard"><ArrowLeft /></Link>
+                   ) : (
+                       <ArrowLeft />
+                   )}
               </Button>
               <div className="relative flex-grow">
                 <GlobalSearch />
@@ -233,35 +250,67 @@ export default function ExplorePage() {
               </Sheet>
           </div>
       </header>
-       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16">
-        <div className={cn("transition-transform duration-500 ease-in-out", view === 'friends' && '-translate-x-full')}>
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold font-headline mb-2">Discover Events</h1>
-                    <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
+       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16 h-full">
+            <div className={cn("transition-transform duration-500 ease-in-out h-full", {
+                'translate-x-0': view === 'explore',
+                '-translate-x-[110%]': view === 'friends',
+                '-translate-x-[220%]': view === 'chats',
+            })}>
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold font-headline mb-2">Discover Events</h1>
+                        <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
+                    </div>
+                    <Button onClick={() => setView('friends')}>
+                        Freunde entdecken <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
                 </div>
-                <Button onClick={() => setView('friends')}>
-                    Freunde entdecken <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                
+                {loading ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                            <Skeleton key={i} className="h-auto aspect-square w-full" />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {filteredAndSortedEvents.map((event) => (
+                            <EventTile key={event.id} event={event} />
+                        ))}
+                    </div>
+                )}
             </div>
-            
-            {loading ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {Array.from({ length: 10 }).map((_, i) => (
-                        <Skeleton key={i} className="h-auto aspect-square w-full" />
-                    ))}
+            <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[100%]", {
+                'translate-x-[110%]': view === 'explore',
+                'translate-x-0': view === 'friends',
+                '-translate-x-[110%]': view === 'chats',
+            })}>
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold font-headline mb-2">Discover Friends</h1>
+                        <p className="text-muted-foreground">Connect with new people and find shared interests.</p>
+                    </div>
+                    <Button onClick={() => setView('chats')}>
+                        Nachricht schreiben <MessageSquare className="ml-2 h-4 w-4" />
+                    </Button>
                 </div>
-            ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {filteredAndSortedEvents.map((event) => (
-                        <EventTile key={event.id} event={event} />
-                    ))}
+                <FriendsPageContent />
+            </div>
+            <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[100%]", {
+                'translate-x-[220%]': view === 'explore',
+                'translate-x-[110%]': view === 'friends',
+                'translate-x-0': view === 'chats',
+            })}>
+                 <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold font-headline mb-2">Your Chats</h1>
+                        <p className="text-muted-foreground">Continue the conversation with your friends and groups.</p>
+                    </div>
                 </div>
-            )}
-        </div>
-         <div className={cn("transition-transform duration-500 ease-in-out -mt-[100vh] h-full", view === 'friends' ? 'translate-x-0' : 'translate-x-full')}>
-             <FriendsPageContent />
-        </div>
+                <div className="h-[calc(100vh-20rem)]">
+                    <ChatsPageContent />
+                </div>
+            </div>
       </main>
       <Footer />
     </div>
