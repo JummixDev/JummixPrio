@@ -146,7 +146,7 @@ export default function ExplorePage() {
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
-       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40 pt-16 -mt-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16 gap-4">
               <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex" onClick={() => view === 'friends' ? setView('explore') : null}>
                    <Link href={view === 'explore' ? "/dashboard" : '#'}>
@@ -233,7 +233,7 @@ export default function ExplorePage() {
               </Sheet>
           </div>
       </header>
-       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16">
+       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-32">
         <div className={cn("transition-transform duration-500 ease-in-out", view === 'friends' && '-translate-x-full')}>
             <div className="flex justify-between items-center mb-8">
                 <div>

@@ -86,7 +86,7 @@ export function GlobalHeader() {
   
   return (
       <header className={cn(
-          "bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40 transition-transform duration-300",
+          "bg-card/80 backdrop-blur-lg border-b sticky top-0 z-50 transition-transform duration-300",
           isHidden && "-translate-y-full"
         )}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

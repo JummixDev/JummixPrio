@@ -450,7 +450,7 @@ export default function HostDashboardPage() {
     
     return (
         <div className="bg-secondary/20 min-h-screen">
-            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
+            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40 pt-16 -mt-16">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
                      <Button variant="ghost" size="icon" asChild>
                         <Link href="/dashboard">
@@ -463,7 +463,7 @@ export default function HostDashboardPage() {
             <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
                 {isAuthorized ? (
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-                        <aside className="lg:col-span-1 lg:sticky top-36">
+                        <aside className="lg:col-span-1 lg:sticky lg:top-36">
                              <nav className="flex flex-col space-y-2">
                                 {navItems.map(item => (
                                     <Button 

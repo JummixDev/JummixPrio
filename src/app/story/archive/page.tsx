@@ -35,7 +35,7 @@ const StoryTile = ({ story }: { story: (typeof mockArchivedStories)[0] }) => (
 export default function StoryArchivePage() {
     return (
         <div className="bg-background min-h-screen flex flex-col">
-            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
+            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40 pt-16 -mt-16">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
                     <Button variant="ghost" size="icon" asChild>
                         <Link href="/host/dashboard">

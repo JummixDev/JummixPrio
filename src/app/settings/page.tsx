@@ -527,7 +527,7 @@ export default function SettingsPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
+      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40 pt-16 -mt-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard">
@@ -539,7 +539,7 @@ export default function SettingsPage() {
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <aside className="md:col-span-1 md:sticky md:top-36">
+            <aside className="md:col-span-1 md:sticky top-36">
                 <nav className="flex flex-col space-y-2">
                     {navItems.map(item => (
                         <Button 
