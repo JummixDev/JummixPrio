@@ -221,6 +221,10 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         );
     };
 
+    const mapSrc = mapsApiKey 
+    ? `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(event.location)}&zoom=14&size=600x400&maptype=roadmap&markers=color:red%7C${encodeURIComponent(event.location)}&key=${mapsApiKey}`
+    : null;
+
 
   return (
     <div>
@@ -285,17 +289,16 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                         </CardHeader>
                         <CardContent>
                             <div className="aspect-video bg-secondary rounded-lg overflow-hidden flex items-center justify-center">
-                               {mapsApiKey ? (
-                                    <iframe
-                                        width="100%"
-                                        height="100%"
-                                        style={{ border: 0 }}
-                                        loading="lazy"
-                                        allowFullScreen
-                                        src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${encodeURIComponent(event.location)}`}>
-                                    </iframe>
+                               {mapSrc ? (
+                                    <Image
+                                        src={mapSrc}
+                                        alt={`Map of ${event.location}`}
+                                        width={600}
+                                        height={400}
+                                        className="w-full h-full object-cover"
+                                    />
                                 ) : (
-                                    <p className="text-muted-foreground">Google Maps API key is missing or invalid. Map cannot be displayed.</p>
+                                    <p className="text-muted-foreground p-4 text-center">Google Maps API key is missing or invalid. Map cannot be displayed. Please activate the 'Maps Static API' in your Google Cloud project.</p>
                                 )}
                             </div>
                         </CardContent>
