@@ -23,15 +23,15 @@ import {
   CheckCircle,
   Loader2,
 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '../ui/separator';
+import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { EventCard } from './EventCard';
 import { Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
 import { createCheckoutSession, toggleEventInteraction } from '@/app/actions';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type Event = {
     id: string;
@@ -385,5 +385,3 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
-
-    
