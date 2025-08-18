@@ -117,7 +117,7 @@ const FriendList = ({ users, type, onAction, currentUserData }: { users: UserPro
     );
 };
 
-export default function FriendsPageContent() {
+export default function FriendsPage() {
     const { user, userData, loading: authLoading } = useAuth();
     const [followers, setFollowers] = useState<UserProfile[]>([]);
     const [following, setFollowing] = useState<UserProfile[]>([]);
@@ -290,3 +290,4 @@ export default function FriendsPageContent() {
       </main>
   );
 }
+
