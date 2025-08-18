@@ -9,8 +9,9 @@ import { searchEventsWithAI, EventSearchInput } from "@/ai/flows/event-search";
 import type { EventSearchOutput } from "@/ai/flows/event-search";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove, getDoc } from "firebase/firestore";
-import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput } from "@/lib/schemas";
+import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput, storySchema, StoryInput } from "@/lib/schemas";
 import Stripe from 'stripe';
+import { uploadFile } from "@/services/storage";
 
 interface AIResult extends PersonalizedEventRecommendationsOutput {
   error?: string;
@@ -265,5 +266,41 @@ export async function createCheckoutSession(userId: string, eventId: string) {
              return { success: false, error: `Stripe Error: ${error.message}` };
         }
         return { success: false, error: 'Could not create payment session.' };
+    }
+}
+
+
+export async function createStory(storyData: StoryInput) {
+    const validation = storySchema.safeParse(storyData);
+    if (!validation.success) {
+        return { success: false, errors: validation.error.errors.map(e => e.message) };
+    }
+
+    try {
+        const { userId, imageDataUri, caption } = validation.data;
+
+        // Convert data URI to blob
+        const response = await fetch(imageDataUri);
+        const blob = await response.blob();
+        
+        // Create a File object from the Blob
+        const file = new File([blob], `story_${userId}_${Date.now()}.png`, { type: blob.type });
+
+        // Upload to storage
+        const filePath = `stories/${userId}/${file.name}`;
+        const imageUrl = await uploadFile(file, filePath);
+
+        // Save to Firestore
+        await addDoc(collection(db, "stories"), {
+            userId,
+            imageUrl,
+            caption: caption || '',
+            createdAt: serverTimestamp(),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error creating story:", error);
+        return { success: false, errors: ["Failed to create the story."] };
     }
 }

@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { createStory } from '@/app/actions';
 
 
 export default function CreateStoryPage() {
@@ -24,6 +25,7 @@ export default function CreateStoryPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    const [caption, setCaption] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isFlipped, setIsFlipped] = useState(true);
 
@@ -99,17 +101,32 @@ export default function CreateStoryPage() {
         }
     };
     
-    const handlePostStory = () => {
+    const handlePostStory = async () => {
+        if (!capturedImage || !user) return;
         setIsProcessing(true);
-        // In a real app, you would upload `capturedImage` to storage
-        // and then create a new story document in Firestore.
-        toast({
-            title: 'Story Posted! (Simulated)',
-            description: 'Your story has been shared with your followers.',
+
+        const result = await createStory({
+            userId: user.uid,
+            imageDataUri: capturedImage,
+            caption: caption,
         });
-        setTimeout(() => {
-            router.push('/dashboard');
-        }, 1500);
+
+        if (result.success) {
+            toast({
+                title: 'Story Posted!',
+                description: 'Your story has been shared with your followers.',
+            });
+            setTimeout(() => {
+                router.push('/dashboard');
+            }, 1500);
+        } else {
+             toast({
+                variant: 'destructive',
+                title: 'Post Failed',
+                description: result.errors?.join(', ') || 'Could not post your story. Please try again.',
+            });
+            setIsProcessing(false);
+        }
     }
 
     if (authLoading || hasCameraPermission === null) {
@@ -176,7 +193,7 @@ export default function CreateStoryPage() {
                 />
                 {capturedImage ? (
                     <div className="mt-4 space-y-4">
-                        <Textarea placeholder="Add a caption... (optional)" />
+                        <Textarea placeholder="Add a caption... (optional)" value={caption} onChange={(e) => setCaption(e.target.value)}/>
                         <Button className="w-full" onClick={handlePostStory} disabled={isProcessing}>
                              {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Post Story

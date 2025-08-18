@@ -46,4 +46,14 @@ export const reviewSchema = z.object({
 });
 
 export type ReviewInput = z.infer<typeof reviewSchema>;
+
+export const storySchema = z.object({
+    userId: z.string(),
+    imageDataUri: z.string().refine(val => val.startsWith('data:image/'), {
+        message: 'Image data must be a valid data URI',
+    }),
+    caption: z.string().max(280, "Caption cannot exceed 280 characters.").optional(),
+});
+
+export type StoryInput = z.infer<typeof storySchema>;
     
