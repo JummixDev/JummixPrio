@@ -69,7 +69,7 @@ export function AIRecommender() {
                         <Wand2 className="text-primary" />
                         <div>
                             <CardTitle className="font-headline">AI Recommendations</CardTitle>
-                            <CardDescription>Get personalized suggestions.</CardDescription>
+                            <CardDescription>Get personalized suggestions or explore all events.</CardDescription>
                         </div>
                     </div>
                     <Button variant="ghost" size="icon" className="w-8 h-8" asChild>

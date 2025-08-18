@@ -10,7 +10,7 @@ import { EventCard } from "@/components/jummix/EventCard";
 import { Leaderboard } from "@/components/jummix/Leaderboard";
 import { AIRecommender } from "@/components/jummix/AIRecommender";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Heart, Bookmark, Calendar } from "lucide-react";
+import { MapPin, Search, Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Heart, Bookmark, Calendar, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -175,6 +175,13 @@ export default function DashboardPage() {
                       <EventList eventIds={userData?.savedEvents || []} emptyText="You haven't saved any events yet." />
                   </TabsContent>
                 </Tabs>
+                <div className="mt-6 text-center">
+                    <Button asChild variant="outline">
+                        <Link href="/explore">
+                           Mehr entdecken <ArrowRight className="ml-2 h-4 w-4"/>
+                        </Link>
+                    </Button>
+                </div>
             </div>
           </div>
 
