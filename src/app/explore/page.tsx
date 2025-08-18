@@ -29,7 +29,7 @@ import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import FriendsPageContent from '../friends/page';
-import ChatsPageContent from '../chats/page';
+import { ChatList } from '@/components/jummix/ChatList';
 import { cn } from '@/lib/utils';
 
 
@@ -308,7 +308,7 @@ export default function ExplorePage() {
                     </div>
                 </div>
                 <div className="h-[calc(100vh-20rem)]">
-                    <ChatsPageContent />
+                    <ChatList />
                 </div>
             </div>
       </main>

@@ -5,7 +5,7 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import ChatsPageContent from './page';
+import { ChatList } from '@/components/jummix/ChatList';
 
 
 // This is now a wrapper page component to provide the standard page layout
@@ -24,7 +24,7 @@ export default function ChatsPage() {
       </header>
        <main className="container mx-auto p-0 md:p-4 pt-16 flex-grow">
             <div className="h-[calc(100vh-10.5rem)]">
-                <ChatsPageContent/>
+                <ChatList/>
             </div>
       </main>
     </div>
