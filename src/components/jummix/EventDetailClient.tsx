@@ -298,7 +298,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <p className="text-muted-foreground p-4 text-center">Google Maps API key is missing or invalid. Map cannot be displayed. Please activate the 'Maps Static API' in your Google Cloud project.</p>
+                                    <p className="text-muted-foreground p-4 text-center">Google Maps API key is missing or invalid. Please activate the 'Maps Static API' in your Google Cloud project.</p>
                                 )}
                             </div>
                         </CardContent>
@@ -384,5 +384,4 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         </div>
     </div>
   );
-
-    
+}
