@@ -387,7 +387,7 @@ export default function ExplorePage() {
                     </div>
                 )}
             </div>
-             <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[100%]", {
+             <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[100%] pt-16", {
                 'translate-x-[110%]': view === 'explore',
                 'translate-x-0': view === 'friends',
                 '-translate-x-[110%]': view === 'chats',
@@ -437,5 +437,3 @@ export default function ExplorePage() {
     </div>
   );
 }
-
-    
