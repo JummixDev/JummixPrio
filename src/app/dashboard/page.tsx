@@ -149,11 +149,13 @@ export default function DashboardPage() {
             <EventReels />
              <div>
                 <Tabs defaultValue="upcoming" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 mb-4">
-                    <TabsTrigger value="upcoming" className="gap-2"><Calendar/>Upcoming</TabsTrigger>
-                    <TabsTrigger value="liked" className="gap-2"><Heart/>Liked</TabsTrigger>
-                    <TabsTrigger value="saved" className="gap-2"><Bookmark/>Saved</TabsTrigger>
-                  </TabsList>
+                  <div className="flex justify-center mb-4">
+                    <TabsList>
+                      <TabsTrigger value="upcoming" className="gap-2"><Calendar/>Upcoming</TabsTrigger>
+                      <TabsTrigger value="liked" className="gap-2"><Heart/>Liked</TabsTrigger>
+                      <TabsTrigger value="saved" className="gap-2"><Bookmark/>Saved</TabsTrigger>
+                    </TabsList>
+                  </div>
                   <TabsContent value="upcoming">
                     {loadingUpcoming ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -176,7 +178,7 @@ export default function DashboardPage() {
                   </TabsContent>
                 </Tabs>
                 <div className="mt-6 text-center">
-                    <Button asChild variant="outline">
+                    <Button asChild>
                         <Link href="/explore">
                            Mehr entdecken <ArrowRight className="ml-2 h-4 w-4"/>
                         </Link>
