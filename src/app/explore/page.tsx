@@ -79,7 +79,7 @@ const FriendList = ({ users, type, onAction, currentUserData }: { users: UserPro
     const { user: currentUser } = useAuth();
 
     const handleFollow = async (targetUserUid: string) => {
-        if (!currentUser) return;
+        if (!currentUser || !targetUserUid) return;
         
         const currentUserRef = doc(db, "users", currentUser.uid);
         const targetUserRef = doc(db, "users", targetUserUid);
@@ -195,7 +195,7 @@ export default function ExplorePage() {
     try {
         const usersRef = collection(db, "users");
         const querySnapshot = await getDocs(usersRef);
-        const fetchedUsers = querySnapshot.docs.map(doc => doc.data() as UserProfile);
+        const fetchedUsers = querySnapshot.docs.map(doc => ({ uid: doc.id, ...(doc.data() as Omit<UserProfile, 'uid'>) }));
         setAllUsers(fetchedUsers);
     } catch (error) {
         console.error("Error fetching friends data:", error);
