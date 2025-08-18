@@ -99,11 +99,11 @@ const FriendList = ({ users, type, onAction, currentUserData }: { users: UserPro
             {users.map(user => (
                 <div key={user.uid} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
                      <Link href={`/profile/${user.username}`} className='contents'>
-                        <Avatar key={`${user.uid}-avatar`} className="w-12 h-12">
+                        <Avatar className="w-12 h-12">
                             <AvatarImage src={user.photoURL} alt={user.displayName} data-ai-hint={user.hint} />
                             <AvatarFallback>{user.displayName?.substring(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <div key={`${user.uid}-info`} className="flex-grow">
+                        <div className="flex-grow">
                             <p className="font-semibold">{user.displayName}</p>
                             <p className="text-sm text-muted-foreground">@{user.username}</p>
                         </div>
