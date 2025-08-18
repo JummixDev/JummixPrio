@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -244,180 +245,186 @@ export default function EditEventPage() {
     }
 
     return (
-        <div className="bg-secondary/20 min-h-screen flex flex-col items-center justify-center p-4 pt-16">
-            <div className="w-full max-w-3xl space-y-6">
-                <Button variant="ghost" size="sm" asChild className="mb-4">
-                    <Link href="/host/dashboard">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Host Dashboard
-                    </Link>
-                </Button>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="font-headline text-2xl">Edit Event</CardTitle>
-                        <CardDescription>Update the details for your event below.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Event Name</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="e.g., Summer Music Festival" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-secondary/20 min-h-screen">
+            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-30">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
+                    <Button variant="ghost" size="sm" asChild>
+                        <Link href="/host/dashboard">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Host Dashboard
+                        </Link>
+                    </Button>
+                </div>
+            </header>
+            <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
+                <div className="w-full max-w-3xl mx-auto space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline text-2xl">Edit Event</CardTitle>
+                            <CardDescription>Update the details for your event below.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Form {...form}>
+                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                                     <FormField
                                         control={form.control}
-                                        name="date"
+                                        name="name"
                                         render={({ field }) => (
-                                            <FormItem className="flex flex-col">
-                                                <FormLabel>Event Date</FormLabel>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <FormControl>
-                                                            <Button
-                                                                variant={"outline"}
-                                                                className={cn(
-                                                                    "w-full pl-3 text-left font-normal",
-                                                                    !field.value && "text-muted-foreground"
-                                                                )}
-                                                            >
-                                                                {field.value ? (
-                                                                    format(field.value, "PPP")
-                                                                ) : (
-                                                                    <span>Pick a date</span>
-                                                                )}
-                                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                            </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0" align="start">
-                                                        <Calendar
-                                                            mode="single"
-                                                            selected={field.value}
-                                                            onSelect={field.onChange}
-                                                            disabled={(date) => date < new Date()}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
+                                            <FormItem>
+                                                <FormLabel>Event Name</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="e.g., Summer Music Festival" {...field} />
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <FormField
+                                            control={form.control}
+                                            name="date"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-col">
+                                                    <FormLabel>Event Date</FormLabel>
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <FormControl>
+                                                                <Button
+                                                                    variant={"outline"}
+                                                                    className={cn(
+                                                                        "w-full pl-3 text-left font-normal",
+                                                                        !field.value && "text-muted-foreground"
+                                                                    )}
+                                                                >
+                                                                    {field.value ? (
+                                                                        format(field.value, "PPP")
+                                                                    ) : (
+                                                                        <span>Pick a date</span>
+                                                                    )}
+                                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                                </Button>
+                                                            </FormControl>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-auto p-0" align="start">
+                                                            <Calendar
+                                                                mode="single"
+                                                                selected={field.value}
+                                                                onSelect={field.onChange}
+                                                                disabled={(date) => date < new Date()}
+                                                                initialFocus
+                                                            />
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="location"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Location</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="e.g., Central Park, NYC" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
                                     <FormField
                                         control={form.control}
-                                        name="location"
+                                        name="description"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Location</FormLabel>
+                                                <FormLabel>Event Description</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="e.g., Central Park, NYC" {...field} />
+                                                    <Textarea
+                                                        placeholder="Tell everyone what makes your event special..."
+                                                        className="resize-y min-h-[100px]"
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-                                </div>
-                                <FormField
-                                    control={form.control}
-                                    name="description"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Event Description</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    placeholder="Tell everyone what makes your event special..."
-                                                    className="resize-y min-h-[100px]"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                     <FormField
-                                        control={form.control}
-                                        name="image"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Event Image URL</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="https://placehold.co/600x400.png" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                     <FormField
-                                        control={form.control}
-                                        name="price"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Ticket Price (€)</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" placeholder="Enter 0 for a free event" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                     <FormField
-                                        control={form.control}
-                                        name="expenses"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Total Expenses (€)</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" placeholder="e.g., 1500" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                     <FormField
-                                        control={form.control}
-                                        name="capacity"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Max. Capacity</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" placeholder="e.g., 200" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+                                        <FormField
+                                            control={form.control}
+                                            name="image"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Event Image URL</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="https://placehold.co/600x400.png" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="price"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Ticket Price (€)</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" placeholder="Enter 0 for a free event" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <FormField
+                                            control={form.control}
+                                            name="expenses"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Total Expenses (€)</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" placeholder="e.g., 1500" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="capacity"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Max. Capacity</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" placeholder="e.g., 200" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
 
-                                <ProfitabilityCalculator form={form} />
+                                    <ProfitabilityCalculator form={form} />
 
-                                <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
-                                    {form.formState.isSubmitting ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Saving Changes...
-                                        </>
-                                    ) : 'Save Changes'}
-                                </Button>
-                            </form>
-                        </Form>
-                    </CardContent>
-                </Card>
+                                    <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+                                        {form.formState.isSubmitting ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Saving Changes...
+                                            </>
+                                        ) : 'Save Changes'}
+                                    </Button>
+                                </form>
+                            </Form>
+                        </CardContent>
+                    </Card>
 
-                <CheckInScanner />
-            </div>
+                    <CheckInScanner />
+                </div>
+            </main>
         </div>
     );
 }

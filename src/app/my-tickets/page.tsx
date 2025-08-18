@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { ArrowLeft, Loader2, QrCode, Ticket } from 'lucide-react';
@@ -87,7 +88,7 @@ export default function MyTicketsPage() {
 
   return (
     <div className="bg-secondary/20 min-h-screen">
-      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
+      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard">
