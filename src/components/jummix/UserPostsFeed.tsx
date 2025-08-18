@@ -6,7 +6,7 @@ import { Button } from "../ui/button";
 import { ArrowUpRight, Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
 
 const mockPost = {
@@ -60,19 +60,21 @@ const mockFeed = [
 ];
 
 const PostCard = ({ post }: { post: typeof mockPost }) => (
-     <Card>
+     <Card className="w-full">
         <CardHeader className="flex flex-row items-center gap-4 p-4">
+            <Link href={`/profile/${post.user.username}`}>
                 <Avatar>
                 <AvatarImage src={post.user.avatar} alt={post.user.name} data-ai-hint={post.user.hint}/>
                 <AvatarFallback>{post.user.name.substring(0,2)}</AvatarFallback>
-            </Avatar>
+                </Avatar>
+            </Link>
             <div>
-                <p className="font-semibold">{post.user.name}</p>
+                <Link href={`/profile/${post.user.username}`}><p className="font-semibold hover:underline">{post.user.name}</p></Link>
                 <p className="text-sm text-muted-foreground">@{post.user.username} &middot; {post.time}</p>
             </div>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-            <p className="mb-4">{post.content}</p>
+            <p className="mb-4 whitespace-pre-wrap">{post.content}</p>
             {post.image && (
                 <div className="aspect-video relative rounded-lg overflow-hidden mb-4">
                     <Image src={post.image.src} alt="Post image" layout="fill" objectFit="cover" data-ai-hint={post.image.hint} />
@@ -112,8 +114,9 @@ export function UserPostsFeed() {
     <DialogContent className="max-w-2xl">
         <DialogHeader>
             <DialogTitle className="font-headline">Full Community Feed</DialogTitle>
+            <DialogDescription>Bleib auf dem Laufenden mit den neuesten Posts aus der Community.</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[70vh]">
+        <ScrollArea className="h-[70vh] border-t">
             <div className="space-y-6 p-4">
                 {mockFeed.map((post, index) => (
                     <PostCard key={index} post={post} />

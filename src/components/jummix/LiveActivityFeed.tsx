@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowUpRight, CalendarCheck, Share2, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
 
 const activities = [
@@ -120,12 +120,13 @@ export function LiveActivityFeed() {
         <DialogContent>
             <DialogHeader>
                 <DialogTitle className="font-headline">Full Activity Feed</DialogTitle>
+                <DialogDescription>Alle kürzlichen Aktivitäten von dir und deinen Freunden im Überblick.</DialogDescription>
             </DialogHeader>
              <ScrollArea className="h-96">
-                <ul className="space-y-6 pr-4">
+                <ul className="space-y-4 pr-4 pt-4">
                 {allActivities.map((activity, index) => (
-                    <li key={index} className="flex items-start space-x-4">
-                    <Avatar className="w-10 h-10 border-2 border-secondary flex-shrink-0">
+                    <li key={index} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-muted/50">
+                    <Avatar className="w-12 h-12 border-2 border-secondary flex-shrink-0">
                         <AvatarImage src={activity.avatar} alt={activity.user} data-ai-hint={activity.hint} />
                         <AvatarFallback>{activity.user.substring(0, 2)}</AvatarFallback>
                     </Avatar>

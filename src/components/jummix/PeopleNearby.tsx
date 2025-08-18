@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
 import { ArrowUpRight, Users } from "lucide-react";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
 
 const mockUsers = [
@@ -58,23 +58,27 @@ export function PeopleNearby() {
             </div>
         </CardContent>
         </Card>
-        <DialogContent>
+        <DialogContent className="sm:max-w-xl">
             <DialogHeader>
                 <DialogTitle className="font-headline flex items-center gap-2"><Users/> All People Nearby</DialogTitle>
+                <DialogDescription>Finde neue Leute und potenzielle Freunde in deiner Umgebung.</DialogDescription>
             </DialogHeader>
-            <ScrollArea className="h-96">
-                <div className="grid grid-cols-4 gap-4 p-4">
+            <ScrollArea className="h-[70vh]">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 p-4">
                     {allMockUsers.map((user) => (
                         <Link
                         key={user.username}
                         href={`/profile/${user.username}`}
-                        className="flex flex-col items-center gap-2 text-center flex-shrink-0 cursor-pointer group"
+                        className="flex flex-col items-center gap-2 text-center cursor-pointer group p-4 rounded-lg hover:bg-muted/50"
                         >
-                        <Avatar className="w-20 h-20 border-2 border-transparent group-hover:border-primary transition-colors">
+                        <Avatar className="w-24 h-24 border-2 border-transparent group-hover:border-primary transition-colors">
                             <AvatarImage src={user.avatar} alt={user.name} data-ai-hint={user.hint} />
                             <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <span className="text-sm font-medium w-24 truncate">{user.name}</span>
+                        <div className="text-center">
+                            <p className="text-sm font-semibold w-24 truncate">{user.name}</p>
+                            <p className="text-xs text-muted-foreground">@{user.username}</p>
+                        </div>
                         </Link>
                     ))}
                 </div>
