@@ -23,15 +23,15 @@ import {
   CheckCircle,
   Loader2,
 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '../ui/separator';
+import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { EventCard } from './EventCard';
 import { Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
 import { createCheckoutSession, toggleEventInteraction } from '@/app/actions';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type Event = {
     id: string;
@@ -366,7 +366,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             <Separator className="my-4"/>
                             <CardContent>
                                 <Link href={`/hosts/${event.organizer.username}`} className="flex items-center gap-4 group">
-                                    <Avatar className="w-12 h-12">
+                                    <Avatar className="w-12 w-12">
                                         <AvatarImage src={event.organizer.avatar} data-ai-hint={event.organizer.hint} />
                                         <AvatarFallback>{event.organizer.name.substring(0,2)}</AvatarFallback>
                                     </Avatar>
