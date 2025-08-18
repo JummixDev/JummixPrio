@@ -342,7 +342,7 @@ export default function ExplorePage() {
               </Sheet>
           </div>
       </header>
-       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16 h-full">
+       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16 h-full flex flex-col">
             <div className={cn("transition-transform duration-500 ease-in-out h-full", {
                 'translate-x-0': view === 'explore',
                 '-translate-x-[110%]': view === 'friends' || view === 'chats',
@@ -390,7 +390,7 @@ export default function ExplorePage() {
                         </Button>
                     </div>
                 </div>
-                 <ScrollArea className="flex-grow h-[calc(100vh-20rem)]">
+                 <ScrollArea className="flex-grow min-h-0">
                    {loadingFriends ? (
                         <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
                    ) : (
