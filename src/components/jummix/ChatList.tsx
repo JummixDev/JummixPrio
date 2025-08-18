@@ -14,6 +14,7 @@ import { sendMessage } from '@/app/actions';
 import { ScrollArea } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 
 type Participant = {
     uid: string;
@@ -36,41 +37,42 @@ type Message = {
     timestamp: Timestamp;
 }
 
-const ConversationList = ({ conversations, onSelect, activeConversationId }: { conversations: Conversation[], onSelect: (id: string) => void, activeConversationId: string | null }) => {
+const ConversationList = ({ conversations, onSelect, activeConversationId, emptyText }: { conversations: Conversation[], onSelect: (id: string) => void, activeConversationId: string | null, emptyText: string }) => {
     const { user } = useAuth();
+    
+    if (conversations.length === 0) {
+        return <div className="p-8 text-center text-muted-foreground">{emptyText}</div>
+    }
 
     return (
-        <div className="border-r">
-            <h2 className="p-4 text-lg font-semibold border-b">Conversations</h2>
-            <ScrollArea className="h-[calc(100%-4rem)]">
-                 <div className="flex flex-col">
-                    {conversations.map(convo => {
-                        const otherParticipant = convo.participants.find(p => p.uid !== user?.uid);
-                        return (
-                            <button
-                                key={convo.id}
-                                onClick={() => onSelect(convo.id)}
-                                className={`flex items-center gap-4 p-4 text-left w-full hover:bg-muted/50 ${activeConversationId === convo.id ? 'bg-muted' : ''}`}
-                            >
-                                <Avatar className="w-12 h-12">
-                                    <AvatarImage src={otherParticipant?.avatar} alt={otherParticipant?.name} data-ai-hint={otherParticipant?.hint} />
-                                    <AvatarFallback>{otherParticipant?.name.substring(0,2)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-grow overflow-hidden">
-                                    <div className="flex justify-between">
-                                        <p className="font-semibold truncate">{otherParticipant?.name}</p>
-                                        <p className="text-xs text-muted-foreground flex-shrink-0">
-                                            {convo.lastMessageTimestamp ? formatDistanceToNow(convo.lastMessageTimestamp.toDate(), { addSuffix: true }) : ''}
-                                        </p>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground truncate">{convo.lastMessage}</p>
+        <ScrollArea className="h-[calc(100%-4rem)]">
+             <div className="flex flex-col">
+                {conversations.map(convo => {
+                    const otherParticipant = convo.participants.find(p => p.uid !== user?.uid);
+                    return (
+                        <button
+                            key={convo.id}
+                            onClick={() => onSelect(convo.id)}
+                            className={`flex items-center gap-4 p-4 text-left w-full hover:bg-muted/50 ${activeConversationId === convo.id ? 'bg-muted' : ''}`}
+                        >
+                            <Avatar className="w-12 h-12">
+                                <AvatarImage src={otherParticipant?.avatar} alt={otherParticipant?.name} data-ai-hint={otherParticipant?.hint} />
+                                <AvatarFallback>{otherParticipant?.name.substring(0,2)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-grow overflow-hidden">
+                                <div className="flex justify-between">
+                                    <p className="font-semibold truncate">{otherParticipant?.name}</p>
+                                    <p className="text-xs text-muted-foreground flex-shrink-0">
+                                        {convo.lastMessageTimestamp ? formatDistanceToNow(convo.lastMessageTimestamp.toDate(), { addSuffix: true }) : ''}
+                                    </p>
                                 </div>
-                            </button>
-                        )
-                    })}
-                </div>
-            </ScrollArea>
-        </div>
+                                <p className="text-sm text-muted-foreground truncate">{convo.lastMessage}</p>
+                            </div>
+                        </button>
+                    )
+                })}
+            </div>
+        </ScrollArea>
     );
 };
 
@@ -224,7 +226,15 @@ export function ChatList() {
         return (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-full border rounded-lg">
                 <div className="border-r hidden md:block">
-                    <h2 className="p-4 text-lg font-semibold border-b"><Skeleton className="h-6 w-32" /></h2>
+                    <div className="p-4 border-b">
+                        <Tabs defaultValue="all">
+                            <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="all">All</TabsTrigger>
+                                <TabsTrigger value="groups">Groups</TabsTrigger>
+                                <TabsTrigger value="archived">Archived</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                    </div>
                     <div className="p-4 space-y-4">
                         <div className="flex items-center gap-4"><Skeleton className="w-12 h-12 rounded-full" /><div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-3 w-40" /></div></div>
                         <div className="flex items-center gap-4"><Skeleton className="w-12 h-12 rounded-full" /><div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-3 w-40" /></div></div>
@@ -236,23 +246,47 @@ export function ChatList() {
             </div>
         );
     }
-    
-    if (conversations.length === 0) {
-        return (
-            <div className="flex items-center justify-center h-full border rounded-lg">
-                <p className="text-muted-foreground">You have no conversations yet.</p>
-            </div>
-        )
-    }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-full border rounded-lg overflow-hidden">
         <div className={`${activeConversationId ? 'hidden' : 'block'} md:block`}>
-            <ConversationList 
-                conversations={conversations} 
-                onSelect={setActiveConversationId}
-                activeConversationId={activeConversationId}
-            />
+             <div className="border-r h-full flex flex-col">
+                <div className='p-4 border-b'>
+                    <Tabs defaultValue="all" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="all">All</TabsTrigger>
+                            <TabsTrigger value="groups">Groups</TabsTrigger>
+                            <TabsTrigger value="archived">Archived</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+                <Tabs defaultValue="all" className="w-full flex-grow">
+                    <TabsContent value="all" className="h-full m-0">
+                         <ConversationList 
+                            conversations={conversations} 
+                            onSelect={setActiveConversationId}
+                            activeConversationId={activeConversationId}
+                            emptyText="You have no conversations yet."
+                        />
+                    </TabsContent>
+                    <TabsContent value="groups" className="h-full m-0">
+                         <ConversationList 
+                            conversations={[]} // Placeholder for group chats
+                            onSelect={setActiveConversationId}
+                            activeConversationId={activeConversationId}
+                            emptyText="You have no group conversations."
+                        />
+                    </TabsContent>
+                     <TabsContent value="archived" className="h-full m-0">
+                         <ConversationList 
+                            conversations={[]} // Placeholder for archived chats
+                            onSelect={setActiveConversationId}
+                            activeConversationId={activeConversationId}
+                            emptyText="You have no archived conversations."
+                        />
+                    </TabsContent>
+                </Tabs>
+            </div>
         </div>
         <div className={`col-span-1 md:col-span-2 lg:col-span-3 ${!activeConversationId ? 'hidden' : 'block'} md:block`}>
             {activeConversationId ? (
