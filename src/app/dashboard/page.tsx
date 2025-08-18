@@ -133,7 +133,7 @@ export default function DashboardPage() {
 
   return (
     <div className="bg-background min-h-screen font-body flex flex-col">
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow pt-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start hidden lg:block">

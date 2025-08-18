@@ -110,7 +110,7 @@ export default function CreateStoryPage() {
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
-       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
               <Button variant="ghost" size="icon" asChild>
                   <Link href="/dashboard">
@@ -120,7 +120,7 @@ export default function CreateStoryPage() {
               <h1 className="text-xl font-bold ml-4">Create a new Story</h1>
           </div>
       </header>
-       <main className="flex-grow container mx-auto p-4 flex items-center justify-center">
+       <main className="flex-grow container mx-auto p-4 flex items-center justify-center pt-16">
         <Card className="w-full max-w-md">
             <CardContent className="p-4">
                 <div className="aspect-square bg-muted rounded-lg overflow-hidden relative flex items-center justify-center">

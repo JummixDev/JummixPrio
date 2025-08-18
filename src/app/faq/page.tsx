@@ -36,7 +36,7 @@ const faqItems = [
 export default function FaqPage() {
   return (
     <div className="bg-background min-h-screen flex flex-col">
-       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
               <Button variant="ghost" size="icon" asChild>
                   <Link href="/dashboard">
@@ -46,7 +46,7 @@ export default function FaqPage() {
               <h1 className="text-xl font-bold ml-4">Häufig gestellte Fragen (FAQ)</h1>
           </div>
       </header>
-      <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
         <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl font-bold font-headline mb-2 text-center">Haben Sie Fragen?</h2>
             <p className="text-muted-foreground mb-8 text-center">Hier finden Sie Antworten auf die häufigsten Fragen zu Jummix.</p>

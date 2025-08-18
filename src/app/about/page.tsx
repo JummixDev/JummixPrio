@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function AboutPage() {
   return (
     <div className="bg-background min-h-screen flex flex-col">
-       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
               <Button variant="ghost" size="icon" asChild>
                   <Link href="/dashboard">
@@ -18,7 +18,7 @@ export default function AboutPage() {
               <h1 className="text-xl font-bold ml-4">Über Jummix</h1>
           </div>
       </header>
-      <main className="flex-grow">
+      <main className="flex-grow pt-16">
         <section className="relative py-20 sm:py-32 flex items-center justify-center text-center">
             <div className="absolute inset-0 z-0">
                 <Image src="https://placehold.co/1920x1080.png" alt="Menschen bei einem Event" layout="fill" objectFit="cover" className="opacity-20" data-ai-hint="people community event" />

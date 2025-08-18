@@ -244,7 +244,7 @@ export default function EditEventPage() {
     }
 
     return (
-        <div className="bg-secondary/20 min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="bg-secondary/20 min-h-screen flex flex-col items-center justify-center p-4 pt-16">
             <div className="w-full max-w-3xl space-y-6">
                 <Button variant="ghost" size="sm" asChild className="mb-4">
                     <Link href="/host/dashboard">

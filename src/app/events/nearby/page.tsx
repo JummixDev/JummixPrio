@@ -101,7 +101,7 @@ export default function NearbyEventsPage() {
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
-      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
+      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
               <Button variant="ghost" size="icon" asChild>
                   <Link href="/dashboard">
@@ -111,7 +111,7 @@ export default function NearbyEventsPage() {
               <h1 className="text-xl font-bold ml-4">Nearby Events</h1>
           </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow pt-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
                 <EventCard key={event.id} event={event} />

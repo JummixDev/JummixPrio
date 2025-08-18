@@ -24,9 +24,8 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased h-full`}>
         <AuthProvider>
             <GlobalHeader />
-            <div className="pt-16">
-              {children}
-            </div>
+            {/* The pt-16 is removed from here and will be applied to the main content of each page individually */}
+            {children}
         </AuthProvider>
         <Toaster />
       </body>

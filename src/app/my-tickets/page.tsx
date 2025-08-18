@@ -87,7 +87,7 @@ export default function MyTicketsPage() {
 
   return (
     <div className="bg-secondary/20 min-h-screen">
-      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
+      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard">
@@ -97,7 +97,7 @@ export default function MyTicketsPage() {
           <h1 className="text-xl font-bold ml-4">My Tickets</h1>
         </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
         {tickets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {tickets.map(ticket => (

@@ -25,7 +25,7 @@ export default function ContactPage() {
 
   return (
     <div className="bg-secondary/20 min-h-screen flex flex-col">
-       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
               <Button variant="ghost" size="icon" asChild>
                   <Link href="/dashboard">
@@ -35,7 +35,7 @@ export default function ContactPage() {
               <h1 className="text-xl font-bold ml-4">Kontakt</h1>
           </div>
       </header>
-      <main className="flex-grow flex items-center justify-center container mx-auto p-4">
+      <main className="flex-grow flex items-center justify-center container mx-auto p-4 pt-16">
         <Card className="w-full max-w-lg">
             <CardHeader>
                 <CardTitle className="font-headline text-2xl">Schreiben Sie uns</CardTitle>

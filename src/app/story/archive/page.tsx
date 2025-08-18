@@ -35,7 +35,7 @@ const StoryTile = ({ story }: { story: (typeof mockArchivedStories)[0] }) => (
 export default function StoryArchivePage() {
     return (
         <div className="bg-background min-h-screen flex flex-col">
-            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
+            <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-20">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
                     <Button variant="ghost" size="icon" asChild>
                         <Link href="/host/dashboard">
@@ -45,7 +45,7 @@ export default function StoryArchivePage() {
                     <h1 className="text-xl font-bold ml-4">Story Archive</h1>
                 </div>
             </header>
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
+            <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow pt-16">
                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {mockArchivedStories.map((story) => (
                         <StoryTile key={story.id} story={story} />
@@ -56,5 +56,3 @@ export default function StoryArchivePage() {
         </div>
     );
 }
-
-    
