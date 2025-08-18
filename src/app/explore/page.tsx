@@ -287,8 +287,8 @@ export default function ExplorePage() {
             })}>
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold font-headline mb-2">Discover Friends</h1>
-                        <p className="text-muted-foreground">Connect with new people and find shared interests.</p>
+                        <h1 className="text-3xl font-bold font-headline mb-2">Freunde entdecken</h1>
+                        <p className="text-muted-foreground">Vernetze dich mit neuen Leuten und finde gemeinsame Interessen.</p>
                     </div>
                     <Button onClick={() => setView('chats')}>
                         Nachricht schreiben <MessageSquare className="ml-2 h-4 w-4" />
