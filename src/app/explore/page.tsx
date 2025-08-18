@@ -4,7 +4,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users } from 'lucide-react';
+import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Footer } from '@/components/jummix/Footer';
 import { Input } from '@/components/ui/input';
@@ -241,8 +241,7 @@ export default function ExplorePage() {
                     <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
                 </div>
                 <Button onClick={() => setView('friends')}>
-                    <Users className="mr-2 h-4 w-4" />
-                    Zu Freunden
+                    Freunde entdecken <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             </div>
             
