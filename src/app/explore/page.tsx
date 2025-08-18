@@ -170,8 +170,7 @@ export default function ExplorePage() {
                        <ArrowLeft />
                    )}
               </Button>
-              <div className="relative flex-grow invisible">
-                <GlobalSearch />
+              <div className="relative flex-grow">
               </div>
               <Sheet>
                 <SheetTrigger asChild>
@@ -290,9 +289,14 @@ export default function ExplorePage() {
                         <h1 className="text-3xl font-bold font-headline mb-2">Freunde entdecken</h1>
                         <p className="text-muted-foreground">Vernetze dich mit neuen Leuten und finde gemeinsame Interessen.</p>
                     </div>
-                    <Button onClick={() => setView('chats')}>
-                        Nachricht schreiben <MessageSquare className="ml-2 h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button onClick={() => setView('explore')} variant="outline">
+                             <ArrowLeft className="mr-2 h-4 w-4" /> Events entdecken
+                        </Button>
+                        <Button onClick={() => setView('chats')}>
+                            Nachricht schreiben <MessageSquare className="ml-2 h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
                 <FriendsPageContent />
             </div>
