@@ -127,7 +127,7 @@ export function NotificationCenter() {
 
                         <div className="flex-grow">
                         <p className="text-sm">
-                            <span className="font-bold text-foreground">{notification.user}</span>{" "}
+                            <span className="font-bold text-foreground hover:underline">{notification.user}</span>{" "}
                             {notification.action}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">

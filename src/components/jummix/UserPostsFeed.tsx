@@ -62,16 +62,16 @@ const mockFeed = [
 const PostCard = ({ post }: { post: typeof mockPost }) => (
      <Card className="w-full">
         <CardHeader className="flex flex-row items-center gap-4 p-4">
-            <Link href={`/profile/${post.user.username}`}>
+            <Link href={`/profile/${post.user.username}`} className="contents">
                 <Avatar>
                 <AvatarImage src={post.user.avatar} alt={post.user.name} data-ai-hint={post.user.hint}/>
                 <AvatarFallback>{post.user.name.substring(0,2)}</AvatarFallback>
                 </Avatar>
+                <div>
+                    <p className="font-semibold hover:underline">{post.user.name}</p>
+                    <p className="text-sm text-muted-foreground">@{post.user.username} &middot; {post.time}</p>
+                </div>
             </Link>
-            <div>
-                <Link href={`/profile/${post.user.username}`}><p className="font-semibold hover:underline">{post.user.name}</p></Link>
-                <p className="text-sm text-muted-foreground">@{post.user.username} &middot; {post.time}</p>
-            </div>
         </CardHeader>
         <CardContent className="p-4 pt-0">
             <p className="mb-4 whitespace-pre-wrap">{post.content}</p>
