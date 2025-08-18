@@ -34,6 +34,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const categories = ["Music", "Sports", "Art", "Tech", "Food", "Outdoors", "Comedy", "Workshops"];
@@ -391,8 +392,7 @@ export default function ExplorePage() {
        <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16 h-full">
             <div className={cn("transition-transform duration-500 ease-in-out h-full", {
                 'translate-x-0': view === 'explore',
-                '-translate-x-[110%]': view === 'friends',
-                '-translate-x-[220%]': view === 'chats',
+                '-translate-x-[110%]': view === 'friends' || view === 'chats',
             })}>
                 <div className="flex justify-between items-center mb-8">
                     <div>
@@ -418,12 +418,12 @@ export default function ExplorePage() {
                     </div>
                 )}
             </div>
-            <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[100%]", {
+            <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[100%]", {
                 'translate-x-[110%]': view === 'explore',
                 'translate-x-0': view === 'friends',
                 '-translate-x-[110%]': view === 'chats',
             })}>
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex justify-between items-center mb-8 flex-shrink-0">
                     <div>
                         <h1 className="text-3xl font-bold font-headline mb-2">Freunde entdecken</h1>
                         <p className="text-muted-foreground">Vernetze dich mit neuen Leuten und finde gemeinsame Interessen.</p>
@@ -437,84 +437,85 @@ export default function ExplorePage() {
                         </Button>
                     </div>
                 </div>
-                <Card>
-                    <CardContent className="p-4">
-                        <Tabs defaultValue="suggestions">
-                            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                                <TabsList className="grid w-full sm:w-auto sm:grid-cols-3">
-                                    <TabsTrigger value="followers">Followers ({followers.length})</TabsTrigger>
-                                    <TabsTrigger value="following">Following ({following.length})</TabsTrigger>
-                                    <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
-                                </TabsList>
-                                <div className="flex gap-2 w-full sm:w-auto">
-                                    <div className="relative w-full sm:w-64">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                        <Input 
-                                            placeholder="Search friends..." 
-                                            className="pl-10" 
-                                            value={friendSearchTerm}
-                                            onChange={e => setFriendSearchTerm(e.target.value)}
-                                        />
+                 <ScrollArea className="flex-grow h-[calc(100vh-20rem)]">
+                    <Card>
+                        <CardContent className="p-4">
+                            <Tabs defaultValue="suggestions">
+                                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                                    <TabsList className="grid w-full sm:w-auto sm:grid-cols-3">
+                                        <TabsTrigger value="followers">Followers ({followers.length})</TabsTrigger>
+                                        <TabsTrigger value="following">Following ({following.length})</TabsTrigger>
+                                        <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
+                                    </TabsList>
+                                    <div className="flex gap-2 w-full sm:w-auto">
+                                        <div className="relative w-full sm:w-64">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                            <Input 
+                                                placeholder="Search friends..." 
+                                                className="pl-10" 
+                                                value={friendSearchTerm}
+                                                onChange={e => setFriendSearchTerm(e.target.value)}
+                                            />
+                                        </div>
+                                        <Sheet>
+                                            <SheetTrigger asChild>
+                                                <Button variant="outline" size="icon">
+                                                    <SlidersHorizontal />
+                                                </Button>
+                                            </SheetTrigger>
+                                            <SheetContent>
+                                                <SheetHeader>
+                                                    <SheetTitle>Filter &amp; Sort</SheetTitle>
+                                                    <SheetDescription>Refine your search for new friends.</SheetDescription>
+                                                </SheetHeader>
+                                                <div className="py-4 space-y-6">
+                                                    <div className="space-y-4">
+                                                        <Label className="font-semibold">Sort by</Label>
+                                                        <RadioGroup value={friendSortBy} onValueChange={setFriendSortBy}>
+                                                            <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="fs1" /><Label htmlFor="fs1">Relevance</Label></div>
+                                                            <div className="flex items-center space-x-2"><RadioGroupItem value="new" id="fs2" /><Label htmlFor="fs2">Newly Registered</Label></div>
+                                                            <div className="flex items-center space-x-2"><RadioGroupItem value="active" id="fs3" /><Label htmlFor="fs3">Most Active</Label></div>
+                                                        </RadioGroup>
+                                                    </div>
+                                                    <Separator/>
+                                                    <div className="space-y-4">
+                                                        <Label className="font-semibold">Filters</Label>
+                                                        <div className="flex items-center space-x-2">
+                                                            <Checkbox id="verified-only" checked={friendFilters.verifiedOnly} onCheckedChange={(checked) => setFriendFilters(f => ({...f, verifiedOnly: !!checked}))} />
+                                                            <Label htmlFor="verified-only">Verified Hosts Only</Label>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <Checkbox id="online-only" />
+                                                            <Label htmlFor="online-only">Online Now</Label>
+                                                        </div>
+                                                    </div>
+                                                    <Separator/>
+                                                    <div className="space-y-4">
+                                                        <Label className="font-semibold">Location</Label>
+                                                        <Input placeholder="e.g., San Francisco"/>
+                                                    </div>
+                                                </div>
+                                                <SheetClose asChild className="absolute bottom-4 right-4"><Button>Apply</Button></SheetClose>
+                                            </SheetContent>
+                                        </Sheet>
                                     </div>
-                                    <Sheet>
-                                        <SheetTrigger asChild>
-                                            <Button variant="outline" size="icon">
-                                                <SlidersHorizontal />
-                                            </Button>
-                                        </SheetTrigger>
-                                        <SheetContent>
-                                            <SheetHeader>
-                                                <SheetTitle>Filter &amp; Sort</SheetTitle>
-                                                <SheetDescription>Refine your search for new friends.</SheetDescription>
-                                            </SheetHeader>
-                                            <div className="py-4 space-y-6">
-                                                <div className="space-y-4">
-                                                    <Label className="font-semibold">Sort by</Label>
-                                                    <RadioGroup value={friendSortBy} onValueChange={setFriendSortBy}>
-                                                        <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="fs1" /><Label htmlFor="fs1">Relevance</Label></div>
-                                                        <div className="flex items-center space-x-2"><RadioGroupItem value="new" id="fs2" /><Label htmlFor="fs2">Newly Registered</Label></div>
-                                                        <div className="flex items-center space-x-2"><RadioGroupItem value="active" id="fs3" /><Label htmlFor="fs3">Most Active</Label></div>
-                                                    </RadioGroup>
-                                                </div>
-                                                <Separator/>
-                                                <div className="space-y-4">
-                                                    <Label className="font-semibold">Filters</Label>
-                                                    <div className="flex items-center space-x-2">
-                                                        <Checkbox id="verified-only" checked={friendFilters.verifiedOnly} onCheckedChange={(checked) => setFriendFilters(f => ({...f, verifiedOnly: !!checked}))} />
-                                                        <Label htmlFor="verified-only">Verified Hosts Only</Label>
-                                                    </div>
-                                                    <div className="flex items-center space-x-2">
-                                                        <Checkbox id="online-only" />
-                                                        <Label htmlFor="online-only">Online Now</Label>
-                                                    </div>
-                                                </div>
-                                                <Separator/>
-                                                <div className="space-y-4">
-                                                    <Label className="font-semibold">Location</Label>
-                                                    <Input placeholder="e.g., San Francisco"/>
-                                                </div>
-                                            </div>
-                                            <SheetClose asChild className="absolute bottom-4 right-4"><Button>Apply</Button></SheetClose>
-                                        </SheetContent>
-                                    </Sheet>
                                 </div>
-                            </div>
-                            {loadingFriends ? (
-                                <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
-                            ) : (
-                                <>
-                                    <TabsContent value="followers"><FriendList users={followers} type="follower" onAction={fetchFriendData} currentUserData={userData} /></TabsContent>
-                                    <TabsContent value="following"><FriendList users={following} type="following" onAction={fetchFriendData} currentUserData={userData} /></TabsContent>
-                                    <TabsContent value="suggestions"><FriendList users={filteredSuggestions} type="suggestion" onAction={fetchFriendData} currentUserData={userData} /></TabsContent>
-                                </>
-                            )}
-                        </Tabs>
-                    </CardContent>
-                </Card>
+                                {loadingFriends ? (
+                                    <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
+                                ) : (
+                                    <>
+                                        <TabsContent value="followers"><FriendList users={followers} type="follower" onAction={fetchFriendData} currentUserData={userData} /></TabsContent>
+                                        <TabsContent value="following"><FriendList users={following} type="following" onAction={fetchFriendData} currentUserData={userData} /></TabsContent>
+                                        <TabsContent value="suggestions"><FriendList users={filteredSuggestions} type="suggestion" onAction={fetchFriendData} currentUserData={userData} /></TabsContent>
+                                    </>
+                                )}
+                            </Tabs>
+                        </CardContent>
+                    </Card>
+                 </ScrollArea>
             </div>
             <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[100%]", {
-                'translate-x-[220%]': view === 'explore',
-                'translate-x-[110%]': view === 'friends',
+                'translate-x-[220%]': view === 'explore' || view === 'friends',
                 'translate-x-0': view === 'chats',
             })}>
                  <div className="flex justify-between items-center mb-8">
@@ -532,4 +533,5 @@ export default function ExplorePage() {
     </div>
   );
 }
+
 
