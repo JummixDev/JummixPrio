@@ -192,15 +192,24 @@ export function ChatList() {
         if (!user) return;
 
         setLoading(true);
+        // The orderBy clause is removed from here to prevent the index error.
         const q = query(
             collection(db, 'chats'), 
-            where('participantUids', 'array-contains', user.uid),
-            orderBy('lastMessageTimestamp', 'desc')
+            where('participantUids', 'array-contains', user.uid)
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const convos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Conversation[];
+            
+            // Sort the conversations on the client-side
+            convos.sort((a, b) => {
+                const timeA = a.lastMessageTimestamp?.toDate().getTime() || 0;
+                const timeB = b.lastMessageTimestamp?.toDate().getTime() || 0;
+                return timeB - timeA;
+            });
+
             setConversations(convos);
+            
             // Set the first conversation as active by default if none is selected
             if (!activeConversationId && convos.length > 0) {
                 setActiveConversationId(convos[0].id);
