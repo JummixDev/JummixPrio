@@ -56,22 +56,31 @@ type UserProfile = {
     isVerifiedHost?: boolean;
 };
 
-const EventTile = ({ event }: { event: Event }) => (
-    <Link href={`/event/${event.id}`} className="block group relative aspect-square overflow-hidden rounded-lg">
-        <Image 
-            src={event.image || 'https://placehold.co/600x400.png'} 
-            alt={event.name || 'Event image'}
-            layout="fill" 
-            objectFit="cover" 
-            className="transition-transform duration-300 ease-in-out group-hover:scale-110"
-            data-ai-hint={event.hint || 'event photo'}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <div className="absolute bottom-0 left-0 p-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <h3 className="font-bold truncate">{event.name}</h3>
-            <p className="text-sm">{event.location}</p>
-        </div>
-    </Link>
+const aspectRatios = ['aspect-square', 'aspect-[4/3]', 'aspect-[3/4]'];
+const EventTile = ({ event, index }: { event: Event, index: number }) => (
+    <div className="mb-4 break-inside-avoid">
+         <Link 
+            href={`/event/${event.id}`} 
+            className={cn(
+                "block group relative overflow-hidden rounded-lg shadow-md transition-all duration-300 ease-in-out",
+                "hover:shadow-lg hover:ring-2 hover:ring-primary hover:scale-105"
+            )}
+        >
+            <Image 
+                src={event.image || 'https://placehold.co/600x400.png'} 
+                alt={event.name || 'Event image'}
+                width={400}
+                height={400}
+                className={cn("w-full h-auto object-cover", aspectRatios[index % aspectRatios.length])}
+                data-ai-hint={event.hint || 'event photo'}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute bottom-0 left-0 p-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <h3 className="font-bold truncate">{event.name}</h3>
+                <p className="text-sm">{event.location}</p>
+            </div>
+        </Link>
+    </div>
 )
 
 const UserCard = ({ user, onFollow }: { user: UserProfile, onFollow: (uid: string) => void }) => (
@@ -98,6 +107,7 @@ export default function ExplorePage() {
   const [priceFilter, setPriceFilter] = useState({ free: false, paid: false });
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [events, setEvents] = useState<Event[]>([]);
+  const [shuffledEvents, setShuffledEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [view, setView] = useState<'explore' | 'friends' | 'chats'>('explore');
@@ -120,6 +130,8 @@ export default function ExplorePage() {
             const querySnapshot = await getDocs(q);
             const fetchedEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[];
             setEvents(fetchedEvents);
+            // Shuffle events once after fetching
+            setShuffledEvents(fetchedEvents.sort(() => Math.random() - 0.5));
         } catch (error) {
             console.error("Error fetching events:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch events.' });
@@ -162,7 +174,8 @@ export default function ExplorePage() {
   }, [allUsers, userData, user]);
   
   const filteredAndSortedEvents = useMemo(() => {
-    let filtered = [...events];
+    // Start with the shuffled array to maintain random order
+    let filtered = [...shuffledEvents];
 
     if (searchTerm) {
       filtered = filtered.filter(event => 
@@ -182,30 +195,33 @@ export default function ExplorePage() {
        filtered = filtered.filter(event => new Date(event.date).toDateString() === today.toDateString());
     }
 
-    switch (sortBy) {
-      case 'date_asc':
-        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        break;
-      case 'date_desc':
-      case 'newest':
-        filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        break;
-      case 'popularity':
-        filtered.sort((a, b) => (b.attendees?.length || 0) - (a.attendees?.length || 0));
-        break;
-      case 'price_asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price_desc':
-        filtered.sort((a, b) => b.price - b.price);
-        break;
-      case 'relevance':
-      default:
-        break;
+    // Sorting will override the random shuffle. This is intentional if user selects a sort order.
+    if (sortBy !== 'relevance') {
+        switch (sortBy) {
+        case 'date_asc':
+            filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            break;
+        case 'date_desc':
+        case 'newest':
+            filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            break;
+        case 'popularity':
+            filtered.sort((a, b) => (b.attendees?.length || 0) - (a.attendees?.length || 0));
+            break;
+        case 'price_asc':
+            filtered.sort((a, b) => a.price - b.price);
+            break;
+        case 'price_desc':
+            filtered.sort((a, b) => b.price - b.price);
+            break;
+        default:
+            break;
+        }
     }
 
+
     return filtered;
-  }, [searchTerm, sortBy, priceFilter, dateFilter, events]);
+  }, [searchTerm, sortBy, priceFilter, dateFilter, shuffledEvents]);
   
     const filteredSuggestions = useMemo(() => {
         if (!user || allUsers.length === 0) return [];
@@ -358,28 +374,28 @@ export default function ExplorePage() {
                 </div>
                 
                 {loading ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
                         {Array.from({ length: 10 }).map((_, i) => (
-                            <Skeleton key={i} className="h-auto aspect-square w-full" />
+                             <Skeleton key={i} className={cn("h-64 w-full mb-4", i % 2 === 0 && "h-80", i % 3 === 0 && "h-96")} />
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {filteredAndSortedEvents.map((event) => (
-                            <EventTile key={event.id} event={event} />
+                    <div className="columns-2 md:columns-4 lg:columns-5 gap-4">
+                        {filteredAndSortedEvents.map((event, index) => (
+                            <EventTile key={event.id} event={event} index={index} />
                         ))}
                     </div>
                 )}
             </div>
-            <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[100%]", {
+             <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[100%]", {
                 'translate-x-[110%]': view === 'explore',
                 'translate-x-0': view === 'friends',
                 '-translate-x-[110%]': view === 'chats',
             })}>
                 <div className="flex justify-between items-center mb-8 flex-shrink-0">
                     <div>
-                        <h1 className="text-3xl font-bold font-headline mb-2">Discover People</h1>
-                        <p className="text-muted-foreground">Connect with new people and find shared interests.</p>
+                        <h1 className="text-3xl font-bold font-headline mb-2">Freunde entdecken</h1>
+                        <p className="text-muted-foreground">Vernetze dich mit neuen Leuten und finde gemeinsame Interessen.</p>
                     </div>
                     <div className="flex gap-2">
                         <Button onClick={() => setView('explore')} variant="outline">
