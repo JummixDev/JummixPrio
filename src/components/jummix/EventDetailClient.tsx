@@ -51,6 +51,8 @@ type Event = {
     };
     attendees?: { name: string; avatar: string; hint: string, username: string }[];
     gallery?: { src: string; hint: string }[];
+    lat?: number;
+    lon?: number;
 };
 
 
@@ -67,6 +69,30 @@ const formatDate = (date: Timestamp | string) => {
         year: 'numeric',
         timeZone: 'UTC'
     });
+}
+
+function getCirclePath(lat: number, lon: number, radiusMeters: number) {
+    const earthRadius = 6378137;
+    const points = 64;
+    const path = [];
+    for (let i = 0; i < points; i++) {
+        const angle = (i / points) * 360;
+        const bearing = angle * Math.PI / 180;
+        const latRad = lat * Math.PI / 180;
+        const lonRad = lon * Math.PI / 180;
+
+        const distFrac = radiusMeters / earthRadius;
+
+        const newLatRad = Math.asin(Math.sin(latRad) * Math.cos(distFrac) + Math.cos(latRad) * Math.sin(distFrac) * Math.cos(bearing));
+        let newLonRad = lonRad + Math.atan2(Math.sin(bearing) * Math.sin(distFrac) * Math.cos(latRad), Math.cos(distFrac) - Math.sin(latRad) * Math.sin(newLatRad));
+        
+        // Normalize to -180..+180
+        newLonRad = (newLonRad + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+
+        path.push(`${newLatRad * 180 / Math.PI},${newLonRad * 180 / Math.PI}`);
+    }
+    path.push(path[0]); // Close the circle
+    return path.join('|');
 }
 
 
@@ -221,9 +247,15 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         );
     };
 
-    const mapSrc = mapsApiKey 
-    ? `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(event.location)}&zoom=14&size=600x400&maptype=roadmap&markers=color:red%7C${encodeURIComponent(event.location)}&key=${mapsApiKey}`
-    : null;
+    const mapSrc = React.useMemo(() => {
+        if (!mapsApiKey || !event.lat || !event.lon) return null;
+        
+        const center = `${event.lat},${event.lon}`;
+        // The circle path is encoded for the URL
+        const circlePath = encodeURIComponent(`fillcolor:0x1976D233|color:0x1976D200|weight:1|${getCirclePath(event.lat, event.lon, 250)}`);
+        
+        return `https://maps.googleapis.com/maps/api/staticmap?center=${center}&zoom=15&size=600x400&maptype=roadmap&path=${circlePath}&key=${mapsApiKey}`;
+    }, [mapsApiKey, event.lat, event.lon]);
 
 
   return (
@@ -298,7 +330,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <p className="text-muted-foreground p-4 text-center">Google Maps API key is missing or invalid. Please activate the 'Maps Static API' in your Google Cloud project.</p>
+                                    <p className="text-muted-foreground p-4 text-center">Google Maps API key is missing, event coordinates are not available, or the API is not enabled. Please check your configuration.</p>
                                 )}
                             </div>
                         </CardContent>

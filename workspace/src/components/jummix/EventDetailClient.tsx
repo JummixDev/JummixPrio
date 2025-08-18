@@ -222,7 +222,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     };
 
     const mapSrc = mapsApiKey 
-    ? `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(event.location)}&zoom=14&size=600x400&maptype=roadmap&markers=color:red%7C${encodeURIComponent(event.location)}&key=${mapsApiKey}`
+    ? `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(event.location)}&zoom=12&size=600x400&maptype=roadmap&key=${mapsApiKey}`
     : null;
 
 
