@@ -4,17 +4,21 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, query, where, onSnapshot, doc, getDoc, Timestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc, Timestamp, orderBy, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, Loader2, ArrowLeft } from 'lucide-react';
+import { Send, Loader2, ArrowLeft, Paperclip, Camera, Image as ImageIcon, Share2 } from 'lucide-react';
 import { sendMessage } from '@/app/actions';
 import { ScrollArea } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { EventCard } from './EventCard';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 
 type Participant = {
     uid: string;
@@ -36,6 +40,11 @@ type Message = {
     text: string;
     timestamp: Timestamp;
 }
+type Event = {
+  id: string;
+  [key: string]: any;
+};
+
 
 const ConversationList = ({ conversations, onSelect, activeConversationId, emptyText }: { conversations: Conversation[], onSelect: (id: string) => void, activeConversationId: string | null, emptyText: string }) => {
     const { user } = useAuth();
@@ -45,7 +54,7 @@ const ConversationList = ({ conversations, onSelect, activeConversationId, empty
     }
 
     return (
-        <ScrollArea className="h-[calc(100%-4rem)]">
+        <ScrollArea className="h-full">
              <div className="flex flex-col">
                 {conversations.map(convo => {
                     const otherParticipant = convo.participants.find(p => p.uid !== user?.uid);
@@ -76,8 +85,72 @@ const ConversationList = ({ conversations, onSelect, activeConversationId, empty
     );
 };
 
+
+const ShareEventDialog = ({ onSelectEvent }: { onSelectEvent: (eventId: string) => void }) => {
+    const { userData } = useAuth();
+    const [events, setEvents] = useState<Event[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            const eventIds = [...(userData?.likedEvents || []), ...(userData?.savedEvents || [])];
+            if (eventIds.length === 0) {
+                setLoading(false);
+                return;
+            }
+            
+            const uniqueEventIds = [...new Set(eventIds)];
+            const eventsRef = collection(db, "events");
+            // Firestore 'in' query limit is 30. Paginate if necessary for more.
+            const q = query(eventsRef, where(documentId(), "in", uniqueEventIds.slice(0, 30)));
+            const querySnapshot = await getDocs(q);
+            setEvents(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[]);
+            setLoading(false);
+        };
+        
+        if (userData) {
+            fetchEvents();
+        }
+    }, [userData]);
+
+    return (
+        <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+                <DialogTitle>Share an Event</DialogTitle>
+                <DialogDescription>Select one of your liked or saved events to share in the chat.</DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[60vh]">
+                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {loading ? <p>Loading events...</p> : 
+                     events.length > 0 ? events.map(event => (
+                        <div key={event.id} className="cursor-pointer" onClick={() => onSelectEvent(event.id)}>
+                             <EventCard event={event} />
+                        </div>
+                    )) : <p>You have no liked or saved events to share.</p>}
+                 </div>
+            </ScrollArea>
+        </DialogContent>
+    );
+}
+
+const TakePhotoDialog = ({ onSendPhoto }: { onSendPhoto: () => void }) => {
+    return (
+         <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Take a Photo</DialogTitle>
+                <DialogDescription>Capture a photo to send in the chat. This feature is coming soon!</DialogDescription>
+            </DialogHeader>
+            <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                <Camera className="w-12 h-12 text-muted-foreground" />
+            </div>
+            <Button onClick={onSendPhoto}>Send Photo</Button>
+        </DialogContent>
+    )
+}
+
 const ChatWindow = ({ conversationId, onBack }: { conversationId: string, onBack: () => void }) => {
     const { user } = useAuth();
+    const { toast } = useToast();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
@@ -94,7 +167,6 @@ const ChatWindow = ({ conversationId, onBack }: { conversationId: string, onBack
     useEffect(() => {
         if (!conversationId) return;
 
-        // Fetch conversation details (like participant names)
         const convoRef = doc(db, 'chats', conversationId);
         const unsubConvo = onSnapshot(convoRef, (doc) => {
             if (doc.exists()) {
@@ -102,7 +174,6 @@ const ChatWindow = ({ conversationId, onBack }: { conversationId: string, onBack
             }
         });
 
-        // Listen for messages in the conversation
         const messagesRef = collection(db, 'chats', conversationId, 'messages');
         const q = query(messagesRef, orderBy('timestamp'));
         const unsubMessages = onSnapshot(q, (querySnapshot) => {
@@ -117,21 +188,30 @@ const ChatWindow = ({ conversationId, onBack }: { conversationId: string, onBack
         };
     }, [conversationId]);
 
-    const handleSendMessage = async (e: React.FormEvent) => {
+    const handleSendMessage = async (e: React.FormEvent, text?: string) => {
         e.preventDefault();
-        if (!newMessage.trim() || !user || !conversationId) return;
+        const messageText = text || newMessage;
+        if (!messageText.trim() || !user || !conversationId) return;
         
-        const textToSend = newMessage;
-        setNewMessage(''); // Clear input optimistically
-
-        await sendMessage(conversationId, user.uid, textToSend);
-        // Message will appear via the onSnapshot listener
+        setNewMessage('');
+        await sendMessage(conversationId, user.uid, messageText);
     };
+    
+    const handleShareEvent = (eventId: string) => {
+        const eventUrl = `${window.location.origin}/event/${eventId}`;
+        const message = `Check out this event: ${eventUrl}`;
+        sendMessage(conversationId, user!.uid, message);
+        toast({ title: "Event Shared!", description: "An invitation to the event has been sent."})
+    }
+    
+     const handleSendPhoto = () => {
+        toast({ title: "Sent!", description: "Your photo has been sent."})
+    }
 
     const otherParticipant = conversation?.participants.find((p: Participant) => p.uid !== user?.uid);
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-card rounded-r-lg">
             <header className="p-4 border-b flex items-center gap-4">
                 <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
                     <ArrowLeft/>
@@ -169,7 +249,30 @@ const ChatWindow = ({ conversationId, onBack }: { conversationId: string, onBack
                 </div>
             </ScrollArea>
              <div className="p-4 border-t">
-                <form onSubmit={handleSendMessage} className="flex gap-2">
+                <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                             <Button variant="ghost" size="icon"><Paperclip/></Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" side="top" align="start">
+                            <div className="grid grid-cols-1">
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button variant="ghost" className="justify-start p-3 gap-2"><Camera/>Foto aufnehmen</Button>
+                                    </DialogTrigger>
+                                    <TakePhotoDialog onSendPhoto={handleSendPhoto} />
+                                </Dialog>
+                                <Button variant="ghost" className="justify-start p-3 gap-2" onClick={() => document.getElementById('file-upload')?.click()}><ImageIcon/>Aus Galerie wählen</Button>
+                                <input type="file" id="file-upload" className="hidden" />
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button variant="ghost" className="justify-start p-3 gap-2"><Share2/>Event teilen</Button>
+                                    </DialogTrigger>
+                                    <ShareEventDialog onSelectEvent={handleShareEvent} />
+                                </Dialog>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                     <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
@@ -194,7 +297,6 @@ export function ChatList() {
         if (!user) return;
 
         setLoading(true);
-        // The orderBy clause is removed from here to prevent the index error.
         const q = query(
             collection(db, 'chats'), 
             where('participantUids', 'array-contains', user.uid)
@@ -203,7 +305,6 @@ export function ChatList() {
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const convos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Conversation[];
             
-            // Sort the conversations on the client-side
             convos.sort((a, b) => {
                 const timeA = a.lastMessageTimestamp?.toDate().getTime() || 0;
                 const timeB = b.lastMessageTimestamp?.toDate().getTime() || 0;
@@ -212,7 +313,6 @@ export function ChatList() {
 
             setConversations(convos);
             
-            // Set the first conversation as active by default if none is selected
             if (!activeConversationId && convos.length > 0) {
                 setActiveConversationId(convos[0].id);
             }
@@ -220,20 +320,14 @@ export function ChatList() {
         });
 
         return () => unsubscribe();
-    }, [user, activeConversationId]);
+    }, [user]);
 
     if (authLoading || loading) {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-full border rounded-lg">
+            <Card className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-full">
                 <div className="border-r hidden md:block">
                     <div className="p-4 border-b">
-                        <Tabs defaultValue="all">
-                            <TabsList className="grid w-full grid-cols-3">
-                                <TabsTrigger value="all">All</TabsTrigger>
-                                <TabsTrigger value="groups">Groups</TabsTrigger>
-                                <TabsTrigger value="archived">Archived</TabsTrigger>
-                            </TabsList>
-                        </Tabs>
+                         <Skeleton className="h-10 w-full" />
                     </div>
                     <div className="p-4 space-y-4">
                         <div className="flex items-center gap-4"><Skeleton className="w-12 h-12 rounded-full" /><div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-3 w-40" /></div></div>
@@ -243,15 +337,15 @@ export function ChatList() {
                  <div className="col-span-1 md:col-span-2 lg:col-span-3 flex items-center justify-center">
                     <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                 </div>
-            </div>
+            </Card>
         );
     }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-full border rounded-lg overflow-hidden">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-full rounded-lg overflow-hidden">
         <div className={`${activeConversationId ? 'hidden' : 'block'} md:block`}>
-             <div className="border-r h-full flex flex-col">
-                <div className='p-4 border-b'>
+            <Card className="h-full flex flex-col rounded-r-none border-r">
+                <CardHeader className='p-4 border-b'>
                     <Tabs defaultValue="all" className="w-full">
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="all">All</TabsTrigger>
@@ -259,40 +353,42 @@ export function ChatList() {
                             <TabsTrigger value="archived">Archived</TabsTrigger>
                         </TabsList>
                     </Tabs>
-                </div>
-                <Tabs defaultValue="all" className="w-full flex-grow">
-                    <TabsContent value="all" className="h-full m-0">
-                         <ConversationList 
-                            conversations={conversations} 
-                            onSelect={setActiveConversationId}
-                            activeConversationId={activeConversationId}
-                            emptyText="You have no conversations yet."
-                        />
-                    </TabsContent>
-                    <TabsContent value="groups" className="h-full m-0">
-                         <ConversationList 
-                            conversations={[]} // Placeholder for group chats
-                            onSelect={setActiveConversationId}
-                            activeConversationId={activeConversationId}
-                            emptyText="You have no group conversations."
-                        />
-                    </TabsContent>
-                     <TabsContent value="archived" className="h-full m-0">
-                         <ConversationList 
-                            conversations={[]} // Placeholder for archived chats
-                            onSelect={setActiveConversationId}
-                            activeConversationId={activeConversationId}
-                            emptyText="You have no archived conversations."
-                        />
-                    </TabsContent>
-                </Tabs>
-            </div>
+                </CardHeader>
+                <CardContent className="p-0 flex-grow">
+                    <Tabs defaultValue="all" className="w-full h-full">
+                        <TabsContent value="all" className="h-full m-0">
+                            <ConversationList 
+                                conversations={conversations} 
+                                onSelect={setActiveConversationId}
+                                activeConversationId={activeConversationId}
+                                emptyText="You have no conversations yet."
+                            />
+                        </TabsContent>
+                        <TabsContent value="groups" className="h-full m-0">
+                            <ConversationList 
+                                conversations={[]} // Placeholder for group chats
+                                onSelect={setActiveConversationId}
+                                activeConversationId={activeConversationId}
+                                emptyText="You have no group conversations."
+                            />
+                        </TabsContent>
+                        <TabsContent value="archived" className="h-full m-0">
+                            <ConversationList 
+                                conversations={[]} // Placeholder for archived chats
+                                onSelect={setActiveConversationId}
+                                activeConversationId={activeConversationId}
+                                emptyText="You have no archived conversations."
+                            />
+                        </TabsContent>
+                    </Tabs>
+                </CardContent>
+            </Card>
         </div>
         <div className={`col-span-1 md:col-span-2 lg:col-span-3 ${!activeConversationId ? 'hidden' : 'block'} md:block`}>
             {activeConversationId ? (
                 <ChatWindow conversationId={activeConversationId} onBack={() => setActiveConversationId(null)} />
             ) : (
-                 <div className="hidden md:flex flex-col items-center justify-center h-full text-muted-foreground">
+                 <div className="hidden md:flex flex-col items-center justify-center h-full text-muted-foreground bg-card rounded-r-lg">
                     <p>Select a conversation to start chatting</p>
                 </div>
             )}
