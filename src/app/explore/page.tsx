@@ -170,7 +170,7 @@ export default function ExplorePage() {
                        <ArrowLeft />
                    )}
               </Button>
-              <div className="relative flex-grow">
+              <div className="relative flex-grow invisible">
                 <GlobalSearch />
               </div>
               <Sheet>
