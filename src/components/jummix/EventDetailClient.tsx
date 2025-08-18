@@ -252,9 +252,9 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         
         const center = `${event.lat},${event.lon}`;
         // The circle path is encoded for the URL
-        const circlePath = encodeURIComponent(`fillcolor:0x1976D233|color:0x1976D200|weight:1|${getCirclePath(event.lat, event.lon, 250)}`);
+        const circlePath = encodeURIComponent(`fillcolor:0x1976D233|color:0x1976D200|weight:1|${getCirclePath(event.lat, event.lon, 800)}`);
         
-        return `https://maps.googleapis.com/maps/api/staticmap?center=${center}&zoom=15&size=600x400&maptype=roadmap&path=${circlePath}&key=${mapsApiKey}`;
+        return `https://maps.googleapis.com/maps/api/staticmap?center=${center}&zoom=14&size=600x400&maptype=roadmap&path=${circlePath}&key=${mapsApiKey}`;
     }, [mapsApiKey, event.lat, event.lon]);
 
 
@@ -417,3 +417,5 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
+
+    
