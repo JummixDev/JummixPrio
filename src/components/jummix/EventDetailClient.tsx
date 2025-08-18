@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -195,7 +194,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
              return (
                  <TooltipProvider>
                     <Tooltip>
-                        <TooltipTrigger className="w-full">
+                        <TooltipTrigger asChild>
                            <Button disabled className="w-full">
                                 <Ticket className="mr-2" /> Get Tickets
                             </Button>
@@ -382,4 +381,5 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         </div>
     </div>
   );
-}
+
+    
