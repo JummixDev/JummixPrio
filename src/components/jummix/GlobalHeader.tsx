@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { GlobalSearch } from './GlobalSearch';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 // Pages where the global header should NOT be shown
 const noHeaderPages = ['/', '/reset-password'];
@@ -16,11 +18,32 @@ const noHeaderPages = ['/', '/reset-password'];
 export function GlobalHeader() {
   const { user, loading, signOut, userData } = useAuth();
   const pathname = usePathname();
+  const [isHidden, setIsHidden] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const isAdmin = user?.email === 'service@jummix.com';
   const isVerifiedHost = userData?.isVerifiedHost || false;
   const hostApplicationStatus = userData?.hostApplicationStatus;
   const userProfileLink = `/profile/me`;
+
+  useEffect(() => {
+    const controlHeader = () => {
+      if (typeof window !== 'undefined') {
+        if (window.scrollY > lastScrollY && window.scrollY > 80) { // if scroll down hide the header
+          setIsHidden(true);
+        } else { // if scroll up show the header
+          setIsHidden(false);
+        }
+        setLastScrollY(window.scrollY);
+      }
+    };
+
+    window.addEventListener('scroll', controlHeader);
+    return () => {
+      window.removeEventListener('scroll', controlHeader);
+    };
+  }, [lastScrollY]);
+
 
   if (loading) {
     return null; // Or a slim loading bar
@@ -62,7 +85,10 @@ export function GlobalHeader() {
   };
   
   return (
-      <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40">
+      <header className={cn(
+          "bg-card/80 backdrop-blur-lg border-b sticky top-0 z-40 transition-transform duration-300",
+          isHidden && "-translate-y-full"
+        )}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/dashboard">

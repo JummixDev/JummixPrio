@@ -24,7 +24,9 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased h-full`}>
         <AuthProvider>
             <GlobalHeader />
-            {children}
+            <div className="pt-16">
+              {children}
+            </div>
         </AuthProvider>
         <Toaster />
       </body>

@@ -169,7 +169,7 @@ export default function ChatsPage() {
 
   return (
     <div className="bg-background min-h-screen flex flex-col">
-       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-20 z-20">
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
               <Button variant="ghost" size="icon" asChild>
                   <Link href="/dashboard">
@@ -192,7 +192,7 @@ export default function ChatsPage() {
           </div>
       </header>
        <main className="flex-grow container mx-auto p-0 md:p-4">
-        <div className="grid grid-cols-12 border rounded-lg h-[calc(100vh-15rem)] bg-card overflow-hidden">
+        <div className="grid grid-cols-12 border rounded-lg h-[calc(100vh-10.5rem)] bg-card overflow-hidden">
             {/* Left Column: Conversation List */}
             <aside className="col-span-12 md:col-span-4 lg:col-span-3 border-r flex flex-col">
                  <div className="p-4 border-b">
@@ -320,5 +320,3 @@ export default function ChatsPage() {
     </div>
   );
 }
-
-    
