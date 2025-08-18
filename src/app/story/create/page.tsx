@@ -12,6 +12,7 @@ import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 
 export default function CreateStoryPage() {
@@ -24,6 +25,7 @@ export default function CreateStoryPage() {
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isFlipped, setIsFlipped] = useState(true);
 
     useEffect(() => {
         if (authLoading) return;
@@ -69,7 +71,18 @@ export default function CreateStoryPage() {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
-            context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+
+            if (context) {
+                // If the video is flipped, we need to un-flip the canvas before drawing
+                if (isFlipped) {
+                    context.translate(video.videoWidth, 0);
+                    context.scale(-1, 1);
+                }
+                context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+                // Reset transform to avoid affecting subsequent draws
+                context.setTransform(1, 0, 0, 1, 0, 0);
+            }
+            
             const dataUrl = canvas.toDataURL('image/png');
             setCapturedImage(dataUrl);
         }
@@ -133,7 +146,13 @@ export default function CreateStoryPage() {
                         </>
                     ) : (
                          <>
-                            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                            <video 
+                                ref={videoRef} 
+                                className={cn("w-full h-full object-cover transition-transform", isFlipped && "-scale-x-100")} 
+                                autoPlay 
+                                muted 
+                                playsInline 
+                            />
                             <canvas ref={canvasRef} className="hidden" />
                              { !(hasCameraPermission) && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
@@ -171,7 +190,7 @@ export default function CreateStoryPage() {
                         <Button size="icon" className="w-16 h-16 rounded-full" onClick={handleCapture} disabled={!hasCameraPermission}>
                             <Camera className="w-8 h-8"/>
                         </Button>
-                        <Button variant="outline" size="icon"><FlipHorizontal/></Button>
+                        <Button variant="outline" size="icon" onClick={() => setIsFlipped(prev => !prev)}><FlipHorizontal/></Button>
                     </div>
                 )}
             </CardContent>
