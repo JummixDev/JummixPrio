@@ -366,7 +366,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                             <Separator className="my-4"/>
                             <CardContent>
                                 <Link href={`/hosts/${event.organizer.username}`} className="flex items-center gap-4 group">
-                                    <Avatar className="w-12 h-12">
+                                    <Avatar className="w-12 w-12">
                                         <AvatarImage src={event.organizer.avatar} data-ai-hint={event.organizer.hint} />
                                         <AvatarFallback>{event.organizer.name.substring(0,2)}</AvatarFallback>
                                     </Avatar>
@@ -385,3 +385,5 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
+
+    
