@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow public read access to profile pictures and banners
+    match /profile-pictures/{userId}/{allPaths=**} {
+      allow read;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /banner-images/{userId}/{allPaths=**} {
+      allow read;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /stories/{userId}/{allPaths=**} {
+      allow read;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // General rule for profile pictures and banners:
+    // Allow write only for authenticated users on their own path.
+    // Files must be images and less than 5MB.
+    match /{imageCollection}/{userId}/{fileName} {
+      allow write: if request.auth != null 
+                    && request.auth.uid == userId
+                    && (imageCollection == 'profile-pictures' || imageCollection == 'banner-images' || imageCollection == 'stories')
+                    && request.resource.size < 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
