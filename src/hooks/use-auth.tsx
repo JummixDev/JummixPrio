@@ -52,7 +52,7 @@ interface AuthContextType {
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   updateUserProfile: (profileData: Partial<UserProfileData>) => Promise<void>;
-  updateUserProfileImage: (file: File, type: 'profile' | 'banner') => Promise<string>;
+  completeOnboarding: (data: { displayName: string; bio?: string; interests?: string; imageFile?: File | null; }) => Promise<void>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
 }
 
@@ -205,25 +205,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await updateDoc(userDocRef, { hostApplicationStatus: status });
   }
   
-  const updateUserProfileImage = async (file: File, type: 'profile' | 'banner'): Promise<string> => {
+  const completeOnboarding = async (data: { displayName: string; bio?: string; interests?: string; imageFile?: File | null; }) => {
     if (!auth.currentUser) {
-        throw new Error("No user is signed in to upload an image.");
+      throw new Error("No user is signed in.");
     }
-    const filePath = `${type}s/${auth.currentUser.uid}/${file.name}`;
-    const downloadURL = await uploadFile(file, filePath);
-
-    // Update Firestore document, which will trigger onSnapshot to update userData
-    const fieldToUpdate = type === 'profile' ? 'photoURL' : 'bannerURL';
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
-        [fieldToUpdate]: downloadURL
+  
+    let photoURL = userData?.photoURL || '';
+  
+    // 1. Upload image if a new one is provided
+    if (data.imageFile) {
+      const filePath = `profile/${auth.currentUser.uid}/${data.imageFile.name}`;
+      photoURL = await uploadFile(data.imageFile, filePath);
+    }
+  
+    if (!photoURL) {
+      throw new Error("A profile picture is required to complete onboarding.");
+    }
+  
+    // 2. Update Firebase Auth Profile
+    await updateProfile(auth.currentUser, {
+      displayName: data.displayName,
+      photoURL: photoURL,
     });
-
-    // Also explicitly update the auth user profile if it's the profile picture
-    if (type === 'profile') {
-        await updateProfile(auth.currentUser, { photoURL: downloadURL });
-    }
-    
-    return downloadURL;
+  
+    // 3. Update Firestore Document with all data
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(userDocRef, {
+      displayName: data.displayName,
+      photoURL: photoURL,
+      bio: data.bio || '',
+      interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
+      onboardingComplete: true,
+    });
   };
 
   const value = {
@@ -237,7 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithApple,
     sendPasswordReset,
     updateUserProfile,
-    updateUserProfileImage,
+    completeOnboarding,
     updateUserHostApplicationStatus
   };
 

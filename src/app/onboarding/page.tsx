@@ -26,7 +26,7 @@ const onboardingSchema = z.object({
 type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-    const { user, userData, loading, updateUserProfile, updateUserProfileImage } = useAuth();
+    const { user, userData, loading, completeOnboarding } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -75,52 +75,38 @@ export default function OnboardingPage() {
         setIsSubmitting(true);
         
         try {
-            let finalPhotoURL = userData?.photoURL;
-            // 1. If a new image is selected, upload it first and get the new URL
-            if (imageFile) {
-                finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
-            }
-            
-            // 2. A profile picture is required for onboarding. Check if one exists now.
-            if (!finalPhotoURL) {
-                toast({
+            // A profile picture is required. Check for existing one or newly uploaded one.
+            if (!imagePreview) {
+                 toast({
                     variant: 'destructive',
                     title: 'Profile picture is required',
                     description: 'Please upload a profile picture to continue.',
                 });
-                setIsSubmitting(false); // Stop submission
+                setIsSubmitting(false);
                 return;
             }
 
-            // 3. Update the rest of the profile information including the flag and the potentially new photoURL.
-            await updateUserProfile({
-                displayName: data.displayName,
-                bio: data.bio,
-                interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
-                photoURL: finalPhotoURL,
-                onboardingComplete: true, 
-            });
+            await completeOnboarding({ ...data, imageFile });
 
             toast({
                 title: 'Profile created!',
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
-            // The redirection is now fully handled by the useAuth hook. 
-            // We just wait for it to kick in after the state update.
+            // Redirect is handled by useAuth hook after data is updated.
             
-        } catch (error) {
+        } catch (error: any) {
             console.error('Onboarding failed:', error);
             toast({
                 variant: 'destructive',
                 title: 'Onboarding Failed',
-                description: 'Could not save your profile. Please try again.',
+                description: error.message || 'Could not save your profile. Please try again.',
             });
              setIsSubmitting(false);
         }
     };
 
 
-    if (loading || !user) {
+    if (loading || !user || userData?.onboardingComplete) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -129,17 +115,6 @@ export default function OnboardingPage() {
         );
     }
     
-    // This part is important: if user is logged in, but onboarding is somehow complete,
-    // the useAuth hook will redirect. We show loading to prevent flashing the page.
-    if (userData?.onboardingComplete) {
-         return (
-             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
-                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                <h1 className="text-2xl font-bold font-headline text-primary">Redirecting...</h1>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-secondary/20 flex items-center justify-center p-4">
             <Card className="w-full max-w-lg">
