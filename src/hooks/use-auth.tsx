@@ -51,7 +51,6 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
-  updateUserProfile: (profileData: Partial<UserProfileData>) => Promise<void>;
   completeOnboarding: (data: { displayName: string; bio?: string; interests?: string; imageFile?: File | null; }) => Promise<void>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
 }
@@ -77,13 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const createUserDocument = async (user: User, onboardingComplete = false) => {
+  const createUserDocument = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
     const username = user.email!.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
     if (!userDocSnap.exists()) {
-      // Create a new document in the 'users' collection with the user's uid
        const newUserData = {
         uid: user.uid,
         email: user.email,
@@ -94,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         bio: '',
         isVerifiedHost: false, 
         hostApplicationStatus: 'none',
-        onboardingComplete: onboardingComplete, // Set onboarding status
+        onboardingComplete: false,
         interests: [],
         followers: [],
         following: [],
@@ -116,18 +114,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (doc.exists()) {
           const data = doc.data();
           setUserData(data);
-           // Add redirection logic here
+
+          const currentPath = window.location.pathname;
+          
           if (data.onboardingComplete) {
-            if (window.location.pathname === '/onboarding' || window.location.pathname === '/') {
+            if (currentPath === '/onboarding' || currentPath === '/') {
                 router.push('/dashboard');
             }
           } else {
-             if (window.location.pathname !== '/onboarding') {
+             // Only redirect to onboarding if we are NOT already there. This prevents the loop.
+             if (currentPath !== '/onboarding') {
                 router.push('/onboarding');
             }
           }
         } else {
-          // If the doc doesn't exist for some reason, create it.
           createUserDocument(user);
         }
         setLoading(false);
@@ -143,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    await createUserDocument(userCredential.user, false); // onboardingComplete is false for new signups
+    await createUserDocument(userCredential.user);
     return userCredential;
   }
 
@@ -154,8 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     return signInWithPopup(auth, provider).then(async (result) => {
-        // For social sign-ins, we can assume they have a name/photo and mark onboarding as complete
-        await createUserDocument(result.user, false);
+        await createUserDocument(result.user);
         return result;
     });
   };
@@ -163,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithApple = () => {
     const provider = new OAuthProvider('apple.com');
     return signInWithPopup(auth, provider).then(async (result) => {
-        await createUserDocument(result.user, false);
+        await createUserDocument(result.user);
         return result;
     });
   };
@@ -176,26 +175,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await firebaseSignOut(auth);
     router.push('/');
   };
-
-  const updateUserProfile = async (profileData: Partial<UserProfileData>) => {
-    if (!auth.currentUser) {
-        throw new Error("No user is signed in to update profile.");
-    }
-    
-    // Data for Firebase Auth profile (only accepts displayName and photoURL)
-    const authProfile: { displayName?: string, photoURL?: string } = {};
-    if (profileData.displayName) authProfile.displayName = profileData.displayName;
-    if (profileData.photoURL) authProfile.photoURL = profileData.photoURL;
-
-    // Only update auth profile if there are changes for it
-    if (Object.keys(authProfile).length > 0) {
-      await updateProfile(auth.currentUser, authProfile);
-    }
-    
-    // Data for Firestore document (can include anything)
-    const userDocRef = doc(db, "users", auth.currentUser.uid);    
-    await updateDoc(userDocRef, profileData);
-  }
 
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
      if (!auth.currentUser) {
@@ -212,9 +191,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
     let photoURL = userData?.photoURL || '';
   
-    // 1. Upload image if a new one is provided
     if (data.imageFile) {
-      const filePath = `profile/${auth.currentUser.uid}/${data.imageFile.name}`;
+      const filePath = `profile-pictures/${auth.currentUser.uid}/${data.imageFile.name}`;
       photoURL = await uploadFile(data.imageFile, filePath);
     }
   
@@ -222,13 +200,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("A profile picture is required to complete onboarding.");
     }
   
-    // 2. Update Firebase Auth Profile
     await updateProfile(auth.currentUser, {
       displayName: data.displayName,
       photoURL: photoURL,
     });
   
-    // 3. Update Firestore Document with all data
     const userDocRef = doc(db, "users", auth.currentUser.uid);
     await updateDoc(userDocRef, {
       displayName: data.displayName,
@@ -249,7 +225,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     signInWithApple,
     sendPasswordReset,
-    updateUserProfile,
     completeOnboarding,
     updateUserHostApplicationStatus
   };
