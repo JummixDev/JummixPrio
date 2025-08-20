@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, BarChart, Calendar, DollarSign, MessageCircle, PieChart, Star, Users, Loader2, Ticket, Archive, Image as ImageIcon, Zap, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, BarChart, Calendar, DollarSign, MessageCircle, PieChart, Star, Users, Loader2, Ticket, Archive, Image as ImageIcon, Zap, ShieldAlert, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,8 +16,9 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { Bar, Pie, ResponsiveContainer, BarChart as RechartsBarChart, PieChart as RechartsPieChart } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type EventData = {
     id: string;
@@ -27,6 +28,18 @@ type EventData = {
     bookings: number;
     revenue: number;
 };
+
+type BookingRequest = {
+    id: string;
+    eventId: string;
+    eventName: string;
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    userHint: string;
+    userUsername: string;
+    status: 'pending' | 'approved' | 'rejected' | 'paid';
+}
 
 const mockReviews = [
     { id: 'rev-1', event: 'The Color Run', user: 'Jenna S.', rating: 5, comment: 'So much fun! Well organized.' },
@@ -251,6 +264,89 @@ export function EventManagement() {
     )
 }
 
+function BookingRequests() {
+    const { user } = useAuth();
+    const [requests, setRequests] = useState<BookingRequest[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (!user) return;
+        setIsLoading(true);
+        const q = query(collection(db, 'bookings'), where('hostId', '==', user.uid));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const fetchedRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BookingRequest));
+            setRequests(fetchedRequests);
+            setIsLoading(false);
+        });
+        return () => unsubscribe();
+    }, [user]);
+
+    const handleUpdateRequest = async (bookingId: string, status: 'approved' | 'rejected') => {
+        try {
+            const bookingRef = doc(db, 'bookings', bookingId);
+            await updateDoc(bookingRef, { status: status });
+            toast({ title: `Request ${status}`, description: `The booking request has been ${status}.`});
+        } catch (error) {
+             toast({ variant: 'destructive', title: "Update failed", description: "Could not update the booking request."});
+        }
+    };
+    
+    const pendingRequests = requests.filter(r => r.status === 'pending');
+
+    if (isLoading) {
+        return <Card><CardHeader><CardTitle>Booking Requests</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin" /></CardContent></Card>
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Booking Requests</CardTitle>
+                <CardDescription>Manage incoming requests from users for your events.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>User</TableHead>
+                            <TableHead>Event</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                     <TableBody>
+                        {pendingRequests.length > 0 ? pendingRequests.map(req => (
+                             <TableRow key={req.id}>
+                                <TableCell>
+                                    <Link href={`/profile/${req.userUsername}`} className="flex items-center gap-2 group">
+                                        <Avatar className="w-8 h-8">
+                                            <AvatarImage src={req.userAvatar} data-ai-hint={req.userHint} />
+                                            <AvatarFallback>{req.userName.substring(0,1)}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-medium group-hover:underline">{req.userName}</span>
+                                    </Link>
+                                </TableCell>
+                                <TableCell>
+                                    <Link href={`/event/${req.eventId}`} className="hover:underline">{req.eventName}</Link>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant="default">{req.status}</Badge>
+                                </TableCell>
+                                <TableCell className="text-right space-x-2">
+                                    <Button onClick={() => handleUpdateRequest(req.id, 'approved')} size="sm" variant="outline" className="text-green-600 hover:bg-green-100 hover:text-green-700"><Check className="w-4 h-4 mr-2"/>Accept</Button>
+                                    <Button onClick={() => handleUpdateRequest(req.id, 'rejected')} size="sm" variant="outline" className="text-red-600 hover:bg-red-100 hover:text-red-700"><X className="w-4 h-4 mr-2"/>Decline</Button>
+                                </TableCell>
+                            </TableRow>
+                        )) : (
+                            <TableRow><TableCell colSpan={4} className="text-center p-8 text-muted-foreground">No pending booking requests.</TableCell></TableRow>
+                        )}
+                     </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    )
+}
+
 export function ReviewManagement() {
      return (
         <Card>
@@ -432,6 +528,7 @@ export default function HostDashboardPage() {
     const navItems = [
         { id: 'overview', label: 'Overview', icon: BarChart },
         { id: 'events', label: 'Events', icon: Calendar },
+        { id: 'requests', label: 'Requests', icon: Users },
         { id: 'stories', label: 'Stories', icon: ImageIcon },
         { id: 'ticketing', label: 'Ticketing', icon: Ticket },
         { id: 'reviews', label: 'Reviews', icon: Star },
@@ -481,6 +578,7 @@ export default function HostDashboardPage() {
                         <section className="lg:col-span-3 space-y-8">
                             {activeSection === 'overview' && <Overview />}
                             {activeSection === 'events' && <EventManagement />}
+                            {activeSection === 'requests' && <BookingRequests />}
                             {activeSection === 'stories' && <StoryManagement />}
                             {activeSection === 'ticketing' && <Ticketing />}
                             {activeSection === 'reviews' && <ReviewManagement />}

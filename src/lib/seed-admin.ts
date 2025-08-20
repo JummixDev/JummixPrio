@@ -178,6 +178,15 @@ const seedDatabase = async () => {
   console.log('--- Starting Database Seeding ---');
   const batch = db.batch();
 
+  // Clear existing bookings collection
+  const bookingsSnapshot = await db.collection('bookings').get();
+  if (!bookingsSnapshot.empty) {
+      console.log('Clearing existing bookings...');
+      bookingsSnapshot.docs.forEach(doc => {
+          batch.delete(doc.ref);
+      });
+  }
+
   // --- 1. Seed Users ---
   for (const user of users) {
     // IMPORTANT: Use the specified UID as the document ID
@@ -192,6 +201,8 @@ const seedDatabase = async () => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       likedEvents: [],
       savedEvents: [],
+      onboardingComplete: true, // Assume all seed users are onboarded
+      hostApplicationStatus: user.isVerifiedHost ? 'approved' : 'none',
     });
     console.log(`- Prepared User: ${user.displayName} (${user.uid})`);
   }

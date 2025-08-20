@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -22,16 +21,19 @@ import {
   Ticket,
   CheckCircle,
   Loader2,
+  Clock,
+  Wallet,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { EventCard } from './EventCard';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
-import { createCheckoutSession, toggleEventInteraction } from '@/app/actions';
+import { createCheckoutSession, toggleEventInteraction, requestToBook } from '@/app/actions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { db } from '@/lib/firebase';
 
 type Event = {
     id: string;
@@ -55,6 +57,7 @@ type Event = {
     lon?: number;
 };
 
+type BookingStatus = 'idle' | 'pending' | 'approved' | 'paid' | 'rejected';
 
 type EventDetailClientProps = {
   event: Event;
@@ -99,8 +102,8 @@ function getCirclePath(lat: number, lon: number, radiusMeters: number) {
 export function EventDetailClient({ event }: EventDetailClientProps) {
     const { user, userData } = useAuth();
     const { toast } = useToast();
-    const [isAttending, setIsAttending] = React.useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [bookingStatus, setBookingStatus] = useState<BookingStatus>('idle');
     const [isLiked, setIsLiked] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -110,7 +113,21 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
           setIsLiked(userData.likedEvents?.includes(event.id));
           setIsSaved(userData.savedEvents?.includes(event.id));
         }
-    }, [userData, event.id]);
+        
+        // Listen for booking status changes
+        if (user && event.id) {
+            const bookingDocRef = doc(db, "bookings", `${user.uid}_${event.id}`);
+            const unsubscribe = onSnapshot(bookingDocRef, (doc) => {
+                if (doc.exists()) {
+                    setBookingStatus(doc.data().status as BookingStatus);
+                } else {
+                    setBookingStatus('idle');
+                }
+            });
+            return () => unsubscribe();
+        }
+
+    }, [userData, event.id, user]);
 
 
     const handleInteraction = async (type: 'liked' | 'saved') => {
@@ -165,86 +182,73 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         }
     };
 
-    const handleAttendClick = async () => {
+    const handleRequestClick = async () => {
         if (!user) {
+            toast({ variant: 'destructive', title: 'Not logged in', description: 'Please log in to request a spot.' });
+            return;
+        }
+        setIsProcessing(true);
+        const result = await requestToBook(user.uid, event.id, event.organizer?.username);
+        if (result.success) {
+            toast({ title: "Request Sent!", description: "The host has been notified of your request." });
+        } else {
+            toast({ variant: 'destructive', title: "Request Failed", description: result.error });
+        }
+        setIsProcessing(false);
+    }
+    
+    const handlePaymentClick = async () => {
+         if (!user) {
             toast({ variant: 'destructive', title: 'Not logged in', description: 'Please log in to purchase tickets.' });
             return;
         }
-
         setIsProcessing(true);
-
-        if (event.isFree) {
-            // For free events, just simulate RSVP
-            setIsAttending(true);
-            toast({
-                title: "You're going!",
-                description: `You are now attending ${event.name}.`,
-            });
-            setIsProcessing(false);
+        const result = await createCheckoutSession(user.uid, event.id);
+        if (result.success && result.url) {
+            window.location.href = result.url;
         } else {
-            // For paid events, create a Stripe checkout session
-            const result = await createCheckoutSession(user.uid, event.id);
-            if (result.success && result.url) {
-                // Redirect user to Stripe's checkout page
-                window.location.href = result.url;
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Payment Error',
-                    description: result.error || 'Could not initiate the payment process. Please try again.',
-                });
-                setIsProcessing(false);
-            }
+            toast({ variant: 'destructive', title: 'Payment Error', description: result.error || 'Could not initiate the payment process. Please try again.'});
+            setIsProcessing(false);
         }
     }
     
     const formattedDate = formatDate(event.date);
     
     const AttendButton = () => {
-        if (isAttending) {
-            return (
-                <div className='space-y-2'>
+        switch (bookingStatus) {
+            case 'pending':
+                return (
                     <Button disabled className="w-full">
-                        <CheckCircle className="mr-2" /> Attending
+                        <Clock className="mr-2" /> Request Sent
                     </Button>
-                    <Button variant="outline" className="w-full" onClick={() => {}}>
-                        Go to Group Chat
+                );
+            case 'approved':
+                return (
+                    <Button onClick={handlePaymentClick} disabled={isProcessing} className="w-full bg-green-600 hover:bg-green-700">
+                        {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wallet className="mr-2" />}
+                        Pay Now to Confirm
                     </Button>
-                </div>
-            );
+                );
+            case 'paid':
+                return (
+                    <Button disabled className="w-full">
+                        <CheckCircle className="mr-2" /> Confirmed
+                    </Button>
+                );
+            case 'rejected':
+                 return (
+                    <Button disabled variant="destructive" className="w-full">
+                        Request Declined by Host
+                    </Button>
+                );
+            default: // idle
+                return (
+                    <Button onClick={handleRequestClick} disabled={isProcessing} className="w-full transition-transform active:scale-95">
+                        {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2" />}
+                        Request to Book
+                    </Button>
+                );
         }
-        
-        const isStripeConfigured = !!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY;
-
-        if (!event.isFree && !isStripeConfigured) {
-             return (
-                 <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                           <Button disabled className="w-full">
-                                <Ticket className="mr-2" /> Get Tickets
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>The payment system is not yet configured by the administrator.</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-             )
-        }
-
-        return (
-            <Button onClick={handleAttendClick} disabled={isProcessing} className="w-full transition-transform active:scale-95">
-                {isProcessing ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : event.isFree ? (
-                    <PlusCircle className="mr-2" />
-                ) : (
-                    <Ticket className="mr-2" />
-                )}
-                {isProcessing ? 'Processing...' : (event.isFree ? 'RSVP Now' : 'Get Tickets')}
-            </Button>
-        );
     };
 
     const mapSrc = React.useMemo(() => {
@@ -368,7 +372,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
                     <Card className="shadow-lg">
                         <CardHeader>
                             <CardTitle className="font-headline">
-                                {isAttending ? "You are going!" : (event.isFree ? "Attend for Free" : `Tickets from $${event.price}`)}
+                                {bookingStatus === 'paid' ? "You're going!" : (event.isFree ? "Attend for Free" : `Tickets from $${event.price}`)}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>

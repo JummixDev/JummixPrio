@@ -8,7 +8,7 @@ import type { PersonalizedEventRecommendationsOutput } from "@/ai/flows/event-re
 import { searchEventsWithAI, EventSearchInput } from "@/ai/flows/event-search";
 import type { EventSearchOutput } from "@/ai/flows/event-search";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove, getDoc } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove, getDoc, setDoc } from "firebase/firestore";
 import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput, storySchema, StoryInput } from "@/lib/schemas";
 import Stripe from 'stripe';
 import { uploadFile } from "@/services/storage";
@@ -254,6 +254,7 @@ export async function createCheckoutSession(userId: string, eventId: string) {
             metadata: {
                 userId,
                 eventId,
+                bookingId: `${userId}_${eventId}`,
             },
         });
 
@@ -303,4 +304,55 @@ export async function createStory(storyData: StoryInput) {
         console.error("Error creating story:", error);
         return { success: false, errors: ["Failed to create the story."] };
     }
+}
+
+
+export async function requestToBook(userId: string, eventId: string, hostUsername: string | undefined) {
+  if (!userId || !eventId || !hostUsername) {
+    return { success: false, error: 'Missing required information.' };
+  }
+
+  try {
+    const bookingId = `${userId}_${eventId}`;
+    const bookingRef = doc(db, "bookings", bookingId);
+    const bookingDoc = await getDoc(bookingRef);
+
+    if (bookingDoc.exists()) {
+      return { success: false, error: 'You have already sent a request for this event.' };
+    }
+    
+    // Fetch event and user details
+    const eventDoc = await getDoc(doc(db, "events", eventId));
+    const userDoc = await getDoc(doc(db, "users", userId));
+
+    if (!eventDoc.exists() || !userDoc.exists()) {
+        return { success: false, error: 'Event or user not found.' };
+    }
+    const eventData = eventDoc.data();
+    const userData = userDoc.data();
+
+    await setDoc(bookingRef, {
+        userId,
+        eventId,
+        hostId: eventData.hostUid,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        // Denormalize data for easier display in host dashboard
+        eventName: eventData.name,
+        eventDate: eventData.date,
+        eventLocation: eventData.location,
+        eventImage: eventData.image,
+        eventHint: eventData.hint,
+        eventPrice: eventData.price,
+        userName: userData.displayName,
+        userAvatar: userData.photoURL,
+        userHint: 'person portrait', // Assuming a default hint
+        userUsername: userData.username
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error creating booking request:", error);
+    return { success: false, error: 'Failed to send booking request.' };
+  }
 }

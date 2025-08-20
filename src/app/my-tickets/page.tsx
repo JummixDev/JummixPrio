@@ -2,21 +2,29 @@
 
 'use client';
 
-import { ArrowLeft, Loader2, QrCode, Ticket } from 'lucide-react';
+import { ArrowLeft, Loader2, QrCode, Ticket, Clock, Wallet, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 
-type Event = {
+type Booking = {
   id: string;
-  [key: string]: any;
+  eventId: string;
+  eventName: string;
+  eventLocation: string;
+  eventDate: string;
+  eventImage: string;
+  eventHint: string;
+  eventPrice: number;
+  status: 'pending' | 'approved' | 'paid' | 'rejected';
 };
 
 // A simple SVG to represent a QR code for placeholder purposes
@@ -36,11 +44,73 @@ const QrCodePlaceholder = () => (
   </svg>
 );
 
+const statusConfig = {
+    pending: { label: 'Request Pending', icon: Clock, color: 'bg-yellow-500' },
+    approved: { label: 'Approved - Awaiting Payment', icon: Wallet, color: 'bg-blue-500' },
+    paid: { label: 'Ticket Confirmed', icon: CheckCircle, color: 'bg-green-600' },
+    rejected: { label: 'Request Declined', icon: XCircle, color: 'bg-red-500' },
+}
+
+const BookingCard = ({ booking }: { booking: Booking }) => {
+    const config = statusConfig[booking.status];
+    return (
+        <Card className="overflow-hidden flex flex-col">
+            <CardHeader className="p-0">
+                 <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center p-4 relative">
+                    <Image 
+                        src={booking.eventImage}
+                        alt={booking.eventName}
+                        layout='fill'
+                        objectFit='cover'
+                        className="opacity-20"
+                        data-ai-hint={booking.eventHint}
+                    />
+                    {booking.status === 'paid' ? (
+                        <div className="w-3/4 h-3/4 bg-white p-2 rounded-lg">
+                             <QrCodePlaceholder />
+                        </div>
+                    ) : (
+                        <div className="z-10 text-center">
+                            <config.icon className="w-12 h-12 mx-auto text-foreground/80 mb-2"/>
+                            <p className="font-semibold">{config.label}</p>
+                        </div>
+                    )}
+                 </div>
+            </CardHeader>
+            <CardContent className="p-4 flex-grow">
+                <p className="text-sm text-muted-foreground">Event</p>
+                <CardTitle className="font-headline mb-2">{booking.eventName}</CardTitle>
+                <Separator className="my-4" />
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p className="text-muted-foreground">Date</p>
+                    <p className="font-semibold">{new Date(booking.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</p>
+                </div>
+                <div>
+                    <p className="text-muted-foreground">Location</p>
+                    <p className="font-semibold truncate">{booking.eventLocation}</p>
+                </div>
+                </div>
+            </CardContent>
+            <CardFooter className="p-4 pt-0">
+                 {booking.status === 'approved' && (
+                     <Button className="w-full" asChild><Link href={`/event/${booking.eventId}`}>Pay Now (${booking.eventPrice})</Link></Button>
+                 )}
+                 {booking.status === 'paid' && (
+                      <Button className="w-full" variant="outline" asChild><Link href={`/event/${booking.eventId}`}>View Event</Link></Button>
+                 )}
+                 {booking.status === 'pending' && (
+                      <Button className="w-full" variant="secondary" disabled>Waiting for Host</Button>
+                 )}
+            </CardFooter>
+        </Card>
+    )
+}
 
 export default function MyTicketsPage() {
   const { user, loading: authLoading, userData } = useAuth();
   const router = useRouter();
-  const [tickets, setTickets] = useState<Event[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,38 +120,26 @@ export default function MyTicketsPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    const fetchTickets = async () => {
-      if (!user) return;
-      // TODO: Replace with actual attended events from user data when payment flow is complete
-      const mockTicketedEventIds = ['summer-music-fest', 'culinary-workshop'];
-      
-      if (mockTicketedEventIds.length === 0) {
+    if (!user) return;
+    
+    const q = query(collection(db, 'bookings'), where('userId', '==', user.uid));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const fetchedBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+        // Sort by date, newest first
+        fetchedBookings.sort((a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
+        setBookings(fetchedBookings);
         setLoading(false);
-        return;
-      }
-      
-      try {
-        const eventsRef = collection(db, 'events');
-        const q = query(eventsRef, where('__name__', 'in', mockTicketedEventIds));
-        const querySnapshot = await getDocs(q);
-        const fetchedEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[];
-        setTickets(fetchedEvents);
-      } catch (error) {
-        console.error("Error fetching tickets:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user) {
-        fetchTickets();
-    }
+    });
+
+    return () => unsubscribe();
+
   }, [user]);
 
   if (authLoading || loading) {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
             <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-            <h1 className="text-2xl font-bold font-headline text-primary">Loading Your Tickets...</h1>
+            <h1 className="text-2xl font-bold font-headline text-primary">Loading Your Bookings...</h1>
         </div>
     );
   }
@@ -95,42 +153,21 @@ export default function MyTicketsPage() {
               <ArrowLeft />
             </Link>
           </Button>
-          <h1 className="text-xl font-bold ml-4">My Tickets</h1>
+          <h1 className="text-xl font-bold ml-4">My Bookings</h1>
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
-        {tickets.length > 0 ? (
+        {bookings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {tickets.map(ticket => (
-              <Card key={ticket.id} className="overflow-hidden">
-                <CardHeader>
-                  <div className="aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center p-4">
-                    <QrCodePlaceholder />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Event</p>
-                  <CardTitle className="font-headline mb-2">{ticket.name}</CardTitle>
-                  <Separator className="my-4" />
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Date</p>
-                      <p className="font-semibold">{new Date(ticket.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Location</p>
-                      <p className="font-semibold truncate">{ticket.location}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {bookings.map(booking => (
+              <BookingCard key={booking.id} booking={booking} />
             ))}
           </div>
         ) : (
           <div className="text-center py-20">
             <Ticket className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-            <h2 className="text-2xl font-bold mb-2">No Tickets Yet</h2>
-            <p className="text-muted-foreground mb-6">When you buy a ticket for an event, it will appear here.</p>
+            <h2 className="text-2xl font-bold mb-2">No Bookings Yet</h2>
+            <p className="text-muted-foreground mb-6">When you book an event, it will appear here.</p>
             <Button asChild>
               <Link href="/explore">Explore Events</Link>
             </Button>

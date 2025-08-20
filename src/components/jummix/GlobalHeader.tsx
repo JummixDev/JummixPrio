@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Ticket, Clock } from 'lucide-react';
+import { Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Ticket, Clock, Library } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -13,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 // Pages where the global header should NOT be shown
-const noHeaderPages = ['/', '/reset-password'];
+const noHeaderPages = ['/', '/reset-password', '/onboarding'];
 
 export function GlobalHeader() {
   const { user, loading, signOut, userData } = useAuth();
@@ -129,7 +130,14 @@ export function GlobalHeader() {
                          <SheetClose asChild>
                             <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                             <Link href="/my-tickets">
-                                <Ticket className="mr-2 h-5 w-5" /> My Tickets
+                                <Ticket className="mr-2 h-5 w-5" /> My Bookings
+                            </Link>
+                            </Button>
+                        </SheetClose>
+                         <SheetClose asChild>
+                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                            <Link href="/my-events">
+                                <Library className="mr-2 h-5 w-5" /> My Events
                             </Link>
                             </Button>
                         </SheetClose>
