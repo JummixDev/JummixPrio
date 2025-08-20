@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -36,8 +35,8 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M12 20.94c1.5 0 2.75-.81 3.5-2.06 1.18-1.85.53-4.52-1.2-5.59-1.59-.97-3.47-.9-4.59.35-1.18 1.27-1.74 3.12-.82 4.67 1.14 1.91 2.94 2.63 4.11 2.63zM12.56 5.59C11.31 4.2 9.69 3.5 8.16 3.5c-2.43 0-4.66 1.48-5.8 3.59-1.56 2.8-1.03 6.2.34 8.04 1.13 1.52 2.66 2.44 4.16 2.44 1.4 0 2.59-.72 3.42-1.85.83-1.13 1.2-2.58.94-3.99-.24-1.28-1-2.04-2.02-2.5-1.07-.48-2.28-.48-3.32.13-.25.14-.54.1-.74-.15-.2-.25-.16-.6.08-.84.93-1 2.23-1.58 3.58-1.58.91 0 1.78.27 2.5.76.54.37 1.2.33 1.66-.08s.55-1.1.18-1.66z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M12.01,16.23c-1.2,0-2.31-0.52-3.04-1.55c-1.2-1.68-1.5-3.83-0.84-5.73c0.61-1.73,2.07-2.88,3.75-2.95 c1.18-0.05,2.33,0.47,3.13,1.48c-0.02-0.01-1.89,1.25-1.9,2.9c-0.01,1.83,2.2,2.6,2.2,2.6c-1.3,2.2-3.44,2.25-4.3,2.25 M14.3,3.32C13.25,2.16,11.75,2,10.5,2C8.35,2,6.53,3.48,5.49,5.65c-1.8,3.66-0.84,7.4,1.43,9.58c0.97,0.92,2.02,1.46,3.22,1.46 c0.2,0,0.4-0.02,0.59-0.05c1.4-0.19,2.62-0.95,3.52-1.95c1.07-1.18,1.75-2.73,1.72-4.36c-0.04-2.5-1.62-3.89-3.57-3.99 C12.33,6.34,12.33,6.34,14.3,3.32L14.3,3.32z" />
     </svg>
 );
 
@@ -111,7 +110,7 @@ function SignInForm({ form }: { form: UseFormReturn<any> }) {
         </div>
         <div className="grid grid-cols-2 gap-4">
             <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-5 w-5"/> Apple</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple} className="bg-black text-white hover:bg-gray-800"><AppleIcon className="mr-2 h-5 w-5"/> Apple</Button>
         </div>
       </div>
     </form>
@@ -186,7 +185,7 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
         </div>
         <div className="grid grid-cols-2 gap-4">
             <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-5 w-5"/> Apple</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple} className="bg-black text-white hover:bg-gray-800"><AppleIcon className="mr-2 h-5 w-5"/> Apple</Button>
         </div>
       </div>
     </form>
@@ -320,5 +319,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
