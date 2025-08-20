@@ -43,14 +43,14 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 function SignInForm({ form }: { form: UseFormReturn<any> }) {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
-  const { register, handleSubmit } = form;
+  const { register, handleSubmit, formState: { isSubmitting } } = form;
   const { toast } = useToast();
   const router = useRouter();
 
   const onSubmit = async (data: any) => {
     try {
       await signIn(data.email, data.password);
-      // The redirect is now handled by the page's main useEffect
+      router.push('/dashboard');
     } catch (error) {
         if (error instanceof FirebaseError) {
             switch (error.code) {
@@ -97,7 +97,8 @@ function SignInForm({ form }: { form: UseFormReturn<any> }) {
           </div>
           <Input id="password" type="password" required {...register('password')} />
         </div>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Sign In
         </Button>
         <div className="relative">
@@ -125,13 +126,14 @@ interface SignUpFormProps {
 
 function SignUpForm({ onEmailInUse }: SignUpFormProps) {
   const { signUp, signInWithGoogle, signInWithApple } = useAuth();
-  const { register, handleSubmit, getValues } = useForm();
+  const { register, handleSubmit, getValues, formState: { isSubmitting } } = useForm();
   const { toast } = useToast();
+  const router = useRouter();
 
   const onSubmit = async (data: any) => {
     try {
       await signUp(data.email, data.password);
-      // Redirect is handled by the page's main useEffect after signup
+      router.push('/onboarding');
     } catch (error) {
         if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
             toast({
@@ -173,7 +175,8 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
             {...register('password')}
           />
         </div>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Sign Up
         </Button>
         <div className="relative">
@@ -209,7 +212,6 @@ export default function LandingPage() {
         if (userData?.onboardingComplete) {
             router.push('/dashboard');
         } else {
-            // This handles the case where user is authenticated but not yet onboarded
             router.push('/onboarding');
         }
     }

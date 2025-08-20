@@ -54,7 +54,6 @@ interface AuthContextType {
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
   updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>;
   updateUserProfileImage: (file: File, type: 'profile' | 'banner') => Promise<string>;
-  completeOnboarding: (data: Omit<UserProfileData, 'userId'> & { imageFile?: File | null }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,24 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
   
-  const handleRedirects = (user: User | null, userData: any | null) => {
-    const isOnboardingPage = window.location.pathname === '/onboarding';
-    
-    if (user) {
-      if (userData?.onboardingComplete) {
-        if (isOnboardingPage) {
-          router.push('/dashboard');
-        }
-      } else if (!isOnboardingPage) {
-        router.push('/onboarding');
-      }
-    } else {
-        const protectedRoutes = ['/dashboard', '/settings', '/profile', '/onboarding', '/my-events', '/my-tickets', '/friends', '/chats', '/host', '/story'];
-        if (protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
-          router.push('/');
-        }
-    }
-  }
 
   const createUserDocument = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
@@ -132,23 +113,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) {
       const userDocRef = doc(db, "users", user.uid);
       const unsubscribe = onSnapshot(userDocRef, (doc) => {
-        let currentData;
         if (doc.exists()) {
-          currentData = doc.data();
-          setUserData(currentData);
+          setUserData(doc.data());
         } else {
           // This case should be rare, but we handle it
           createUserDocument(user).then(newUserData => {
              setUserData(newUserData);
-             if (typeof window !== 'undefined') {
-                handleRedirects(user, newUserData);
-            }
           });
         }
         setLoading(false);
-        if (typeof window !== 'undefined') {
-            handleRedirects(user, currentData);
-        }
       }, (error) => {
         console.error("Error with onSnapshot:", error);
         setLoading(false);
@@ -156,9 +129,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return () => unsubscribe();
     } else {
       setLoading(false);
-      if (typeof window !== 'undefined') {
-        handleRedirects(null, null);
-      }
     }
   }, [user]);
 
@@ -228,32 +198,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updateData = type === 'profile' 
         ? { photoURL: downloadURL } 
         : { bannerURL: downloadURL };
-
+        
       await updateUserProfile(updateData);
 
       return downloadURL;
   };
-  
-   const completeOnboarding = async (data: Omit<UserProfileData, 'userId'> & { imageFile?: File | null }) => {
-        if (!auth.currentUser) {
-            throw new Error("No user is signed in to complete onboarding.");
-        }
-        
-        const { imageFile, ...profileData } = data;
-        let finalPhotoURL = userData?.photoURL || auth.currentUser.photoURL || '';
-
-        if (imageFile) {
-            const filePath = `profile-pictures/${auth.currentUser.uid}/${imageFile.name}`;
-            finalPhotoURL = await uploadFile(imageFile, filePath);
-        }
-
-        await updateUserProfile({
-            ...profileData,
-            photoURL: finalPhotoURL,
-            onboardingComplete: true
-        });
-    }
-
 
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
      if (!auth.currentUser) {
@@ -276,7 +225,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUserHostApplicationStatus,
     updateUserProfile,
     updateUserProfileImage,
-    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

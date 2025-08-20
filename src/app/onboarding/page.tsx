@@ -16,6 +16,8 @@ import { Loader2, UserCircle, Image as ImageIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FormDescription } from '@/components/ui/form';
+import { completeOnboardingProfile } from '../actions';
+import { uploadFile } from '@/services/storage';
 
 const onboardingSchema = z.object({
     displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
@@ -26,7 +28,7 @@ const onboardingSchema = z.object({
 type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-    const { user, userData, loading, completeOnboarding } = useAuth();
+    const { user, userData, loading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -68,6 +70,10 @@ export default function OnboardingPage() {
     };
 
     const onSubmit = async (data: OnboardingInput) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You are not logged in.' });
+            return;
+        }
         if (!imageFile && !userData?.photoURL) {
             toast({
                 variant: 'destructive',
@@ -80,18 +86,29 @@ export default function OnboardingPage() {
         setIsSubmitting(true);
         
         try {
-            await completeOnboarding({
+            let finalPhotoURL = userData?.photoURL || '';
+            if (imageFile) {
+                const filePath = `profile-pictures/${user.uid}/${imageFile.name}`;
+                finalPhotoURL = await uploadFile(imageFile, filePath);
+            }
+
+            const result = await completeOnboardingProfile({
+                userId: user.uid,
                 displayName: data.displayName,
                 bio: data.bio || '',
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
-                imageFile: imageFile,
+                photoURL: finalPhotoURL,
             });
 
-            toast({
-                title: 'Profile created!',
-                description: 'Welcome to Jummix! Redirecting you to the dashboard...',
-            });
-            // The redirect will be handled by the useEffect in useAuth
+            if (result.success) {
+                toast({
+                    title: 'Profile created!',
+                    description: 'Welcome to Jummix! Redirecting you to the dashboard...',
+                });
+                router.push('/dashboard');
+            } else {
+                 throw new Error(result.error || 'Failed to save profile.');
+            }
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);
@@ -100,7 +117,6 @@ export default function OnboardingPage() {
                 title: 'Onboarding Failed',
                 description: error.message || 'Could not save your profile. Please try again.',
             });
-        } finally {
              setIsSubmitting(false);
         }
     };
