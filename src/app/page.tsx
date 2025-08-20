@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
-import { PartyPopper, CalendarDays, Users, Wand2, ArrowRight } from 'lucide-react';
+import { PartyPopper, CalendarDays, Users, Wand2, ArrowRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, UseFormSetValue, UseFormReturn } from 'react-hook-form';
@@ -50,7 +50,7 @@ function SignInForm({ form }: { form: UseFormReturn<any> }) {
   const onSubmit = async (data: any) => {
     try {
       await signIn(data.email, data.password);
-      // The redirect is handled by the useAuth hook based on onboarding status
+      // The redirect is now handled by the page's main useEffect
     } catch (error) {
         if (error instanceof FirebaseError) {
             switch (error.code) {
@@ -131,7 +131,7 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
   const onSubmit = async (data: any) => {
     try {
       await signUp(data.email, data.password);
-      // Redirect is handled by useAuth hook
+      // Redirect is handled by the page's main useEffect after signup
     } catch (error) {
         if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
             toast({
@@ -204,26 +204,25 @@ export default function LandingPage() {
   const signInForm = useForm();
   
   useEffect(() => {
+    // This effect handles the initial redirection logic for authenticated users.
     if (!loading && user) {
         if (userData?.onboardingComplete) {
             router.push('/dashboard');
         } else {
-            // This case is primarily handled by the redirect in useAuth,
-            // but serves as a backup.
+            // This handles the case where user is authenticated but not yet onboarded
             router.push('/onboarding');
         }
     }
   }, [user, userData, loading, router]);
 
 
-  if (loading || (user && userData === null)) { // Also wait for userData to be loaded
-    return <div className="flex items-center justify-center min-h-screen bg-background">Loading...</div>;
-  }
-
-  // If user is logged in but onboarding is not complete, they will be redirected by the effect. 
-  // We show loading to prevent flashing the landing page.
-  if (user && !userData?.onboardingComplete) {
-     return <div className="flex items-center justify-center min-h-screen bg-background">Loading...</div>;
+  if (loading || user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+        <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+        <h1 className="text-2xl font-bold font-headline text-primary">Loading your Jummix experience</h1>
+      </div>
+    );
   }
 
   const scrollToSignup = () => {

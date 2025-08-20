@@ -44,7 +44,8 @@ export default function OnboardingPage() {
             interests: '',
         },
     });
-
+    
+    // Effect to handle initial state and redirects
     useEffect(() => {
         if (!loading) {
             if (!user) {
@@ -52,6 +53,7 @@ export default function OnboardingPage() {
             } else if (userData?.onboardingComplete) {
                 router.push('/dashboard');
             } else if (userData) {
+                 // Pre-fill form with existing data if available
                  form.setValue('displayName', userData.displayName || '');
                  form.setValue('bio', userData.bio || '');
                  form.setValue('interests', (userData.interests || []).join(', '));
@@ -61,6 +63,7 @@ export default function OnboardingPage() {
             }
         }
     }, [user, userData, loading, router, form]);
+
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -77,7 +80,7 @@ export default function OnboardingPage() {
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
         
-        if (!imageFile && !userData?.photoURL) {
+        if (!imagePreview) {
             toast({
                 variant: 'destructive',
                 title: 'Profile picture is required',
@@ -90,6 +93,7 @@ export default function OnboardingPage() {
         
         try {
             let finalPhotoURL = userData?.photoURL || '';
+            // Only upload a new file if the user selected one
             if (imageFile) {
                 const filePath = `profile-pictures/${user.uid}/${imageFile.name}`;
                 finalPhotoURL = await uploadFile(imageFile, filePath);
@@ -108,7 +112,8 @@ export default function OnboardingPage() {
                     title: 'Profile created!',
                     description: 'Welcome to Jummix! Redirecting you to the dashboard...',
                 });
-                // Redirect is handled by the useAuth hook detecting the onboardingComplete flag
+                // Explicitly redirect after successful onboarding
+                router.push('/dashboard');
             } else {
                  throw new Error(result.error || "An unknown error occurred");
             }
@@ -120,9 +125,8 @@ export default function OnboardingPage() {
                 title: 'Onboarding Failed',
                 description: error.message || 'Could not save your profile. Please try again.',
             });
-             setIsSubmitting(false);
+            setIsSubmitting(false); // Re-enable button on failure
         }
-        // No need to set isSubmitting to false on success, as the page will redirect.
     };
 
 
@@ -215,5 +219,3 @@ export default function OnboardingPage() {
         </div>
     );
 }
-
-    

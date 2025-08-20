@@ -51,7 +51,6 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
-  completeOnboarding: (data: { displayName: string; bio?: string; interests?: string; imageFile?: File | null; }) => Promise<void>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
 }
 
@@ -65,14 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setLoading(true); // Start loading when auth state changes
       setUser(user);
       if (!user) {
           setUserData(null);
           setLoading(false);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -112,20 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(db, "users", user.uid);
       const unsubscribe = onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
-          const data = doc.data();
-          setUserData(data);
-
-          const currentPath = window.location.pathname;
-          
-          if (data.onboardingComplete) {
-            if (currentPath === '/onboarding' || currentPath === '/') {
-                router.push('/dashboard');
-            }
-          } else {
-             if (currentPath !== '/onboarding') {
-                router.push('/onboarding');
-            }
-          }
+          setUserData(doc.data());
         } else {
           createUserDocument(user);
         }
@@ -135,10 +119,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
       return () => unsubscribe();
-    } else {
-      setLoading(false);
     }
-  }, [user, router]);
+  }, [user]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -182,41 +164,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userDocRef = doc(db, "users", auth.currentUser.uid);
     await updateDoc(userDocRef, { hostApplicationStatus: status });
   }
-  
-  const completeOnboarding = async (data: { displayName: string; bio?: string; interests?: string; imageFile?: File | null; }) => {
-    if (!auth.currentUser) {
-      throw new Error("No user is signed in.");
-    }
-  
-    let photoURL = userData?.photoURL || '';
-  
-    if (data.imageFile) {
-      const filePath = `profile-pictures/${auth.currentUser.uid}/${data.imageFile.name}`;
-      photoURL = await uploadFile(data.imageFile, filePath);
-    }
-  
-    // This was the missing validation step. Onboarding cannot complete without a picture.
-    if (!photoURL) {
-      throw new Error("A profile picture is required to complete onboarding.");
-    }
-  
-    // Update the Firebase Auth profile
-    await updateProfile(auth.currentUser, {
-      displayName: data.displayName,
-      photoURL: photoURL,
-    });
-  
-    // Now, update the Firestore document with all data at once.
-    const userDocRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userDocRef, {
-      displayName: data.displayName,
-      photoURL: photoURL,
-      bio: data.bio || '',
-      interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
-      onboardingComplete: true, // This is the final step
-    });
-  };
-
 
   const value = {
     user,
@@ -228,7 +175,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     signInWithApple,
     sendPasswordReset,
-    completeOnboarding,
     updateUserHostApplicationStatus
   };
 
@@ -242,5 +188,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-    
