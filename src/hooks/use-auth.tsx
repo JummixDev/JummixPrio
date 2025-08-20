@@ -52,6 +52,8 @@ interface AuthContextType {
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
+  updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>;
+  updateUserProfileImage: (file: File, type: 'profile' | 'banner') => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -119,8 +121,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
       return () => unsubscribe();
+    } else if (!user && !loading) {
+      // If there is no user and we are not in the initial loading state
+      if (typeof window !== 'undefined') {
+        const protectedRoutes = ['/dashboard', '/settings', '/profile', '/onboarding'];
+        if (protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
+          router.push('/');
+        }
+      }
     }
-  }, [user]);
+  }, [user, loading, router]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -157,6 +167,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/');
   };
 
+  const updateUserProfile = async (data: Partial<UserProfileData>) => {
+    if (!auth.currentUser) {
+        throw new Error("No user is signed in to update profile.");
+    }
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(userDocRef, data);
+
+    // Also update the Firebase Auth profile if displayName or photoURL are changed
+    if (data.displayName || data.photoURL) {
+        await updateProfile(auth.currentUser, {
+            displayName: data.displayName,
+            photoURL: data.photoURL,
+        });
+    }
+  };
+
+  const updateUserProfileImage = async (file: File, type: 'profile' | 'banner'): Promise<string> => {
+      if (!auth.currentUser) {
+          throw new Error("No user is signed in to upload an image.");
+      }
+      const filePath = type === 'profile' 
+          ? `profile-pictures/${auth.currentUser.uid}/${file.name}`
+          : `banner-images/${auth.currentUser.uid}/${file.name}`;
+      
+      const downloadURL = await uploadFile(file, filePath);
+
+      if (type === 'profile') {
+          await updateUserProfile({ photoURL: downloadURL });
+      } else {
+          await updateUserProfile({ bannerURL: downloadURL });
+      }
+
+      return downloadURL;
+  };
+
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
      if (!auth.currentUser) {
         throw new Error("No user is signed in to update profile.");
@@ -175,7 +220,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     signInWithApple,
     sendPasswordReset,
-    updateUserHostApplicationStatus
+    updateUserHostApplicationStatus,
+    updateUserProfile,
+    updateUserProfileImage,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
