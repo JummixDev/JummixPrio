@@ -71,9 +71,12 @@ export default function OnboardingPage() {
 
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
+        
+        // Disable button while processing
+        form.formState.isSubmitting = true;
 
         try {
-            let finalPhotoURL = imagePreview;
+            let finalPhotoURL = userData?.photoURL;
 
             // Step 1: Upload image if a new one is selected
             if (imageFile) {
@@ -87,6 +90,7 @@ export default function OnboardingPage() {
                     title: 'Profile picture is required',
                     description: 'Please upload a profile picture to continue.',
                 });
+                form.formState.isSubmitting = false; // Re-enable button
                 return;
             }
 
@@ -104,6 +108,7 @@ export default function OnboardingPage() {
                 description: 'Welcome to Jummix! You will be redirected shortly.',
             });
             // The redirection is now handled reliably by the useAuth hook.
+            // No need to call router.push here.
             
         } catch (error) {
             console.error('Onboarding failed:', error);
@@ -112,6 +117,7 @@ export default function OnboardingPage() {
                 title: 'Onboarding Failed',
                 description: 'Could not save your profile. Please try again.',
             });
+             form.formState.isSubmitting = false; // Re-enable button on error
         }
     };
 

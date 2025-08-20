@@ -47,7 +47,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
-  updateUserProfile: (profileData: UserProfileData) => Promise<void>;
+  updateUserProfile: (profileData: Partial<UserProfileData>) => Promise<void>;
   updateUserProfileImage: (file: File, type: 'profile' | 'banner') => Promise<string>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
 }
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserData(data);
            // Add redirection logic here
           if (data.onboardingComplete) {
-            if (window.location.pathname === '/onboarding') {
+            if (window.location.pathname === '/onboarding' || window.location.pathname === '/') {
                 router.push('/dashboard');
             }
           } else {
@@ -170,7 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/');
   };
 
-  const updateUserProfile = async (profileData: UserProfileData) => {
+  const updateUserProfile = async (profileData: Partial<UserProfileData>) => {
     if (!auth.currentUser) {
         throw new Error("No user is signed in to update profile.");
     }
@@ -185,18 +185,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     // Data for Firestore document (can include anything)
-    const userDocRef = doc(db, "users", auth.currentUser.uid);
-    // Create a new object for Firestore that includes all provided data
-    const firestoreData: { [key: string]: any } = {};
-    for (const key in profileData) {
-        if (profileData[key as keyof UserProfileData] !== undefined) {
-            firestoreData[key] = profileData[key as keyof UserProfileData];
-        }
-    }
-    
-    if (Object.keys(firestoreData).length > 0) {
-        await updateDoc(userDocRef, firestoreData);
-    }
+    const userDocRef = doc(db, "users", auth.currentUser.uid);    
+    await updateDoc(userDocRef, profileData);
   }
 
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
