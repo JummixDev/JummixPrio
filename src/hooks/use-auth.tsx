@@ -184,9 +184,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Data for Firebase Auth profile (only accepts displayName and photoURL)
     const authProfile: { displayName?: string, photoURL?: string } = {};
-    if (profileData.displayName) authProfile.displayName = profileData.displayName;
-    if (profileData.photoURL) authProfile.photoURL = profileData.photoURL;
+    if ('displayName' in profileData) authProfile.displayName = profileData.displayName;
+    if ('photoURL' in profileData) authProfile.photoURL = profileData.photoURL;
 
+    // Only update auth profile if there are changes for it
     if (Object.keys(authProfile).length > 0) {
       await updateProfile(auth.currentUser, authProfile);
     }
@@ -212,11 +213,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const downloadURL = await uploadFile(file, filePath);
 
     if (type === 'profile') {
+        // Explicitly update the auth user profile as well
         await updateProfile(auth.currentUser, { photoURL: downloadURL });
     }
     
+    // Update Firestore document
     const fieldToUpdate = type === 'profile' ? 'photoURL' : 'bannerURL';
-    await updateUserProfile({ [fieldToUpdate]: downloadURL });
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+        [fieldToUpdate]: downloadURL
+    });
     
     return downloadURL;
   };

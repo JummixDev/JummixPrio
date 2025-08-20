@@ -71,20 +71,21 @@ export default function OnboardingPage() {
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
         
-        // A profile picture is required for onboarding.
-        if (!imageFile && !userData?.photoURL) {
-            toast({
-                variant: 'destructive',
-                title: 'Profile picture is required',
-                description: 'Please upload a profile picture to continue.',
-            });
-            return;
-        }
-        
         try {
+            // A profile picture is required for onboarding.
+            if (!imageFile && !userData?.photoURL) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Profile picture is required',
+                    description: 'Please upload a profile picture to continue.',
+                });
+                return;
+            }
+
+            let finalPhotoURL = userData?.photoURL;
             // First, upload the image if a new one was selected.
             if (imageFile) {
-                await updateUserProfileImage(imageFile, 'profile');
+                finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
             }
 
             // Then, update the rest of the profile information.
@@ -92,6 +93,7 @@ export default function OnboardingPage() {
                 displayName: data.displayName,
                 bio: data.bio,
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
+                photoURL: finalPhotoURL,
                 onboardingComplete: true, // This is the crucial flag.
             });
 
@@ -110,6 +112,7 @@ export default function OnboardingPage() {
             });
         }
     };
+
 
     if (loading || !user || (userData && userData.onboardingComplete)) {
         return (
