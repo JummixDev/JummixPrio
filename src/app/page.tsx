@@ -26,10 +26,14 @@ import { FirebaseError } from 'firebase/app';
 import { Footer } from '@/components/jummix/Footer';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.99 3.66 9.13 8.42 9.88V15.5H7.9v-3.5h2.52V9.6c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.97h-1.5c-1.22 0-1.6.73-1.6 1.52v1.88h3.33l-.53 3.5h-2.8V21.88A10.014 10.014 0 0 0 22 12z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
+        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.519-3.486-11.187-8.166l-6.571,4.819C9.22,39.638,15.989,44,24,44z"/>
+        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,34.545,44,29.836,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
     </svg>
 );
+
 
 const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -106,8 +110,8 @@ function SignInForm({ form }: { form: UseFormReturn<any> }) {
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
+            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-5 w-5"/> Apple</Button>
         </div>
       </div>
     </form>
@@ -181,8 +185,8 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-4 w-4"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-4 w-4"/> Apple</Button>
+            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-5 w-5"/> Apple</Button>
         </div>
       </div>
     </form>
