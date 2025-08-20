@@ -101,9 +101,10 @@ export default function OnboardingPage() {
 
             toast({
                 title: 'Profile created!',
-                description: 'Welcome to Jummix!',
+                description: 'Welcome to Jummix! You will be redirected shortly.',
             });
-            router.push('/dashboard');
+            // The redirection is handled by the useAuth hook now,
+            // once it detects that onboardingComplete is true.
             
         } catch (error) {
             console.error('Onboarding failed:', error);
@@ -115,7 +116,7 @@ export default function OnboardingPage() {
         }
     };
 
-    if (loading || !user || userData?.onboardingComplete) {
+    if (loading || !user || (userData && userData.onboardingComplete)) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />

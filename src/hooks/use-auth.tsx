@@ -112,7 +112,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const data = doc.data();
           setUserData(data);
            // Add redirection logic here
-          if (!data.onboardingComplete) {
+          if (data.onboardingComplete) {
+            if (router.pathname === '/onboarding') {
+                router.push('/dashboard');
+            }
+          } else {
             router.push('/onboarding');
           }
         } else {
