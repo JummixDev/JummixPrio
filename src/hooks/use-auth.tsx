@@ -96,7 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hostApplicationStatus: 'none',
         onboardingComplete: onboardingComplete, // Set onboarding status
         interests: [],
-        followers: 0,
+        followers: [],
+        following: [],
         friendsCount: 0,
         eventsCount: 0,
         likedEvents: [],
@@ -209,10 +210,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const filePath = `${type}s/${auth.currentUser.uid}/${file.name}`;
     const downloadURL = await uploadFile(file, filePath);
+
+    if (type === 'profile') {
+        await updateProfile(auth.currentUser, { photoURL: downloadURL });
+    }
     
     const fieldToUpdate = type === 'profile' ? 'photoURL' : 'bannerURL';
-    // No need to call updateUserProfile here, as the URL will be passed back to the calling function
-    // and saved in a single update operation.
+    await updateUserProfile({ [fieldToUpdate]: downloadURL });
     
     return downloadURL;
   };

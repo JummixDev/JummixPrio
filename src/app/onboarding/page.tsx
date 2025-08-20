@@ -45,11 +45,10 @@ export default function OnboardingPage() {
     useEffect(() => {
         if (!loading) {
             if (!user) {
-                // This redirection is now mainly handled by the useAuth hook,
-                // but kept as a fallback.
                 router.push('/');
             } else if (userData) {
                  form.setValue('displayName', userData.displayName || '');
+                 form.setValue('bio', userData.bio || '');
                  if (userData.photoURL) {
                     setImagePreview(userData.photoURL);
                  }
@@ -72,31 +71,28 @@ export default function OnboardingPage() {
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
         
+        // A profile picture is required for onboarding.
+        if (!imageFile && !userData?.photoURL) {
+            toast({
+                variant: 'destructive',
+                title: 'Profile picture is required',
+                description: 'Please upload a profile picture to continue.',
+            });
+            return;
+        }
+        
         try {
-            let finalPhotoURL = userData?.photoURL;
-
-            // Step 1: Upload image if a new one is selected
+            // First, upload the image if a new one was selected.
             if (imageFile) {
-                finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
+                await updateUserProfileImage(imageFile, 'profile');
             }
 
-            // Step 2: Validate that there is a photo
-            if (!finalPhotoURL) {
-                toast({
-                    variant: 'destructive',
-                    title: 'Profile picture is required',
-                    description: 'Please upload a profile picture to continue.',
-                });
-                return;
-            }
-
-            // Step 3: Update profile with all data, including the onboarding flag
+            // Then, update the rest of the profile information.
             await updateUserProfile({
                 displayName: data.displayName,
                 bio: data.bio,
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
-                photoURL: finalPhotoURL,
-                onboardingComplete: true, // Explicitly set onboarding to complete
+                onboardingComplete: true, // This is the crucial flag.
             });
 
             toast({
@@ -104,7 +100,6 @@ export default function OnboardingPage() {
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
             // The redirection is now handled reliably by the useAuth hook.
-            // No need to call router.push here.
             
         } catch (error) {
             console.error('Onboarding failed:', error);
@@ -189,7 +184,9 @@ export default function OnboardingPage() {
                                         <FormControl>
                                             <Input placeholder="e.g., Live Music, Hiking, Tech" {...field} />
                                         </FormControl>
-                                        <FormDescription>This helps us recommend events you'll love.</FormDescription>
+                                        <FormDescription>
+                                            This helps us recommend events you'll love.
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
