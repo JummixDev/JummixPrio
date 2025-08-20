@@ -16,6 +16,8 @@ import { Loader2, UserCircle, Image as ImageIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FormDescription } from '@/components/ui/form';
+import { completeOnboardingProfile } from '@/app/actions';
+import { uploadFile } from '@/services/storage';
 
 const onboardingSchema = z.object({
     displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
@@ -26,7 +28,7 @@ const onboardingSchema = z.object({
 type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-    const { user, userData, loading, completeOnboarding } = useAuth();
+    const { user, userData, loading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -47,6 +49,8 @@ export default function OnboardingPage() {
         if (!loading) {
             if (!user) {
                 router.push('/');
+            } else if (userData?.onboardingComplete) {
+                router.push('/dashboard');
             } else if (userData) {
                  form.setValue('displayName', userData.displayName || '');
                  form.setValue('bio', userData.bio || '');
@@ -73,8 +77,7 @@ export default function OnboardingPage() {
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
         
-        // Validation: Ensure a profile picture is set.
-        if (!imagePreview) {
+        if (!imageFile && !userData?.photoURL) {
             toast({
                 variant: 'destructive',
                 title: 'Profile picture is required',
@@ -86,13 +89,29 @@ export default function OnboardingPage() {
         setIsSubmitting(true);
         
         try {
-            await completeOnboarding({ ...data, imageFile });
+            let finalPhotoURL = userData?.photoURL || '';
+            if (imageFile) {
+                const filePath = `profile-pictures/${user.uid}/${imageFile.name}`;
+                finalPhotoURL = await uploadFile(imageFile, filePath);
+            }
 
-            toast({
-                title: 'Profile created!',
-                description: 'Welcome to Jummix! Redirecting you to the dashboard...',
+            const result = await completeOnboardingProfile({
+                userId: user.uid,
+                displayName: data.displayName,
+                photoURL: finalPhotoURL,
+                bio: data.bio || '',
+                interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
             });
-            // The redirect is now handled reliably by the useAuth hook.
+
+            if (result.success) {
+                toast({
+                    title: 'Profile created!',
+                    description: 'Welcome to Jummix! Redirecting you to the dashboard...',
+                });
+                // Redirect is handled by the useAuth hook detecting the onboardingComplete flag
+            } else {
+                 throw new Error(result.error || "An unknown error occurred");
+            }
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);
@@ -101,13 +120,13 @@ export default function OnboardingPage() {
                 title: 'Onboarding Failed',
                 description: error.message || 'Could not save your profile. Please try again.',
             });
-        } finally {
-            setIsSubmitting(false);
+             setIsSubmitting(false);
         }
+        // No need to set isSubmitting to false on success, as the page will redirect.
     };
 
 
-    if (loading || !user || (userData && userData.onboardingComplete)) {
+    if (loading || !user || !userData) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
