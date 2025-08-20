@@ -10,12 +10,13 @@ import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2, UserCircle, Image as ImageIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Image from 'next/image';
+import { FormDescription } from '@/components/ui/form';
+
 
 const onboardingSchema = z.object({
     displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
@@ -72,20 +73,20 @@ export default function OnboardingPage() {
         if (!user) return;
         
         try {
+            let finalPhotoURL = userData?.photoURL;
+            // First, upload the image if a new one was selected.
+            if (imageFile) {
+                finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
+            }
+            
             // A profile picture is required for onboarding.
-            if (!imageFile && !userData?.photoURL) {
+            if (!finalPhotoURL) {
                 toast({
                     variant: 'destructive',
                     title: 'Profile picture is required',
                     description: 'Please upload a profile picture to continue.',
                 });
                 return;
-            }
-
-            let finalPhotoURL = userData?.photoURL;
-            // First, upload the image if a new one was selected.
-            if (imageFile) {
-                finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
             }
 
             // Then, update the rest of the profile information including the flag
@@ -101,7 +102,7 @@ export default function OnboardingPage() {
                 title: 'Profile created!',
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
-            // The redirection is handled by the useAuth hook. No need to call router.push here.
+            // The redirection is now fully handled by the useAuth hook.
             
         } catch (error) {
             console.error('Onboarding failed:', error);
@@ -114,11 +115,22 @@ export default function OnboardingPage() {
     };
 
 
-    if (loading || !user || (userData && userData.onboardingComplete)) {
+    if (loading || !user) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
                 <h1 className="text-2xl font-bold font-headline text-primary">Loading...</h1>
+            </div>
+        );
+    }
+    
+    // This part is important: if user is logged in, but onboarding is somehow complete,
+    // the useAuth hook will redirect. We show loading to prevent flashing the page.
+    if (userData?.onboardingComplete) {
+         return (
+             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+                <h1 className="text-2xl font-bold font-headline text-primary">Redirecting...</h1>
             </div>
         );
     }
@@ -187,9 +199,7 @@ export default function OnboardingPage() {
                                         <FormControl>
                                             <Input placeholder="e.g., Live Music, Hiking, Tech" {...field} />
                                         </FormControl>
-                                        <FormDescription>
-                                            This helps us recommend events you'll love.
-                                        </FormDescription>
+                                        <FormDescription>This helps us recommend events you'll love.</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
