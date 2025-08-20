@@ -110,7 +110,7 @@ function SignInForm({ form }: { form: UseFormReturn<any> }) {
         </div>
         <div className="grid grid-cols-2 gap-4">
             <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple} className="bg-black text-white hover:bg-gray-800"><AppleIcon className="mr-2 h-5 w-5"/> Apple</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-5 w-5 fill-black dark:fill-white"/> Apple</Button>
         </div>
       </div>
     </form>
@@ -185,7 +185,7 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
         </div>
         <div className="grid grid-cols-2 gap-4">
             <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple} className="bg-black text-white hover:bg-gray-800"><AppleIcon className="mr-2 h-5 w-5"/> Apple</Button>
+            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-5 w-5 fill-black dark:fill-white"/> Apple</Button>
         </div>
       </div>
     </form>
