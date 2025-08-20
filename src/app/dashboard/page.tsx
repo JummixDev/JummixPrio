@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPostsFeed } from "@/components/jummix/UserPostsFeed";
 import { PeopleNearby } from "@/components/jummix/PeopleNearby";
 import { NotificationCenter } from "@/components/jummix/NotificationCenter";
+import { Card, CardContent } from "@/components/ui/card";
 
 
 type Event = {
@@ -168,7 +169,11 @@ export default function DashboardPage() {
 
           <div className="lg:col-span-6 space-y-8">
             <div className="md:hidden">
-                <GlobalSearch />
+                <Card>
+                    <CardContent className="p-4">
+                        <GlobalSearch />
+                    </CardContent>
+                </Card>
             </div>
             <EventReels />
              <div>
