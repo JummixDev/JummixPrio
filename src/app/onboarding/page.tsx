@@ -73,10 +73,13 @@ export default function OnboardingPage() {
 
         try {
             let photoURL = userData?.photoURL;
+
+            // 1. Handle file upload if a new image is selected
             if (imageFile) {
                 photoURL = await updateUserProfileImage(imageFile, 'profile');
             }
 
+            // 2. Ensure there is a photo URL (either new or existing)
             if (!photoURL) {
                 toast({
                     variant: 'destructive',
@@ -86,11 +89,12 @@ export default function OnboardingPage() {
                 return;
             }
 
+            // 3. Update the rest of the profile data
             await updateUserProfile({
                 displayName: data.displayName,
                 bio: data.bio,
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
-                photoURL: photoURL,
+                photoURL: photoURL, // Use the potentially new URL
                 onboardingComplete: true,
             });
 
