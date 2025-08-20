@@ -17,7 +17,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FormDescription } from '@/components/ui/form';
 
-
 const onboardingSchema = z.object({
     displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
     bio: z.string().max(160, { message: "Bio cannot be longer than 160 characters." }).optional(),
@@ -33,6 +32,7 @@ export default function OnboardingPage() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<OnboardingInput>({
         resolver: zodResolver(onboardingSchema),
@@ -50,6 +50,7 @@ export default function OnboardingPage() {
             } else if (userData) {
                  form.setValue('displayName', userData.displayName || '');
                  form.setValue('bio', userData.bio || '');
+                 form.setValue('interests', (userData.interests || []).join(', '));
                  if (userData.photoURL) {
                     setImagePreview(userData.photoURL);
                  }
@@ -71,25 +72,27 @@ export default function OnboardingPage() {
 
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
+        setIsSubmitting(true);
         
         try {
             let finalPhotoURL = userData?.photoURL;
-            // First, upload the image if a new one was selected.
+            // 1. If a new image is selected, upload it first and get the new URL
             if (imageFile) {
                 finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
             }
             
-            // A profile picture is required for onboarding.
+            // 2. A profile picture is required for onboarding. Check if one exists now.
             if (!finalPhotoURL) {
                 toast({
                     variant: 'destructive',
                     title: 'Profile picture is required',
                     description: 'Please upload a profile picture to continue.',
                 });
+                setIsSubmitting(false); // Stop submission
                 return;
             }
 
-            // Then, update the rest of the profile information including the flag
+            // 3. Update the rest of the profile information including the flag and the potentially new photoURL.
             await updateUserProfile({
                 displayName: data.displayName,
                 bio: data.bio,
@@ -102,7 +105,8 @@ export default function OnboardingPage() {
                 title: 'Profile created!',
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
-            // The redirection is now fully handled by the useAuth hook.
+            // The redirection is now fully handled by the useAuth hook. 
+            // We just wait for it to kick in after the state update.
             
         } catch (error) {
             console.error('Onboarding failed:', error);
@@ -111,6 +115,7 @@ export default function OnboardingPage() {
                 title: 'Onboarding Failed',
                 description: 'Could not save your profile. Please try again.',
             });
+             setIsSubmitting(false);
         }
     };
 
@@ -204,8 +209,8 @@ export default function OnboardingPage() {
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Complete Profile
                             </Button>
                         </form>
@@ -215,3 +220,5 @@ export default function OnboardingPage() {
         </div>
     );
 }
+
+    

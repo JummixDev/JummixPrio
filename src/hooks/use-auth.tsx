@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const provider = new GoogleAuthProvider();
     return signInWithPopup(auth, provider).then(async (result) => {
         // For social sign-ins, we can assume they have a name/photo and mark onboarding as complete
-        await createUserDocument(result.user, true);
+        await createUserDocument(result.user, false);
         return result;
     });
   };
@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithApple = () => {
     const provider = new OAuthProvider('apple.com');
     return signInWithPopup(auth, provider).then(async (result) => {
-        await createUserDocument(result.user, true);
+        await createUserDocument(result.user, false);
         return result;
     });
   };
@@ -251,3 +251,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+    
