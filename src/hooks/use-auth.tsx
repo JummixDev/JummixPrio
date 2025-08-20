@@ -122,7 +122,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 router.push('/dashboard');
             }
           } else {
-             // Only redirect to onboarding if we are NOT already there. This prevents the loop.
              if (currentPath !== '/onboarding') {
                 router.push('/onboarding');
             }
@@ -196,24 +195,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       photoURL = await uploadFile(data.imageFile, filePath);
     }
   
+    // This was the missing validation step. Onboarding cannot complete without a picture.
     if (!photoURL) {
       throw new Error("A profile picture is required to complete onboarding.");
     }
   
+    // Update the Firebase Auth profile
     await updateProfile(auth.currentUser, {
       displayName: data.displayName,
       photoURL: photoURL,
     });
   
+    // Now, update the Firestore document with all data at once.
     const userDocRef = doc(db, "users", auth.currentUser.uid);
     await updateDoc(userDocRef, {
       displayName: data.displayName,
       photoURL: photoURL,
       bio: data.bio || '',
       interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
-      onboardingComplete: true,
+      onboardingComplete: true, // This is the final step
     });
   };
+
 
   const value = {
     user,
@@ -239,3 +242,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+    

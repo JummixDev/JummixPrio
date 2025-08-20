@@ -72,27 +72,27 @@ export default function OnboardingPage() {
 
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
+        
+        // Validation: Ensure a profile picture is set.
+        if (!imagePreview) {
+            toast({
+                variant: 'destructive',
+                title: 'Profile picture is required',
+                description: 'Please upload a profile picture to continue.',
+            });
+            return;
+        }
+
         setIsSubmitting(true);
         
         try {
-            // A profile picture is required. Check for existing one or newly uploaded one.
-            if (!imagePreview) {
-                 toast({
-                    variant: 'destructive',
-                    title: 'Profile picture is required',
-                    description: 'Please upload a profile picture to continue.',
-                });
-                setIsSubmitting(false);
-                return;
-            }
-
             await completeOnboarding({ ...data, imageFile });
 
             toast({
                 title: 'Profile created!',
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
-            // Redirect is handled by useAuth hook after data is updated.
+            // The redirect is now handled reliably by the useAuth hook.
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);
@@ -101,12 +101,13 @@ export default function OnboardingPage() {
                 title: 'Onboarding Failed',
                 description: error.message || 'Could not save your profile. Please try again.',
             });
-             setIsSubmitting(false);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
 
-    if (loading || !user || userData?.onboardingComplete) {
+    if (loading || !user || (userData && userData.onboardingComplete)) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -195,3 +196,5 @@ export default function OnboardingPage() {
         </div>
     );
 }
+
+    
