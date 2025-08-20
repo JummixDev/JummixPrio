@@ -46,7 +46,7 @@ export default function HostDashboardPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                <h1 className="text-2xl font-bold font-headline text-primary">Lade Ihr Erlebnis mit Jummix</h1>
+                <h1 className="text-2xl font-bold font-headline text-primary">Loading your Jummix experience</h1>
             </div>
         );
     }

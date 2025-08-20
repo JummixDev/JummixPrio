@@ -76,7 +76,7 @@ export function Leaderboard() {
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
                 <DialogTitle className="font-headline flex items-center gap-2"><Trophy className="text-primary"/> Full Leaderboard</DialogTitle>
-                <CardDescription>Sieh dir die aktivsten Mitglieder der Jummix-Community an.</CardDescription>
+                <CardDescription>Check out the most active members of the Jummix community.</CardDescription>
             </DialogHeader>
             <ScrollArea className="h-96">
                 <ul className="space-y-2 pr-4 pt-4">

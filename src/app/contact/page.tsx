@@ -17,10 +17,10 @@ export default function ContactPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         toast({
-            title: 'Nachricht gesendet!',
-            description: 'Vielen Dank für Ihre Anfrage. Wir werden uns so schnell wie möglich bei Ihnen melden.',
+            title: 'Message Sent!',
+            description: 'Thank you for your inquiry. We will get back to you as soon as possible.',
         });
-        // In einer echten App würden hier die Formulardaten zurückgesetzt
+        // In a real app, the form data would be reset here
     };
 
   return (
@@ -32,36 +32,36 @@ export default function ContactPage() {
                       <ArrowLeft />
                   </Link>
               </Button>
-              <h1 className="text-xl font-bold ml-4">Kontakt</h1>
+              <h1 className="text-xl font-bold ml-4">Contact</h1>
           </div>
       </header>
       <main className="flex-grow flex items-center justify-center container mx-auto p-4 pt-16">
         <Card className="w-full max-w-lg">
             <CardHeader>
-                <CardTitle className="font-headline text-2xl">Schreiben Sie uns</CardTitle>
-                <CardDescription>Haben Sie Fragen, Anregungen oder Feedback? Wir freuen uns, von Ihnen zu hören.</CardDescription>
+                <CardTitle className="font-headline text-2xl">Write to us</CardTitle>
+                <CardDescription>Do you have questions, suggestions, or feedback? We look forward to hearing from you.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Ihr Name</Label>
+                            <Label htmlFor="name">Your Name</Label>
                             <Input id="name" placeholder="Max Mustermann" required />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Ihre E-Mail</Label>
+                            <Label htmlFor="email">Your Email</Label>
                             <Input id="email" type="email" placeholder="max@example.com" required />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="subject">Betreff</Label>
-                        <Input id="subject" placeholder="Worum geht es?" required />
+                        <Label htmlFor="subject">Subject</Label>
+                        <Input id="subject" placeholder="What is it about?" required />
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="message">Ihre Nachricht</Label>
-                        <Textarea id="message" placeholder="Schreiben Sie hier Ihre Nachricht..." required rows={5} />
+                        <Label htmlFor="message">Your Message</Label>
+                        <Textarea id="message" placeholder="Write your message here..." required rows={5} />
                     </div>
-                    <Button type="submit" className="w-full">Nachricht senden</Button>
+                    <Button type="submit" className="w-full">Send Message</Button>
                 </form>
             </CardContent>
         </Card>

@@ -113,7 +113,7 @@ export function NotificationCenter() {
         <DialogContent>
             <DialogHeader>
                 <DialogTitle className="font-headline flex items-center gap-2"><Bell/> All Notifications</DialogTitle>
-                <DialogDescription>Deine neuesten Benachrichtigungen, Erwähnungen und Event-Updates.</DialogDescription>
+                <DialogDescription>Your latest notifications, mentions, and event updates.</DialogDescription>
             </DialogHeader>
             <ScrollArea className="h-96">
                 <ul className="space-y-2 pr-4 pt-4">

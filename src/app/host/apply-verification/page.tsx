@@ -26,8 +26,8 @@ export default function ApplyVerificationPage() {
         if (!ageCheckbox.checked) {
             toast({
                 variant: 'destructive',
-                title: 'Bestätigung erforderlich',
-                description: 'Sie müssen bestätigen, dass Sie mindestens 18 Jahre alt sind.',
+                title: 'Confirmation required',
+                description: 'You must confirm that you are at least 18 years old.',
             });
             return;
         }
@@ -35,8 +35,8 @@ export default function ApplyVerificationPage() {
         try {
             await updateUserHostApplicationStatus('pending');
             toast({
-                title: 'Bewerbung eingereicht!',
-                description: 'Vielen Dank für Ihre Bewerbung. Wir werden sie prüfen und uns bei Ihnen melden.',
+                title: 'Application submitted!',
+                description: 'Thank you for your application. We will review it and get back to you.',
             });
             // Redirect the user after submission
             setTimeout(() => router.push('/dashboard'), 2000);
@@ -44,8 +44,8 @@ export default function ApplyVerificationPage() {
             console.error("Error submitting application:", error);
             toast({
                 variant: 'destructive',
-                title: 'Fehler',
-                description: 'Ihre Bewerbung konnte nicht eingereicht werden. Bitte versuchen Sie es erneut.',
+                title: 'Error',
+                description: 'Your application could not be submitted. Please try again.',
             });
         }
     };
@@ -56,53 +56,53 @@ export default function ApplyVerificationPage() {
                  <Button variant="ghost" size="sm" asChild className="mb-4">
                     <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Zurück zum Dashboard
+                        Back to Dashboard
                     </Link>
                 </Button>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline text-2xl">Als verifizierter Host bewerben</CardTitle>
+                        <CardTitle className="font-headline text-2xl">Apply as a Verified Host</CardTitle>
                         <CardDescription>
-                            Füllen Sie das Formular aus, um Host-Privilegien zu beantragen. Damit können Sie Events auf Jummix erstellen und verwalten.
+                            Fill out the form to apply for host privileges. This will allow you to create and manage events on Jummix.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="fullName">Vollständiger Name</Label>
-                                    <Input id="fullName" placeholder="z.B. Alex Doe" required />
+                                    <Label htmlFor="fullName">Full Name</Label>
+                                    <Input id="fullName" placeholder="e.g., Alex Doe" required />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="brandName">Organisation / Markenname (Optional)</Label>
-                                    <Input id="brandName" placeholder="z.B. Awesome Events Inc." />
+                                    <Label htmlFor="brandName">Organization / Brand Name (Optional)</Label>
+                                    <Input id="brandName" placeholder="e.g., Awesome Events Inc." />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="address">Adresse</Label>
-                                <Input id="address" placeholder="Hauptstr. 123, 10115 Berlin" required />
+                                <Label htmlFor="address">Address</Label>
+                                <Input id="address" placeholder="123 Main St, 10115 Berlin" required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="motivation">Motivation</Label>
-                                <Textarea id="motivation" placeholder="Sagen Sie uns, warum Sie Host werden möchten und welche Art von Events Sie planen." required />
+                                <Textarea id="motivation" placeholder="Tell us why you want to become a host and what kind of events you are planning." required />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="experience">Erfahrung (Optional)</Label>
-                                <Textarea id="experience" placeholder="Beschreiben Sie Ihre bisherige Erfahrung in der Organisation von Events. Sie können Links zu vergangenen Events oder Social-Media-Seiten einfügen." />
+                                <Label htmlFor="experience">Experience (Optional)</Label>
+                                <Textarea id="experience" placeholder="Describe your previous experience in organizing events. You can include links to past events or social media pages." />
                             </div>
                              <div className="flex items-start space-x-2">
                                 <input type="checkbox" id="age" name="age" required className="mt-1"/>
                                 <label htmlFor="age" className="text-sm text-muted-foreground">
-                                   Ich bestätige, dass ich mindestens 18 Jahre alt bin.
+                                   I confirm that I am at least 18 years old.
                                 </label>
                             </div>
                              <div className="flex items-start space-x-2">
                                 <input type="checkbox" id="terms" required className="mt-1"/>
                                 <label htmlFor="terms" className="text-sm text-muted-foreground">
-                                    Ich habe die <Link href="/terms" className="underline">Host-Nutzungsbedingungen</Link> und unsere <Link href="/privacy" className="underline">Datenschutzrichtlinie</Link> gelesen und stimme ihnen zu.
+                                    I have read and agree to the <Link href="/terms" className="underline">Host Terms of Service</Link> and our <Link href="/privacy" className="underline">Privacy Policy</Link>.
                                 </label>
                             </div>
-                            <Button type="submit" className="w-full">Bewerbung absenden</Button>
+                            <Button type="submit" className="w-full">Submit Application</Button>
                         </form>
                     </CardContent>
                 </Card>

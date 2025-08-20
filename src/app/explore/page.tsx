@@ -369,7 +369,7 @@ export default function ExplorePage() {
                         <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
                     </div>
                     <Button onClick={() => setView('friends')}>
-                        Freunde entdecken <ArrowRight className="ml-2 h-4 w-4" />
+                        Discover Friends <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                 </div>
                 
@@ -394,8 +394,8 @@ export default function ExplorePage() {
             })}>
                 <div className="flex justify-between items-center mb-8 flex-shrink-0">
                     <div>
-                        <h1 className="text-3xl font-bold font-headline mb-2">Freunde entdecken</h1>
-                        <p className="text-muted-foreground">Vernetze dich mit neuen Leuten und finde gemeinsame Interessen.</p>
+                        <h1 className="text-3xl font-bold font-headline mb-2">Discover Friends</h1>
+                        <p className="text-muted-foreground">Connect with new people and find common interests.</p>
                     </div>
                     <div className="flex gap-2">
                         <Button onClick={() => setView('explore')} variant="outline">

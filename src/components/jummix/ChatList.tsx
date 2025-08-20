@@ -258,15 +258,15 @@ const ChatWindow = ({ conversationId, onBack }: { conversationId: string, onBack
                             <div className="grid grid-cols-1">
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <Button variant="ghost" className="justify-start p-3 gap-2"><Camera/>Foto aufnehmen</Button>
+                                        <Button variant="ghost" className="justify-start p-3 gap-2"><Camera/>Take Photo</Button>
                                     </DialogTrigger>
                                     <TakePhotoDialog onSendPhoto={handleSendPhoto} />
                                 </Dialog>
-                                <Button variant="ghost" className="justify-start p-3 gap-2" onClick={() => document.getElementById('file-upload')?.click()}><ImageIcon/>Aus Galerie wählen</Button>
+                                <Button variant="ghost" className="justify-start p-3 gap-2" onClick={() => document.getElementById('file-upload')?.click()}><ImageIcon/>From Gallery</Button>
                                 <input type="file" id="file-upload" className="hidden" />
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <Button variant="ghost" className="justify-start p-3 gap-2"><Share2/>Event teilen</Button>
+                                        <Button variant="ghost" className="justify-start p-3 gap-2"><Share2/>Share Event</Button>
                                     </DialogTrigger>
                                     <ShareEventDialog onSelectEvent={handleShareEvent} />
                                 </Dialog>

@@ -9,22 +9,22 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from "../ui/scroll-area";
 
 const badges = [
-  { icon: <Trophy className="w-8 h-8 text-yellow-500" />, name: "Top Contributor", description: "Für herausragende Community-Beiträge." },
-  { icon: <Award className="w-8 h-8 text-blue-500" />, name: "First Event", description: "Für die Erstellung deines ersten Events." },
-  { icon: <Star className="w-8 h-8 text-amber-400" />, name: "Super Fan", description: "Für die Teilnahme an 10+ Events." },
-  { icon: <Zap className="w-8 h-8 text-purple-500" />, name: "Power User", description: "Für regelmäßige und aktive Nutzung." },
-  { icon: <ShieldCheck className="w-8 h-8 text-green-500" />, name: "Verified Host", description: "Du bist ein verifizierter Host." },
-  { icon: <Star className="w-8 h-8 text-red-500" />, name: "Early Bird", description: "Einer der ersten 1000 Nutzer." },
+  { icon: <Trophy className="w-8 h-8 text-yellow-500" />, name: "Top Contributor", description: "For outstanding community contributions." },
+  { icon: <Award className="w-8 h-8 text-blue-500" />, name: "First Event", description: "For creating your first event." },
+  { icon: <Star className="w-8 h-8 text-amber-400" />, name: "Super Fan", description: "For attending 10+ events." },
+  { icon: <Zap className="w-8 h-8 text-purple-500" />, name: "Power User", description: "For regular and active use." },
+  { icon: <ShieldCheck className="w-8 h-8 text-green-500" />, name: "Verified Host", description: "You are a verified host." },
+  { icon: <Star className="w-8 h-8 text-red-500" />, name: "Early Bird", description: "One of the first 1000 users." },
 ];
 
 const allBadges = [
     ...badges,
-    { icon: <Diamond className="w-8 h-8 text-cyan-400" />, name: "Community Leader", description: "Für das Hosten von 5+ Events." },
-    { icon: <Trophy className="w-8 h-8 text-slate-400" />, name: "Top 10 Host", description: "Erreiche die Top 10 im Host-Ranking." },
-    { icon: <Award className="w-8 h-8 text-orange-500" />, name: "First Review", description: "Für das Schreiben deiner ersten Bewertung." },
-    { icon: <Star className="w-8 h-8 text-pink-400" />, name: "Social Butterfly", description: "Vernetze dich mit 50+ Freunden." },
-    { icon: <Zap className="w-8 h-8 text-teal-500" />, name: "Streak Starter", description: "Täglich aktiv für eine Woche." },
-    { icon: <ShieldCheck className="w-8 h-8 text-indigo-500" />, name: "Trusted Member", description: "Für positive Community-Bewertungen." },
+    { icon: <Diamond className="w-8 h-8 text-cyan-400" />, name: "Community Leader", description: "For hosting 5+ events." },
+    { icon: <Trophy className="w-8 h-8 text-slate-400" />, name: "Top 10 Host", description: "Reach the top 10 in the host ranking." },
+    { icon: <Award className="w-8 h-8 text-orange-500" />, name: "First Review", description: "For writing your first review." },
+    { icon: <Star className="w-8 h-8 text-pink-400" />, name: "Social Butterfly", description: "Connect with 50+ friends." },
+    { icon: <Zap className="w-8 h-8 text-teal-500" />, name: "Streak Starter", description: "Active daily for a week." },
+    { icon: <ShieldCheck className="w-8 h-8 text-indigo-500" />, name: "Trusted Member", description: "For positive community reviews." },
 ]
 
 export function Badges() {
@@ -61,7 +61,7 @@ export function Badges() {
         <DialogContent className="sm:max-w-lg">
             <DialogHeader>
                 <DialogTitle className="font-headline">All My Badges</DialogTitle>
-                <DialogDescription>Sammle sie alle! Hier ist eine Übersicht über deine bisherigen Erfolge und was du noch erreichen kannst.</DialogDescription>
+                <DialogDescription>Collect them all! Here is an overview of your achievements so far and what you can still achieve.</DialogDescription>
             </DialogHeader>
             <ScrollArea className="h-96">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">

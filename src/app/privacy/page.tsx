@@ -6,48 +6,48 @@ export default function PrivacyPage() {
   return (
     <div className="bg-background min-h-screen flex flex-col">
       <main className="flex-grow container mx-auto px-4 py-8 prose prose-stone dark:prose-invert max-w-4xl">
-        <h1 className="text-3xl font-bold mb-4">Datenschutzerklärung</h1>
+        <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
 
         <p>
-          <em>Dies ist ein Mustertext und stellt keine rechtsverbindliche Datenschutzerklärung dar. Für eine rechtssichere Erklärung sollten Sie einen Anwalt oder Datenschutzbeauftragten konsultieren.</em>
+          <em>This is a sample text and does not constitute a legally binding privacy policy. For a legally sound declaration, you should consult a lawyer or data protection officer.</em>
         </p>
 
-        <h2 id="verantwortlicher">1. Verantwortlicher</h2>
+        <h2 id="controller">1. Controller</h2>
         <p>
-          Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
+          The controller within the meaning of the General Data Protection Regulation (GDPR) is:
           <br />
-          Jummix Events (Musterfirma)
+          Jummix Events (Sample Company)
           <br />
-          Musterstraße 1
+          Sample Street 1
           <br />
-          12345 Musterstadt
+          12345 Sample City
           <br />
-          E-Mail: privacy@jummix.com
+          Email: privacy@jummix.com
         </p>
 
-        <h2 id="daten">2. Erhebung und Speicherung personenbezogener Daten</h2>
-        <p>Wir erheben und verarbeiten personenbezogene Daten, um unsere Dienste bereitzustellen, zu verbessern und zu sichern. Dazu gehören:</p>
+        <h2 id="data">2. Collection and Storage of Personal Data</h2>
+        <p>We collect and process personal data to provide, improve, and secure our services. This includes:</p>
         <ul>
-          <li><strong>Kontoinformationen:</strong> Bei der Registrierung erheben wir Ihren Namen, Ihre E-Mail-Adresse und Ihr Passwort. Freiwillige Angaben wie Profilbild, Biografie, Interessen, Standort und Geburtsdatum werden ebenfalls gespeichert.</li>
-          <li><strong>Nutzungsdaten:</strong> Informationen über Ihre Interaktionen mit der Plattform (z.B. besuchte Events, Likes, gespeicherte Events, erstellte Inhalte).</li>
-          <li><strong>Zahlungsdaten:</strong> Bei kostenpflichtigen Events werden Ihre Zahlungsdaten sicher von unserem Partner Stripe verarbeitet. Wir speichern keine vollständigen Kreditkartennummern.</li>
-          <li><strong>Technische Daten:</strong> IP-Adresse, Browsertyp, Betriebssystem und Geräteinformationen.</li>
-          <li><strong>Kommunikationsdaten:</strong> Inhalte Ihrer Nachrichten in Chats und Kommunikation mit unserem Support.</li>
+          <li><strong>Account Information:</strong> When you register, we collect your name, email address, and password. Voluntary information such as profile picture, biography, interests, location, and date of birth are also stored.</li>
+          <li><strong>Usage Data:</strong> Information about your interactions with the platform (e.g., attended events, likes, saved events, created content).</li>
+          <li><strong>Payment Data:</strong> For paid events, your payment data is securely processed by our partner Stripe. We do not store complete credit card numbers.</li>
+          <li><strong>Technical Data:</strong> IP address, browser type, operating system, and device information.</li>
+          <li><strong>Communication Data:</strong> Content of your messages in chats and communication with our support.</li>
         </ul>
 
-        <h2 id="zweck">3. Zweck und Rechtsgrundlage der Datenverarbeitung</h2>
-        <p>Die Verarbeitung Ihrer Daten erfolgt auf Basis der DSGVO:</p>
+        <h2 id="purpose">3. Purpose and Legal Basis of Data Processing</h2>
+        <p>The processing of your data is based on the GDPR:</p>
         <ul>
-          <li><strong>Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO):</strong> Zur Bereitstellung der Kernfunktionen von Jummix.</li>
-          <li><strong>Berechtigte Interessen (Art. 6 Abs. 1 lit. f DSGVO):</strong> Zur Verbesserung unserer Dienste, zur Betrugsprävention und für personalisierte Empfehlungen.</li>
-          <li><strong>Einwilligung (Art. 6 Abs. 1 lit. a DSGVO):</strong> Für optionale Funktionen wie Cookies für Analysezwecke.</li>
+          <li><strong>Performance of a Contract (Art. 6(1)(b) GDPR):</strong> To provide the core functions of Jummix.</li>
+          <li><strong>Legitimate Interests (Art. 6(1)(f) GDPR):</strong> To improve our services, for fraud prevention, and for personalized recommendations.</li>
+          <li><strong>Consent (Art. 6(1)(a) GDPR):</strong> For optional features such as cookies for analysis purposes.</li>
         </ul>
 
         <h2 id="cookies">4. Cookies</h2>
-        <p>Unsere Webseite verwendet Cookies. Dies sind kleine Textdateien, die auf Ihrem Endgerät gespeichert werden. Wir verwenden technisch notwendige Cookies, um die grundlegende Funktionalität der Seite sicherzustellen. Für alle weiteren Cookies (z.B. für Analyse- oder Marketingzwecke) holen wir über einen Cookie-Banner Ihre ausdrückliche Einwilligung ein. Sie können Ihre Einwilligung jederzeit widerrufen.</p>
+        <p>Our website uses cookies. These are small text files that are stored on your device. We use technically necessary cookies to ensure the basic functionality of the site. For all other cookies (e.g., for analysis or marketing purposes), we obtain your express consent via a cookie banner. You can revoke your consent at any time.</p>
 
-        <h2 id="rechte">5. Ihre Rechte als betroffene Person</h2>
-        <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit sowie das Recht auf Widerspruch gegen die Verarbeitung Ihrer personenbezogenen Daten. Sie können viele dieser Einstellungen direkt in Ihrem Profil vornehmen oder uns unter der oben genannten E-Mail-Adresse kontaktieren. Ihnen steht zudem ein Beschwerderecht bei einer Datenschutz-Aufsichtsbehörde zu.</p>
+        <h2 id="rights">5. Your Rights as a Data Subject</h2>
+        <p>You have the right to information, correction, deletion, restriction of processing, data portability, and the right to object to the processing of your personal data. You can make many of these settings directly in your profile or contact us at the email address mentioned above. You also have the right to lodge a complaint with a data protection supervisory authority.</p>
       </main>
       <Footer />
     </div>

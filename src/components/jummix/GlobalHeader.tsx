@@ -69,7 +69,7 @@ export function GlobalHeader() {
     if (hostApplicationStatus === 'pending') {
       return (
          <Button variant="ghost" className="w-full justify-start text-base py-6 text-muted-foreground cursor-not-allowed">
-            <Clock className="mr-2 h-5 w-5" /> Bewerbung ausstehend...
+            <Clock className="mr-2 h-5 w-5" /> Application pending...
         </Button>
       );
     }
@@ -77,7 +77,7 @@ export function GlobalHeader() {
       <SheetClose asChild>
         <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
           <Link href="/host/apply-verification">
-            <LayoutDashboard className="mr-2 h-5 w-5" /> Als Host bewerben
+            <LayoutDashboard className="mr-2 h-5 w-5" /> Apply to be a Host
           </Link>
         </Button>
       </SheetClose>
@@ -157,14 +157,14 @@ export function GlobalHeader() {
                          <SheetClose asChild>
                             <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                             <Link href="/about">
-                                <Info className="mr-2 h-5 w-5" /> Über uns
+                                <Info className="mr-2 h-5 w-5" /> About Us
                             </Link>
                             </Button>
                         </SheetClose>
                          <SheetClose asChild>
                             <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
                             <Link href="/contact">
-                                <Mail className="mr-2 h-5 w-5" /> Kontakt
+                                <Mail className="mr-2 h-5 w-5" /> Contact
                             </Link>
                             </Button>
                         </SheetClose>

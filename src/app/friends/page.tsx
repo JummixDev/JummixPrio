@@ -199,8 +199,8 @@ export default function FriendsPage() {
 
   return (
     <main className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold font-headline mb-2">Freunde finden</h1>
-        <p className="text-muted-foreground mb-8">Vernetze dich mit anderen, entdecke gemeinsame Interessen und Erlebnisse.</p>
+        <h1 className="text-3xl font-bold font-headline mb-2">Find Friends</h1>
+        <p className="text-muted-foreground mb-8">Connect with others, discover common interests and experiences.</p>
         <Card>
             <CardContent className="p-4">
                 <Tabs defaultValue="suggestions">

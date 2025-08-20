@@ -1,106 +1,106 @@
-# Nächste Schritte & Zu implementierende Funktionen
+# Next Steps & Features to Implement
 
-Diese Datei listet die wichtigsten Funktionen auf, die als Nächstes implementiert werden sollten, um die Jummix-Anwendung von einer reinen Frontend-Simulation zu einer voll funktionsfähigen, datengesteuerten Anwendung zu machen.
+This file lists the most important features that should be implemented next to transform the Jummix application from a pure frontend simulation into a fully functional, data-driven application.
 
 ---
 
-## 🏆 Alle wesentlichen Funktionen sind implementiert! 🏆
+## 🏆 All Essential Features Are Implemented! 🏆
 
-Die Jummix-Anwendung ist nun eine voll funktionsfähige, datengesteuerte Anwendung mit allen ursprünglich geplanten Kernfunktionen.
+The Jummix application is now a fully functional, data-driven application with all originally planned core features.
 
 <details>
-<summary>Details zu den erledigten Aufgaben anzeigen</summary>
+<summary>Show details of completed tasks</summary>
 
-- **<del>1. Backend-Datenpersistenz (Vollständig erledigt)</del>**
-- **<del>2. Echte Benutzerauthentifizierung & -verwaltung (Vollständig erledigt)</del>**
-- **<del>3. Event-Management für Hosts (Vollständig erledigt)</del>**
-- **<del>4. Ticketing & Bezahlung (Vollständig erledigt)</del>**
-- **<del>5. Live-Chat mit WebSockets (Vollständig erledigt)</del>**
-- **<del>6. Medien-Uploads (Bilder & Videos) (Vollständig erledigt)</del>**
-- **<del>7. Echte Geolokalisierung für "Events in der Nähe" (Vollständig erledigt)</del>**
-- **<del>8. Benachrichtigungssystem (Vollständig erledigt)</del>**
+- **<del>1. Backend Data Persistence (Fully Completed)</del>**
+- **<del>2. Real User Authentication & Management (Fully Completed)</del>**
+- **<del>3. Event Management for Hosts (Fully Completed)</del>**
+- **<del>4. Ticketing & Payment (Fully Completed)</del>**
+- **<del>5. Live Chat with WebSockets (Fully Completed)</del>**
+- **<del>6. Media Uploads (Images & Videos) (Fully Completed)</del>**
+- **<del>7. Real Geolocation for "Nearby Events" (Fully Completed)</del>**
+- **<del>8. Notification System (Fully Completed)</del>**
 
 </details>
 
 ---
 
-## 🚀 Zukünftige Feature-Anforderungen (Neu)
+## 🚀 Future Feature Requests (New)
 
-Hier sind die neuen Anforderungen und Ideen für die Weiterentwicklung von Jummix.
+Here are the new requirements and ideas for the further development of Jummix.
 
-### 1. KI-gestützte Suche
-- **Anforderung:** Die globale Suchleiste soll eine KI-gestützte Suche mit natürlicher Sprache ermöglichen (z.B. "ein entspanntes Jazz-Event am Wochenende").
-- **UI/UX:** Das Pop-up für die Suche soll vergrößert werden und einen größeren Texteingabebereich bieten.
+### 1. AI-Powered Search
+- **Requirement:** The global search bar should enable AI-powered search with natural language (e.g., "a relaxed jazz event on the weekend").
+- **UI/UX:** The search pop-up should be enlarged and offer a larger text input area.
 
-### 2. Event-Stories (Host-exklusiv & Monetarisierung)
-- **Anforderung:** Die Story-Leiste auf der Homepage soll exklusiv für verifizierte Hosts sein.
-- **Monetarisierung:** Hosts sollen dafür bezahlen können, ihre Events als Story zu bewerben. Dies stellt eine neue Einnahmequelle dar.
+### 2. Event Stories (Host-exclusive & Monetization)
+- **Requirement:** The story bar on the homepage should be exclusive to verified hosts.
+- **Monetization:** Hosts should be able to pay to promote their events as a story. This represents a new revenue stream.
 
-### 3. Dashboard-Layout & Feed
-- **Anforderung:** Das Dashboard-Layout soll angepasst werden:
-    - Das Leaderboard wird unter die "Meine Badges"-Sektion verschoben.
-    - Der "Meine Aktivitäten"-Feed rückt an die Position des Leaderboards (oben rechts).
-    - An der alten Position des Aktivitätsfeeds wird ein neuer "Feed"-Bereich für die Posts von anderen Nutzern eingeführt.
+### 3. Dashboard Layout & Feed
+- **Requirement:** The dashboard layout needs to be adjusted:
+    - The leaderboard will be moved below the "My Badges" section.
+    - The "My Activities" feed will move to the leaderboard's position (top right).
+    - A new "Feed" area for other users' posts will be introduced at the old position of the activity feed.
 
-### 4. Interaktive Widgets & Animationen
-- **Anforderung:** Alle Hauptbereiche auf dem Dashboard (Events, Leaderboard etc.) sollen einen "Vergrößern"-Button erhalten.
-- **UI/UX:** Bei Klick auf den Button soll eine Animation das Widget vergrößern und den Nutzer zur entsprechenden Vollbild-Seite der Funktion führen (z.B. zur Leaderboard-Seite).
+### 4. Interactive Widgets & Animations
+- **Requirement:** All main areas on the dashboard (Events, Leaderboard, etc.) should have a "Zoom In" button.
+- **UI/UX:** Clicking the button should animate the widget to enlarge and take the user to the corresponding full-screen page of the feature (e.g., to the leaderboard page).
 
-### 5. Story-Funktionalität (Erweitert)
-- **Anforderung:** Implementierung einer umfassenden Story-Funktion für Hosts.
+### 5. Story Functionality (Expanded)
+- **Requirement:** Implementation of a comprehensive story function for hosts.
 - **Features:**
-    - **Kamera-Integration:** Direkter Zugriff auf die Gerätekamera, um Fotos für Stories aufzunehmen.
-    - **Galerie-Upload:** Möglichkeit, Bilder aus der Gerätegalerie auszuwählen.
-    - **Archivierung:** Erstellte Stories sollen archiviert und später erneut eingesehen werden können.
+    - **Camera Integration:** Direct access to the device camera to take photos for stories.
+    - **Gallery Upload:** Ability to select images from the device gallery.
+    - **Archiving:** Created stories should be archived and viewable again later.
 
-### 6. Seitenübergänge & Explore-Seite
-- **Anforderung:** Ein Button auf der "Explore"-Seite soll zur "Freunde"-Seite führen.
-- **UI/UX:** Dieser Übergang soll durch eine fließende Animation realisiert werden, bei der der gesamte Bildschirminhalt nach links gleitet, während der globale Header fixiert bleibt.
+### 6. Page Transitions & Explore Page
+- **Requirement:** A button on the "Explore" page should lead to the "Friends" page.
+- **UI/UX:** This transition should be realized with a fluid animation where the entire screen content slides to the left while the global header remains fixed.
 
-### 7. Erweiterte Event-Filter & Sortierung
-- **Anforderung:** Die Filter- und Sortieroptionen auf der "Explore"-Seite müssen erweitert werden.
-- **Neue Filter:** Datum, Uhrzeit, "Woman Only", Preis, Sprache, Interessen, Politik, Thema.
-- **Neue Sortieroptionen:** Neueste zuerst, Beliebtheit, Datum (auf-/absteigend), beste Bewertung, Preis (auf-/absteigend), Entfernung.
+### 7. Advanced Event Filters & Sorting
+- **Requirement:** The filter and sorting options on the "Explore" page need to be expanded.
+- **New Filters:** Date, Time, "Woman Only", Price, Language, Interests, Politics, Theme.
+- **New Sorting Options:** Newest first, Popularity, Date (asc/desc), Best rating, Price (asc/desc), Distance.
 
-### 8. "Leute in deiner Nähe" & Profil-Interaktion
-- **Anforderung:** Eine neue Sektion "Leute in deiner Nähe" auf der Homepage.
-- **Interaktion:** Bei Klick auf einen Nutzer soll man direkt zu dessen Profilseite gelangen, wo man die Posts, Events und vergangenen Stories der Person sehen kann. Von dort aus soll man die Person als Freund hinzufügen und einen Chat starten können.
+### 8. "People Near You" & Profile Interaction
+- **Requirement:** A new section "People Near You" on the homepage.
+- **Interaction:** Clicking on a user should take you directly to their profile page, where you can see the person's posts, events, and past stories. From there, you should be able to add the person as a friend and start a chat.
 
-### 9. Neugestaltung der "Events entdecken"-Seite
-- **Anforderung:** Die Seite soll im Stil von Instagram neu gestaltet werden.
+### 9. Redesign of the "Discover Events" Page
+- **Requirement:** The page should be redesigned in the style of Instagram.
 - **UI/UX:**
-    - Eine Kachelansicht mit Event-Fotos in verschiedenen Layouts.
-    - Eine prominente Suchleiste oben.
-    - Bei Klick auf ein Event öffnet sich ein Pop-up mit Kurzinformationen auf einem abgedunkelten Hintergrund.
-    - Ein "Details anzeigen"-Button im Pop-up führt zur vollständigen Event-Detailseite.
+    - A tile view with event photos in various layouts.
+    - A prominent search bar at the top.
+    - Clicking on an event opens a pop-up with brief information on a darkened background.
+    - A "Show Details" button in the pop-up leads to the full event detail page.
 
-### 10. Erweiterte Freundes-Filter & Sortierung
-- **Anforderung:** Die Filter- und Sortieroptionen auf der "Freunde"-Seite müssen erweitert werden.
-- **Neue Filter:** Alter, Geschlecht, Sprache, Standort, nur online anzeigen, nur verifizierte Hosts.
-- **Neue Sortieroptionen:** "Neu registriert" und "Am aktivsten".
+### 10. Advanced Friend Filters & Sorting
+- **Requirement:** The filter and sorting options on the "Friends" page need to be expanded.
+- **New Filters:** Age, Gender, Language, Location, Show online only, Show verified hosts only.
+- **New Sorting Options:** "Newly registered" and "Most active".
 
-### 11. Erweiterte Chat-Funktionen
-- **Anforderung:** Die Chat-Funktionalität muss erweitert werden.
+### 11. Advanced Chat Functions
+- **Requirement:** The chat functionality needs to be expanded.
 - **Features:**
-    - **Anhänge:** Ein Button zum Anhängen von Inhalten mit den Optionen: "Foto aufnehmen", "Aus Galerie wählen", "Event teilen".
-    - **Event teilen:** Ermöglicht das Senden eines gespeicherten Events an einen Chatpartner.
-    - **Automatische Event-Gruppen:** Bei Teilnahme an einem Event wird der Nutzer automatisch einer Gruppe hinzugefügt. Der Host ist Admin dieser Gruppe. Alle Event-Details (Standort, Teilnehmer etc.) sind in der Gruppeninfo einsehbar.
+    - **Attachments:** A button to attach content with the options: "Take Photo", "Choose from Gallery", "Share Event".
+    - **Share Event:** Allows sending a saved event to a chat partner.
+    - **Automatic Event Groups:** When participating in an event, the user is automatically added to a group. The host is the admin of this group. All event details (location, participants, etc.) are viewable in the group info.
 
-### 12. Benachrichtigungs-Center
-- **Anforderung:** Eine dedizierte Benachrichtigungs-Sektion auf der Homepage.
-- **Inhalte:** Ungelesene Benachrichtigungen, Nachrichten von Freunden, eventbezogene Neuigkeiten und Erwähnungen.
+### 12. Notification Center
+- **Requirement:** A dedicated notification section on the homepage.
+- **Contents:** Unread notifications, messages from friends, event-related news, and mentions.
 
-### 13. Mindestteilnehmerzahl & Event-Absage (Host-Tool)
-- **Anforderung:** Ein Tool für Hosts zur Berechnung der Wirtschaftlichkeit eines Events.
-- **Logik:**
-    - Hosts geben Ticketpreis, maximale Kapazität und ihre Ausgaben an.
-    - Das System berechnet die Mindestteilnehmerzahl für ein rentables Event.
-    - Wird diese Zahl nicht erreicht, wird das Event automatisch abgesagt und alle Ticketkäufer erhalten ihr Geld zurück.
+### 13. Minimum Number of Participants & Event Cancellation (Host Tool)
+- **Requirement:** A tool for hosts to calculate the profitability of an event.
+- **Logic:**
+    - Hosts enter ticket price, maximum capacity, and their expenses.
+    - The system calculates the minimum number of participants for a profitable event.
+    - If this number is not reached, the event is automatically canceled and all ticket buyers receive their money back.
 
-### 14. Ticketing, QR-Code-Check-in & Auszahlung
-- **Anforderung:** Ein umfassendes Ticketing- und Check-in-System.
+### 14. Ticketing, QR Code Check-in & Payout
+- **Requirement:** A comprehensive ticketing and check-in system.
 - **Features:**
-    - **Meine Tickets:** Nach dem Kauf wird jedem Teilnehmer ein Ticket (mit QR-Code) in seinem Account zugewiesen.
-    - **Host-Scanner:** Der Host kann über die Event-Seite auf seine Kamera zugreifen, um die QR-Codes der Teilnehmer zu scannen.
-    - **Check-in & Auszahlung:** Der Scan bestätigt die Anwesenheit und sichert dem Host die Auszahlung des Geldes für dieses Ticket.
-    - **Auszahlungsmodell:** Der Host erhält den Gesamtbetrag aller gescannten Tickets nach Ende des Events, abzüglich einer Plattformgebühr von ca. 20%.
+    - **My Tickets:** After purchase, each participant is assigned a ticket (with a QR code) in their account.
+    - **Host Scanner:** The host can access their camera via the event page to scan the participants' QR codes.
+    - **Check-in & Payout:** The scan confirms attendance and secures the payout for this ticket to the host.
+    - **Payout Model:** The host receives the total amount of all scanned tickets after the event ends, minus a platform fee of approx. 20%.

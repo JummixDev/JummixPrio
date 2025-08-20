@@ -114,7 +114,7 @@ export function UserPostsFeed() {
     <DialogContent className="max-w-2xl">
         <DialogHeader>
             <DialogTitle className="font-headline">Full Community Feed</DialogTitle>
-            <DialogDescription>Bleib auf dem Laufenden mit den neuesten Posts aus der Community.</DialogDescription>
+            <DialogDescription>Stay up to date with the latest posts from the community.</DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[70vh] border-t">
             <div className="space-y-6 p-4">

@@ -61,7 +61,7 @@ export function PeopleNearby() {
         <DialogContent className="sm:max-w-xl">
             <DialogHeader>
                 <DialogTitle className="font-headline flex items-center gap-2"><Users/> All People Nearby</DialogTitle>
-                <DialogDescription>Finde neue Leute und potenzielle Freunde in deiner Umgebung.</DialogDescription>
+                <DialogDescription>Find new people and potential friends in your area.</DialogDescription>
             </DialogHeader>
             <ScrollArea className="h-[70vh]">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 p-4">
