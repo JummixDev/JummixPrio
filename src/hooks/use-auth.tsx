@@ -174,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { bio, bannerURL, interests, likedEvents, savedEvents, hostApplicationStatus, onboardingComplete, ...authProfileData } = profileData;
 
     // Update Firebase Auth profile (displayName, photoURL)
-    if (Object.keys(authProfileData).length > 0) {
+    if (Object.keys(authProfileData).length > 0 && (authProfileData.displayName || authProfileData.photoURL)) {
       await updateProfile(auth.currentUser, authProfileData);
     }
     
@@ -206,19 +206,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const updateUserProfileImage = async (file: File, type: 'profile' | 'banner'): Promise<string> => {
     if (!auth.currentUser) {
-        throw new Error("No user is signed in to update profile.");
+        throw new Error("No user is signed in to upload an image.");
     }
     const filePath = `${type}s/${auth.currentUser.uid}/${file.name}`;
     const downloadURL = await uploadFile(file, filePath);
-
-    // This part is now handled in the page itself to avoid race conditions.
-    // We just return the URL.
-    // if (type === 'profile') {
-    //     await updateUserProfile({ photoURL: downloadURL });
-    // } else if (type === 'banner') {
-    //     await updateUserProfile({ bannerURL: downloadURL });
-    // }
-
+    
+    // Return the URL so the calling function can use it
     return downloadURL;
   };
 

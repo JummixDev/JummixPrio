@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2, UserCircle, Image as ImageIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,7 +21,6 @@ const onboardingSchema = z.object({
     displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
     bio: z.string().max(160, { message: "Bio cannot be longer than 160 characters." }).optional(),
     interests: z.string().optional(),
-    photoURL: z.string().optional(),
 });
 
 type OnboardingInput = z.infer<typeof onboardingSchema>;
@@ -40,7 +39,6 @@ export default function OnboardingPage() {
             displayName: '',
             bio: '',
             interests: '',
-            photoURL: '',
         },
     });
 
@@ -52,6 +50,9 @@ export default function OnboardingPage() {
                 router.push('/dashboard');
             } else if (userData) {
                  form.setValue('displayName', userData.displayName || '');
+                 if (userData.photoURL) {
+                    setImagePreview(userData.photoURL);
+                 }
             }
         }
     }, [user, userData, loading, router, form]);
@@ -71,17 +72,16 @@ export default function OnboardingPage() {
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
 
-        try {
-            let finalPhotoURL = userData?.photoURL;
+        let finalPhotoURL = userData?.photoURL || imagePreview;
 
-            // 1. Handle file upload if a new image is selected
+        try {
+            // Step 1: Upload image if a new one is selected
             if (imageFile) {
-                // The hook now returns the URL, so we capture it.
                 finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
             }
 
-            // 2. Ensure there is a photo URL (either new or existing or from preview)
-            if (!finalPhotoURL && !imagePreview) {
+            // Step 2: Validate that there is a photo
+            if (!finalPhotoURL) {
                 toast({
                     variant: 'destructive',
                     title: 'Profile picture is required',
@@ -90,12 +90,12 @@ export default function OnboardingPage() {
                 return;
             }
 
-            // 3. Update the rest of the profile data with the correct photo URL
+            // Step 3: Update profile with all data
             await updateUserProfile({
                 displayName: data.displayName,
                 bio: data.bio,
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
-                photoURL: finalPhotoURL || imagePreview, // Use the new URL
+                photoURL: finalPhotoURL,
                 onboardingComplete: true,
             });
 
@@ -104,6 +104,7 @@ export default function OnboardingPage() {
                 description: 'Welcome to Jummix!',
             });
             router.push('/dashboard');
+            
         } catch (error) {
             console.error('Onboarding failed:', error);
             toast({
@@ -114,7 +115,7 @@ export default function OnboardingPage() {
         }
     };
 
-    if (loading || !userData || userData.onboardingComplete) {
+    if (loading || !user || userData?.onboardingComplete) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -135,7 +136,7 @@ export default function OnboardingPage() {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <div className="flex flex-col items-center space-y-4">
                                 <Avatar className="w-32 h-32 border-4 border-muted ring-2 ring-ring">
-                                    <AvatarImage src={imagePreview || userData?.photoURL} />
+                                    <AvatarImage src={imagePreview || undefined} />
                                     <AvatarFallback>
                                         <UserCircle className="w-full h-full text-muted-foreground" />
                                     </AvatarFallback>
