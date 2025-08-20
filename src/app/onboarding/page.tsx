@@ -72,9 +72,9 @@ export default function OnboardingPage() {
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
 
-        let finalPhotoURL = userData?.photoURL || imagePreview;
-
         try {
+            let finalPhotoURL = imagePreview;
+
             // Step 1: Upload image if a new one is selected
             if (imageFile) {
                 finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
@@ -90,21 +90,20 @@ export default function OnboardingPage() {
                 return;
             }
 
-            // Step 3: Update profile with all data
+            // Step 3: Update profile with all data, including the onboarding flag
             await updateUserProfile({
                 displayName: data.displayName,
                 bio: data.bio,
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
                 photoURL: finalPhotoURL,
-                onboardingComplete: true,
+                onboardingComplete: true, // Explicitly set onboarding to complete
             });
 
             toast({
                 title: 'Profile created!',
                 description: 'Welcome to Jummix! You will be redirected shortly.',
             });
-            // The redirection is handled by the useAuth hook now,
-            // once it detects that onboardingComplete is true.
+            // The redirection is now handled reliably by the useAuth hook.
             
         } catch (error) {
             console.error('Onboarding failed:', error);

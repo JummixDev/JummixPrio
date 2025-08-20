@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserData(data);
            // Add redirection logic here
           if (data.onboardingComplete) {
-            if (router.pathname === '/onboarding') {
+            if (window.location.pathname === '/onboarding') {
                 router.push('/dashboard');
             }
           } else {
@@ -174,29 +174,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!auth.currentUser) {
         throw new Error("No user is signed in to update profile.");
     }
+    
+    // Data for Firebase Auth profile (only accepts displayName and photoURL)
+    const authProfile: { displayName?: string, photoURL?: string } = {};
+    if (profileData.displayName) authProfile.displayName = profileData.displayName;
+    if (profileData.photoURL) authProfile.photoURL = profileData.photoURL;
 
-    const { bio, bannerURL, interests, likedEvents, savedEvents, hostApplicationStatus, onboardingComplete, ...authProfileData } = profileData;
-
-    // Update Firebase Auth profile (displayName, photoURL)
-    if (Object.keys(authProfileData).length > 0 && (authProfileData.displayName || authProfileData.photoURL)) {
-      await updateProfile(auth.currentUser, authProfileData);
+    if (Object.keys(authProfile).length > 0) {
+      await updateProfile(auth.currentUser, authProfile);
     }
     
-    // Update user's document in Firestore
+    // Data for Firestore document (can include anything)
     const userDocRef = doc(db, "users", auth.currentUser.uid);
-    const dataToUpdate: { [key: string]: any } = {};
-    if (profileData.displayName !== undefined) dataToUpdate.displayName = profileData.displayName;
-    if (profileData.photoURL !== undefined) dataToUpdate.photoURL = profileData.photoURL;
-    if (bio !== undefined) dataToUpdate.bio = bio;
-    if (bannerURL !== undefined) dataToUpdate.bannerURL = bannerURL;
-    if (interests !== undefined) dataToUpdate.interests = interests;
-    if (likedEvents !== undefined) dataToUpdate.likedEvents = likedEvents;
-    if (savedEvents !== undefined) dataToUpdate.savedEvents = savedEvents;
-    if (hostApplicationStatus !== undefined) dataToUpdate.hostApplicationStatus = hostApplicationStatus;
-    if (onboardingComplete !== undefined) dataToUpdate.onboardingComplete = onboardingComplete;
+    // Create a new object for Firestore that includes all provided data
+    const firestoreData: { [key: string]: any } = {};
+    for (const key in profileData) {
+        if (profileData[key as keyof UserProfileData] !== undefined) {
+            firestoreData[key] = profileData[key as keyof UserProfileData];
+        }
+    }
     
-    if (Object.keys(dataToUpdate).length > 0) {
-        await updateDoc(userDocRef, dataToUpdate);
+    if (Object.keys(firestoreData).length > 0) {
+        await updateDoc(userDocRef, firestoreData);
     }
   }
 
@@ -215,7 +214,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const filePath = `${type}s/${auth.currentUser.uid}/${file.name}`;
     const downloadURL = await uploadFile(file, filePath);
     
-    // Return the URL so the calling function can use it
+    // Update the user's profile with the new image URL immediately
+    const fieldToUpdate = type === 'profile' ? 'photoURL' : 'bannerURL';
+    await updateUserProfile({ [fieldToUpdate]: downloadURL });
+    
     return downloadURL;
   };
 
