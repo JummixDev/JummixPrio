@@ -54,6 +54,7 @@ interface AuthContextType {
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
   updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>;
   updateUserProfileImage: (file: File, type: 'profile' | 'banner') => Promise<string>;
+  completeOnboarding: (data: Omit<UserProfileData, 'userId'> & { imageFile?: File | null }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -74,6 +75,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     return () => unsubscribe();
   }, []);
+  
+  const handleRedirects = (user: User | null, userData: any | null) => {
+    const isOnboardingPage = window.location.pathname === '/onboarding';
+    
+    if (user) {
+      if (userData?.onboardingComplete) {
+        if (isOnboardingPage) {
+          router.push('/dashboard');
+        }
+      } else if (!isOnboardingPage) {
+        router.push('/onboarding');
+      }
+    } else {
+        const protectedRoutes = ['/dashboard', '/settings', '/profile', '/onboarding', '/my-events', '/my-tickets', '/friends', '/chats', '/host', '/story'];
+        if (protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
+          router.push('/');
+        }
+    }
+  }
 
   const createUserDocument = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
@@ -102,7 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: serverTimestamp()
       };
       await setDoc(userDocRef, newUserData);
+      return newUserData;
     }
+    return userDocSnap.data();
   };
 
 
@@ -110,27 +132,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) {
       const userDocRef = doc(db, "users", user.uid);
       const unsubscribe = onSnapshot(userDocRef, (doc) => {
+        let currentData;
         if (doc.exists()) {
-          setUserData(doc.data());
+          currentData = doc.data();
+          setUserData(currentData);
         } else {
-          createUserDocument(user);
+          // This case should be rare, but we handle it
+          createUserDocument(user).then(newUserData => {
+             setUserData(newUserData);
+             if (typeof window !== 'undefined') {
+                handleRedirects(user, newUserData);
+            }
+          });
         }
         setLoading(false);
+        if (typeof window !== 'undefined') {
+            handleRedirects(user, currentData);
+        }
       }, (error) => {
         console.error("Error with onSnapshot:", error);
         setLoading(false);
       });
       return () => unsubscribe();
-    } else if (!user && !loading) {
-      // If there is no user and we are not in the initial loading state
+    } else {
+      setLoading(false);
       if (typeof window !== 'undefined') {
-        const protectedRoutes = ['/dashboard', '/settings', '/profile', '/onboarding'];
-        if (protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
-          router.push('/');
-        }
+        handleRedirects(null, null);
       }
     }
-  }, [user, loading, router]);
+  }, [user]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -166,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await firebaseSignOut(auth);
     router.push('/');
   };
-
+  
   const updateUserProfile = async (data: Partial<UserProfileData>) => {
     if (!auth.currentUser) {
         throw new Error("No user is signed in to update profile.");
@@ -175,13 +205,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await updateDoc(userDocRef, data);
 
     // Also update the Firebase Auth profile if displayName or photoURL are changed
-    if (data.displayName || data.photoURL) {
-        await updateProfile(auth.currentUser, {
-            displayName: data.displayName,
-            photoURL: data.photoURL,
-        });
+    const authUpdateData: { displayName?: string, photoURL?: string } = {};
+    if (data.displayName) authUpdateData.displayName = data.displayName;
+    if (data.photoURL) authUpdateData.photoURL = data.photoURL;
+
+    if (Object.keys(authUpdateData).length > 0) {
+        await updateProfile(auth.currentUser, authUpdateData);
     }
   };
+
 
   const updateUserProfileImage = async (file: File, type: 'profile' | 'banner'): Promise<string> => {
       if (!auth.currentUser) {
@@ -192,15 +224,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           : `banner-images/${auth.currentUser.uid}/${file.name}`;
       
       const downloadURL = await uploadFile(file, filePath);
+      
+      const updateData = type === 'profile' 
+        ? { photoURL: downloadURL } 
+        : { bannerURL: downloadURL };
 
-      if (type === 'profile') {
-          await updateUserProfile({ photoURL: downloadURL });
-      } else {
-          await updateUserProfile({ bannerURL: downloadURL });
-      }
+      await updateUserProfile(updateData);
 
       return downloadURL;
   };
+  
+   const completeOnboarding = async (data: Omit<UserProfileData, 'userId'> & { imageFile?: File | null }) => {
+        if (!auth.currentUser) {
+            throw new Error("No user is signed in to complete onboarding.");
+        }
+        
+        const { imageFile, ...profileData } = data;
+        let finalPhotoURL = userData?.photoURL || auth.currentUser.photoURL || '';
+
+        if (imageFile) {
+            const filePath = `profile-pictures/${auth.currentUser.uid}/${imageFile.name}`;
+            finalPhotoURL = await uploadFile(imageFile, filePath);
+        }
+
+        await updateUserProfile({
+            ...profileData,
+            photoURL: finalPhotoURL,
+            onboardingComplete: true
+        });
+    }
+
 
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
      if (!auth.currentUser) {
@@ -223,6 +276,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUserHostApplicationStatus,
     updateUserProfile,
     updateUserProfileImage,
+    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

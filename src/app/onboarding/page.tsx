@@ -16,8 +16,6 @@ import { Loader2, UserCircle, Image as ImageIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FormDescription } from '@/components/ui/form';
-import { completeOnboardingProfile } from '@/app/actions';
-import { uploadFile } from '@/services/storage';
 
 const onboardingSchema = z.object({
     displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
@@ -28,7 +26,7 @@ const onboardingSchema = z.object({
 type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-    const { user, userData, loading } = useAuth();
+    const { user, userData, loading, completeOnboarding } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -45,24 +43,16 @@ export default function OnboardingPage() {
         },
     });
     
-    // Effect to handle initial state and redirects
     useEffect(() => {
-        if (!loading) {
-            if (!user) {
-                router.push('/');
-            } else if (userData?.onboardingComplete) {
-                router.push('/dashboard');
-            } else if (userData) {
-                 // Pre-fill form with existing data if available
-                 form.setValue('displayName', userData.displayName || '');
-                 form.setValue('bio', userData.bio || '');
-                 form.setValue('interests', (userData.interests || []).join(', '));
-                 if (userData.photoURL) {
-                    setImagePreview(userData.photoURL);
-                 }
-            }
+        if (!loading && userData) {
+             form.setValue('displayName', userData.displayName || '');
+             form.setValue('bio', userData.bio || '');
+             form.setValue('interests', (userData.interests || []).join(', '));
+             if (userData.photoURL) {
+                setImagePreview(userData.photoURL);
+             }
         }
-    }, [user, userData, loading, router, form]);
+    }, [userData, loading, form]);
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,9 +68,7 @@ export default function OnboardingPage() {
     };
 
     const onSubmit = async (data: OnboardingInput) => {
-        if (!user) return;
-        
-        if (!imagePreview) {
+        if (!imageFile && !userData?.photoURL) {
             toast({
                 variant: 'destructive',
                 title: 'Profile picture is required',
@@ -92,31 +80,18 @@ export default function OnboardingPage() {
         setIsSubmitting(true);
         
         try {
-            let finalPhotoURL = userData?.photoURL || '';
-            // Only upload a new file if the user selected one
-            if (imageFile) {
-                const filePath = `profile-pictures/${user.uid}/${imageFile.name}`;
-                finalPhotoURL = await uploadFile(imageFile, filePath);
-            }
-
-            const result = await completeOnboardingProfile({
-                userId: user.uid,
+            await completeOnboarding({
                 displayName: data.displayName,
-                photoURL: finalPhotoURL,
                 bio: data.bio || '',
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
+                imageFile: imageFile,
             });
 
-            if (result.success) {
-                toast({
-                    title: 'Profile created!',
-                    description: 'Welcome to Jummix! Redirecting you to the dashboard...',
-                });
-                // Explicitly redirect after successful onboarding
-                router.push('/dashboard');
-            } else {
-                 throw new Error(result.error || "An unknown error occurred");
-            }
+            toast({
+                title: 'Profile created!',
+                description: 'Welcome to Jummix! Redirecting you to the dashboard...',
+            });
+            // The redirect will be handled by the useEffect in useAuth
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);
@@ -125,7 +100,8 @@ export default function OnboardingPage() {
                 title: 'Onboarding Failed',
                 description: error.message || 'Could not save your profile. Please try again.',
             });
-            setIsSubmitting(false); // Re-enable button on failure
+        } finally {
+             setIsSubmitting(false);
         }
     };
 
