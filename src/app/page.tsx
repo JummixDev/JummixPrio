@@ -45,10 +45,12 @@ function SignInForm({ form }: { form: UseFormReturn<any> }) {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
   const { register, handleSubmit } = form;
   const { toast } = useToast();
+  const router = useRouter();
 
   const onSubmit = async (data: any) => {
     try {
       await signIn(data.email, data.password);
+      // The redirect is handled by the useAuth hook based on onboarding status
     } catch (error) {
         if (error instanceof FirebaseError) {
             switch (error.code) {
@@ -129,6 +131,7 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
   const onSubmit = async (data: any) => {
     try {
       await signUp(data.email, data.password);
+      // Redirect is handled by useAuth hook
     } catch (error) {
         if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
             toast({
@@ -194,20 +197,33 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
 
 
 export default function LandingPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, userData } = useAuth();
   const router = useRouter();
   const signupCardRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('signin');
   const signInForm = useForm();
   
   useEffect(() => {
-    if (user) {
-      router.push('/dashboard');
+    if (!loading && user) {
+        if (userData?.onboardingComplete) {
+            router.push('/dashboard');
+        } else {
+            // This case is primarily handled by the redirect in useAuth,
+            // but serves as a backup.
+            router.push('/onboarding');
+        }
     }
-  }, [user, router]);
+  }, [user, userData, loading, router]);
 
-  if (loading || user) {
+
+  if (loading || (user && userData === null)) { // Also wait for userData to be loaded
     return <div className="flex items-center justify-center min-h-screen bg-background">Loading...</div>;
+  }
+
+  // If user is logged in but onboarding is not complete, they will be redirected by the effect. 
+  // We show loading to prevent flashing the landing page.
+  if (user && !userData?.onboardingComplete) {
+     return <div className="flex items-center justify-center min-h-screen bg-background">Loading...</div>;
   }
 
   const scrollToSignup = () => {

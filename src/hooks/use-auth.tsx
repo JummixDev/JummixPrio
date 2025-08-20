@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -36,6 +35,7 @@ interface UserProfileData {
   likedEvents?: string[];
   savedEvents?: string[];
   hostApplicationStatus?: 'pending' | 'approved' | 'rejected' | 'none';
+  onboardingComplete?: boolean;
 }
 interface AuthContextType {
   user: User | null;
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const createUserDocument = async (user: User) => {
+  const createUserDocument = async (user: User, onboardingComplete = false) => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
     const username = user.email!.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
@@ -87,9 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         displayName: user.displayName || username,
         photoURL: user.photoURL || '',
         bannerURL: '',
-        bio: 'Welcome to Jummix! Edit your bio in the settings.',
-        isVerifiedHost: false, // Default value for new users
-        hostApplicationStatus: 'none', // Default application status
+        bio: '',
+        isVerifiedHost: false, 
+        hostApplicationStatus: 'none',
+        onboardingComplete: onboardingComplete, // Set onboarding status
         interests: [],
         followers: 0,
         friendsCount: 0,
@@ -99,7 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: serverTimestamp()
       };
       await setDoc(userDocRef, newUserData);
-      // No need to set user data here, the onSnapshot listener will handle it
     }
   };
 
@@ -109,7 +109,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(db, "users", user.uid);
       const unsubscribe = onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
-          setUserData(doc.data());
+          const data = doc.data();
+          setUserData(data);
+           // Add redirection logic here
+          if (!data.onboardingComplete) {
+            router.push('/onboarding');
+          }
         } else {
           // If the doc doesn't exist for some reason, create it.
           createUserDocument(user);
@@ -123,11 +128,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, router]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    await createUserDocument(userCredential.user);
+    await createUserDocument(userCredential.user, false); // onboardingComplete is false for new signups
     return userCredential;
   }
 
@@ -138,7 +143,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     return signInWithPopup(auth, provider).then(async (result) => {
-        await createUserDocument(result.user);
+        // For social sign-ins, we can assume they have a name/photo and mark onboarding as complete
+        await createUserDocument(result.user, true);
         return result;
     });
   };
@@ -146,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithApple = () => {
     const provider = new OAuthProvider('apple.com');
     return signInWithPopup(auth, provider).then(async (result) => {
-        await createUserDocument(result.user);
+        await createUserDocument(result.user, true);
         return result;
     });
   };
@@ -165,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("No user is signed in to update profile.");
     }
 
-    const { bio, bannerURL, interests, likedEvents, savedEvents, hostApplicationStatus, ...authProfileData } = profileData;
+    const { bio, bannerURL, interests, likedEvents, savedEvents, hostApplicationStatus, onboardingComplete, ...authProfileData } = profileData;
 
     // Update Firebase Auth profile (displayName, photoURL)
     if (Object.keys(authProfileData).length > 0) {
@@ -183,6 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (likedEvents !== undefined) dataToUpdate.likedEvents = likedEvents;
     if (savedEvents !== undefined) dataToUpdate.savedEvents = savedEvents;
     if (hostApplicationStatus !== undefined) dataToUpdate.hostApplicationStatus = hostApplicationStatus;
+    if (onboardingComplete !== undefined) dataToUpdate.onboardingComplete = onboardingComplete;
     
     if (Object.keys(dataToUpdate).length > 0) {
         await updateDoc(userDocRef, dataToUpdate);
