@@ -211,11 +211,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const filePath = `${type}s/${auth.currentUser.uid}/${file.name}`;
     const downloadURL = await uploadFile(file, filePath);
 
-    if (type === 'profile') {
-        await updateUserProfile({ photoURL: downloadURL });
-    } else if (type === 'banner') {
-        await updateUserProfile({ bannerURL: downloadURL });
-    }
+    // This part is now handled in the page itself to avoid race conditions.
+    // We just return the URL.
+    // if (type === 'profile') {
+    //     await updateUserProfile({ photoURL: downloadURL });
+    // } else if (type === 'banner') {
+    //     await updateUserProfile({ bannerURL: downloadURL });
+    // }
 
     return downloadURL;
   };

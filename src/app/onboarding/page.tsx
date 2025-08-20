@@ -72,15 +72,16 @@ export default function OnboardingPage() {
         if (!user) return;
 
         try {
-            let photoURL = userData?.photoURL;
+            let finalPhotoURL = userData?.photoURL;
 
             // 1. Handle file upload if a new image is selected
             if (imageFile) {
-                photoURL = await updateUserProfileImage(imageFile, 'profile');
+                // The hook now returns the URL, so we capture it.
+                finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
             }
 
-            // 2. Ensure there is a photo URL (either new or existing)
-            if (!photoURL) {
+            // 2. Ensure there is a photo URL (either new or existing or from preview)
+            if (!finalPhotoURL && !imagePreview) {
                 toast({
                     variant: 'destructive',
                     title: 'Profile picture is required',
@@ -89,12 +90,12 @@ export default function OnboardingPage() {
                 return;
             }
 
-            // 3. Update the rest of the profile data
+            // 3. Update the rest of the profile data with the correct photo URL
             await updateUserProfile({
                 displayName: data.displayName,
                 bio: data.bio,
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
-                photoURL: photoURL, // Use the potentially new URL
+                photoURL: finalPhotoURL || imagePreview, // Use the new URL
                 onboardingComplete: true,
             });
 
