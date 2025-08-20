@@ -36,6 +36,10 @@ interface UserProfileData {
   savedEvents?: string[];
   hostApplicationStatus?: 'pending' | 'approved' | 'rejected' | 'none';
   onboardingComplete?: boolean;
+  username?: string;
+  eventsCount?: number;
+  friendsCount?: number;
+  followers?: number;
 }
 interface AuthContextType {
   user: User | null;
@@ -117,7 +121,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 router.push('/dashboard');
             }
           } else {
-            router.push('/onboarding');
+             if (window.location.pathname !== '/onboarding') {
+                router.push('/onboarding');
+            }
           }
         } else {
           // If the doc doesn't exist for some reason, create it.
@@ -204,9 +210,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const filePath = `${type}s/${auth.currentUser.uid}/${file.name}`;
     const downloadURL = await uploadFile(file, filePath);
     
-    // Update the user's profile with the new image URL immediately
     const fieldToUpdate = type === 'profile' ? 'photoURL' : 'bannerURL';
-    await updateUserProfile({ [fieldToUpdate]: downloadURL });
+    // No need to call updateUserProfile here, as the URL will be passed back to the calling function
+    // and saved in a single update operation.
     
     return downloadURL;
   };

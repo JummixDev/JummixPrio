@@ -45,9 +45,9 @@ export default function OnboardingPage() {
     useEffect(() => {
         if (!loading) {
             if (!user) {
+                // This redirection is now mainly handled by the useAuth hook,
+                // but kept as a fallback.
                 router.push('/');
-            } else if (userData?.onboardingComplete) {
-                router.push('/dashboard');
             } else if (userData) {
                  form.setValue('displayName', userData.displayName || '');
                  if (userData.photoURL) {
@@ -71,7 +71,7 @@ export default function OnboardingPage() {
 
     const onSubmit = async (data: OnboardingInput) => {
         if (!user) return;
-
+        
         try {
             let finalPhotoURL = userData?.photoURL;
 
@@ -101,7 +101,7 @@ export default function OnboardingPage() {
 
             toast({
                 title: 'Profile created!',
-                description: 'Welcome to Jummix! You will be redirected shortly.',
+                description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
             // The redirection is now handled reliably by the useAuth hook.
             // No need to call router.push here.
