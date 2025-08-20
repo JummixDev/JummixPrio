@@ -184,8 +184,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Data for Firebase Auth profile (only accepts displayName and photoURL)
     const authProfile: { displayName?: string, photoURL?: string } = {};
-    if ('displayName' in profileData) authProfile.displayName = profileData.displayName;
-    if ('photoURL' in profileData) authProfile.photoURL = profileData.photoURL;
+    if (profileData.displayName) authProfile.displayName = profileData.displayName;
+    if (profileData.photoURL) authProfile.photoURL = profileData.photoURL;
 
     // Only update auth profile if there are changes for it
     if (Object.keys(authProfile).length > 0) {
@@ -212,16 +212,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const filePath = `${type}s/${auth.currentUser.uid}/${file.name}`;
     const downloadURL = await uploadFile(file, filePath);
 
-    if (type === 'profile') {
-        // Explicitly update the auth user profile as well
-        await updateProfile(auth.currentUser, { photoURL: downloadURL });
-    }
-    
-    // Update Firestore document
+    // Update Firestore document, which will trigger onSnapshot to update userData
     const fieldToUpdate = type === 'profile' ? 'photoURL' : 'bannerURL';
     await updateDoc(doc(db, "users", auth.currentUser.uid), {
         [fieldToUpdate]: downloadURL
     });
+
+    // Also explicitly update the auth user profile if it's the profile picture
+    if (type === 'profile') {
+        await updateProfile(auth.currentUser, { photoURL: downloadURL });
+    }
     
     return downloadURL;
   };

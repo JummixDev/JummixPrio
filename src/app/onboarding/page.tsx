@@ -88,20 +88,20 @@ export default function OnboardingPage() {
                 finalPhotoURL = await updateUserProfileImage(imageFile, 'profile');
             }
 
-            // Then, update the rest of the profile information.
+            // Then, update the rest of the profile information including the flag
             await updateUserProfile({
                 displayName: data.displayName,
                 bio: data.bio,
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
                 photoURL: finalPhotoURL,
-                onboardingComplete: true, // This is the crucial flag.
+                onboardingComplete: true, 
             });
 
             toast({
                 title: 'Profile created!',
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
-            // The redirection is now handled reliably by the useAuth hook.
+            // The redirection is handled by the useAuth hook. No need to call router.push here.
             
         } catch (error) {
             console.error('Onboarding failed:', error);
