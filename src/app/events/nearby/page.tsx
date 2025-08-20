@@ -96,7 +96,9 @@ export default function NearbyEventsPage() {
             setError("Geolocation is not supported by your browser.");
             setStatus('error');
         }
-    }, [isLoadingEvents, events.length]); // Rerun when events are loaded
+    // The dependency array is intentionally shortened to run this effect only once after events are loaded.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoadingEvents]);
 
 
   return (
@@ -112,11 +114,34 @@ export default function NearbyEventsPage() {
           </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow pt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event) => (
-                <EventCard key={event.id} event={event} />
-            ))}
-        </div>
+        {status === 'loading' && (
+             <div className="flex flex-col items-center justify-center text-center p-8">
+                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+                <h2 className="text-xl font-semibold">Finding events near you...</h2>
+                <p className="text-muted-foreground">Please wait a moment.</p>
+            </div>
+        )}
+         {status === 'error' && (
+            <Alert variant="destructive">
+                <WifiOff className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )}
+        {status === 'success' && (
+            <>
+                <Alert className="mb-6 bg-secondary">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    <AlertTitle>Location Found!</AlertTitle>
+                    <AlertDescription>Showing events sorted by distance from you.</AlertDescription>
+                </Alert>
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {events.map((event) => (
+                        <EventCard key={event.id} event={event} />
+                    ))}
+                </div>
+            </>
+        )}
       </main>
       <Footer />
     </div>

@@ -120,6 +120,30 @@ export default function DashboardPage() {
     }
   }, [user, loading, router]);
 
+  const handleNearbyClick = () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            () => {
+                router.push('/events/nearby');
+            },
+            (error) => {
+                toast({
+                    variant: 'destructive',
+                    title: 'Location Access Denied',
+                    description: 'Please enable location permissions in your browser settings to use this feature.',
+                });
+            }
+        );
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Geolocation Not Supported',
+            description: 'Your browser does not support geolocation.',
+        });
+    }
+  };
+
+
   if (loading || !user) {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
@@ -202,11 +226,13 @@ export default function DashboardPage() {
 
        {/* Floating Action Button for Mobile */}
         <div className="fixed bottom-24 right-4 z-30 md:hidden">
-            <Button asChild size="lg" className="rounded-full shadow-lg h-16 w-16 animate-pulse">
-                <Link href="/events/nearby">
-                    <MapPin className="h-8 w-8" />
-                    <span className="sr-only">Nearby Events</span>
-                </Link>
+            <Button
+                size="lg"
+                className="rounded-full shadow-lg h-16 w-16 bg-gradient-to-tr from-primary to-accent text-white"
+                onClick={handleNearbyClick}
+            >
+                <MapPin className="h-8 w-8" />
+                <span className="sr-only">Nearby Events</span>
             </Button>
         </div>
 
