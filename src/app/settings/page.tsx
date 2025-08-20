@@ -118,20 +118,33 @@ function ProfileSettings() {
 }
 
 function PhotoSettings() {
-    const { userData, updateUserProfileImage, loading } = useAuth();
+    const { user, userData, loading } = useAuth();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState<'profile' | 'banner' | null>(null);
-
+    const { updateUserProfile } = useAuth();
     const profileInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
+    const { uploadFile } = useAuth();
+
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'banner') => {
+        if (!user) return;
         const file = event.target.files?.[0];
         if (!file) return;
 
         setIsUploading(type);
         try {
-            await updateUserProfileImage(file, type);
+            const path = type === 'profile' 
+                ? `images/profile-pictures/${user.uid}/${file.name}` 
+                : `images/banner-images/${user.uid}/${file.name}`;
+            const downloadURL = await uploadFile(file, path);
+            
+            if (type === 'profile') {
+                await updateUserProfile({ photoURL: downloadURL });
+            } else {
+                await updateUserProfile({ bannerURL: downloadURL });
+            }
+
             toast({
                 title: `${type.charAt(0).toUpperCase() + type.slice(1)} Image Updated`,
                 description: "Your new image has been saved."

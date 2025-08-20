@@ -22,8 +22,8 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"; 
-import { useRouter } from 'next/navigation';
-import { uploadFile } from '@/services/storage';
+import { useRouter, usePathname } from 'next/navigation';
+import { uploadFile as uploadFileToStorage } from '@/services/storage';
 
 
 interface UserProfileData {
@@ -53,7 +53,7 @@ interface AuthContextType {
   sendPasswordReset: (email: string) => Promise<void>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
   updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>;
-  updateUserProfileImage: (file: File, type: 'profile' | 'banner') => Promise<string>;
+  uploadFile: (file: File, path: string) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -114,11 +115,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(db, "users", user.uid);
       const unsubscribe = onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
-          setUserData(doc.data());
+          const data = doc.data();
+          setUserData(data);
+          
+          // --- Centralized Redirect Logic ---
+          if (!loading) { // Only redirect after initial load
+              const isPublicPage = ['/','/terms','/privacy','/imprint','/reset-password'].includes(pathname);
+              const isOnboarding = pathname === '/onboarding';
+
+              if (data.onboardingComplete && (isOnboarding || isPublicPage)) {
+                  router.push('/dashboard');
+              } else if (!data.onboardingComplete && !isOnboarding && !isPublicPage) {
+                   router.push('/onboarding');
+              }
+          }
+
         } else {
           // This case should be rare, but we handle it
           createUserDocument(user).then(newUserData => {
              setUserData(newUserData);
+             router.push('/onboarding');
           });
         }
         setLoading(false);
@@ -130,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, loading]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -172,8 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("No user is signed in to update profile.");
     }
     const userDocRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userDocRef, data);
-
+    
     // Also update the Firebase Auth profile if displayName or photoURL are changed
     const authUpdateData: { displayName?: string, photoURL?: string } = {};
     if (data.displayName) authUpdateData.displayName = data.displayName;
@@ -182,27 +197,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (Object.keys(authUpdateData).length > 0) {
         await updateProfile(auth.currentUser, authUpdateData);
     }
+    // Update Firestore document
+    await updateDoc(userDocRef, data);
   };
 
-
-  const updateUserProfileImage = async (file: File, type: 'profile' | 'banner'): Promise<string> => {
-      if (!auth.currentUser) {
-          throw new Error("No user is signed in to upload an image.");
-      }
-      const filePath = type === 'profile' 
-          ? `profile-pictures/${auth.currentUser.uid}/${file.name}`
-          : `banner-images/${auth.currentUser.uid}/${file.name}`;
-      
-      const downloadURL = await uploadFile(file, filePath);
-      
-      const updateData = type === 'profile' 
-        ? { photoURL: downloadURL } 
-        : { bannerURL: downloadURL };
-        
-      await updateUserProfile(updateData);
-
-      return downloadURL;
-  };
+  const uploadFile = async (file: File, path: string): Promise<string> => {
+    return uploadFileToStorage(file, path);
+  }
 
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
      if (!auth.currentUser) {
@@ -224,7 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sendPasswordReset,
     updateUserHostApplicationStatus,
     updateUserProfile,
-    updateUserProfileImage,
+    uploadFile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
