@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -57,7 +56,6 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
-  uploadFile: (file: File, path: string) => Promise<string>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
   updateUserProfile: (data: { displayName?: string; bio?: string; photoURL?: string; bannerURL?: string }) => Promise<void>;
 }
@@ -123,17 +121,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (doc.exists()) {
           const data = doc.data();
           setUserData(data);
-          
-          if (data.onboardingComplete) {
-            if (router.pathname === '/onboarding' || router.pathname === '/') {
-                router.push('/dashboard');
-            }
-          } else {
-             if (router.pathname !== '/onboarding') {
-                router.push('/onboarding');
-            }
-          }
-
         } else {
           // This might happen on first login, create the doc
           createUserDocument(user).then(setUserData);
@@ -148,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // User is logged out
       setLoading(false);
     }
-  }, [user, router]);
+  }, [user]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -184,10 +171,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await firebaseSignOut(auth);
     router.push('/');
   };
-
-  const uploadFile = async (file: File, path: string): Promise<string> => {
-    return uploadFileToStorage(file, path);
-  }
 
   const updateUserProfile = async (data: { displayName?: string; bio?: string; photoURL?: string; bannerURL?: string }) => {
      if (!auth.currentUser) {
@@ -232,7 +215,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     signInWithApple,
     sendPasswordReset,
-    uploadFile,
     updateUserHostApplicationStatus,
     updateUserProfile,
   };
@@ -247,3 +229,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+    

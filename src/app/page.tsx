@@ -321,9 +321,11 @@ export default function LandingPage() {
             if (user) {
                 if (userData?.onboardingComplete) {
                     router.push('/dashboard');
-                } else {
+                } else if (userData) { // userData exists but onboarding is not complete
                     router.push('/onboarding');
                 }
+                // If userData is null, the main listener in useAuth is still working,
+                // so we don't do anything here to avoid race conditions.
             }
         }
     }, [user, userData, loading, router]);
@@ -340,3 +342,5 @@ export default function LandingPage() {
     
     return <LandingPageContent />;
 }
+
+    
