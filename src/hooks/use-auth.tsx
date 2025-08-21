@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -58,12 +59,7 @@ interface AuthContextType {
   sendPasswordReset: (email: string) => Promise<void>;
   uploadFile: (file: File, path: string) => Promise<string>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
-  completeOnboarding: (data: {
-    displayName: string;
-    photoURL: string;
-    bio: string;
-    interests: string[];
-  }) => Promise<void>;
+  updateUserProfile: (data: { displayName?: string; bio?: string; photoURL?: string; bannerURL?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -72,6 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -125,6 +123,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (doc.exists()) {
           const data = doc.data();
           setUserData(data);
+          
+          if (data.onboardingComplete) {
+            if (router.pathname === '/onboarding' || router.pathname === '/') {
+                router.push('/dashboard');
+            }
+          } else {
+             if (router.pathname !== '/onboarding') {
+                router.push('/onboarding');
+            }
+          }
+
         } else {
           // This might happen on first login, create the doc
           createUserDocument(user).then(setUserData);
@@ -139,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // User is logged out
       setLoading(false);
     }
-  }, [user]);
+  }, [user, router]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -173,39 +182,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
+    router.push('/');
   };
 
   const uploadFile = async (file: File, path: string): Promise<string> => {
     return uploadFileToStorage(file, path);
   }
-  
-  const completeOnboarding = async (data: {
-    displayName: string;
-    photoURL: string;
-    bio: string;
-    interests: string[];
-  }) => {
-    if (!auth.currentUser) {
-        throw new Error("No user is signed in to complete onboarding.");
-    }
-    
-    // 1. Update Firebase Auth user profile (this triggers onAuthStateChanged)
-    await updateProfile(auth.currentUser, {
-        displayName: data.displayName,
-        photoURL: data.photoURL,
-    });
-    
-    // 2. Update Firestore user document
-    const userDocRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userDocRef, {
-        displayName: data.displayName,
-        photoURL: data.photoURL,
-        bio: data.bio,
-        interests: data.interests,
-        onboardingComplete: true,
-    });
-  }
 
+  const updateUserProfile = async (data: { displayName?: string; bio?: string; photoURL?: string; bannerURL?: string }) => {
+     if (!auth.currentUser) {
+        throw new Error("No user is signed in to update profile.");
+    }
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+    
+    // Create a new object with only the fields that are provided
+    const updateData: { [key: string]: any } = {};
+    if (data.displayName) updateData.displayName = data.displayName;
+    if (data.bio) updateData.bio = data.bio;
+    if (data.photoURL) updateData.photoURL = data.photoURL;
+    if (data.bannerURL) updateData.bannerURL = data.bannerURL;
+
+    // Update Auth profile if name or photo changed
+    if (data.displayName || data.photoURL) {
+       await updateProfile(auth.currentUser, {
+         displayName: data.displayName || auth.currentUser.displayName,
+         photoURL: data.photoURL || auth.currentUser.photoURL,
+       });
+    }
+
+    // Update Firestore document
+    await updateDoc(userDocRef, updateData);
+  }
+  
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
      if (!auth.currentUser) {
         throw new Error("No user is signed in to update profile.");
@@ -226,7 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sendPasswordReset,
     uploadFile,
     updateUserHostApplicationStatus,
-    completeOnboarding,
+    updateUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

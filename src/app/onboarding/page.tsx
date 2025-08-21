@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -17,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FormDescription } from '@/components/ui/form';
 import { uploadFile } from '@/services/storage';
+import { completeOnboardingProfile } from '../actions';
 
 const onboardingSchema = z.object({
     displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
@@ -27,7 +29,7 @@ const onboardingSchema = z.object({
 type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-    const { user, userData, loading, completeOnboarding } = useAuth();
+    const { user, userData, loading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -98,17 +100,21 @@ export default function OnboardingPage() {
 
             // 1. Upload new image if one is selected
             if (imageFile) {
-                const filePath = `images/${user.uid}/profile-picture`;
+                const filePath = `images/${user.uid}/profile-picture.jpg`;
                 finalPhotoURL = await uploadFile(imageFile, filePath);
             }
             
-            // 2. Call the new onboarding function
-            await completeOnboarding({
+            // 2. Call the server action to complete the profile
+            const result = await completeOnboardingProfile(user.uid, {
                 displayName: data.displayName,
                 bio: data.bio || '',
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
                 photoURL: finalPhotoURL,
             });
+
+            if (!result.success) {
+                throw new Error(result.error);
+            }
 
             toast({
                 title: 'Profile created!',
@@ -130,7 +136,7 @@ export default function OnboardingPage() {
     };
 
 
-    if (loading || !user || !userData) {
+    if (loading || !user) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />

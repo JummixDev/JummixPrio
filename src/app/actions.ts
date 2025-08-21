@@ -1,6 +1,6 @@
 
 
-"use server";
+'use server';
 
 import "dotenv/config";
 import { personalizedEventRecommendations, PersonalizedEventRecommendationsInput } from "@/ai/flows/event-recommendations";
@@ -357,5 +357,34 @@ export async function requestToBook(userId: string, eventId: string, hostUsernam
     console.error("Error creating booking request:", error);
     return { success: false, error: 'Failed to send booking request.' };
   }
+}
+
+export async function completeOnboardingProfile(
+    userId: string,
+    data: {
+        displayName: string;
+        photoURL: string;
+        bio: string;
+        interests: string[];
+    }
+) {
+    if (!userId) {
+        return { success: false, error: "User ID is missing." };
+    }
+
+    try {
+        const userDocRef = doc(db, "users", userId);
+        await updateDoc(userDocRef, {
+            displayName: data.displayName,
+            photoURL: data.photoURL,
+            bio: data.bio,
+            interests: data.interests,
+            onboardingComplete: true,
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error completing onboarding profile:", error);
+        return { success: false, error: "Failed to update profile in the database." };
+    }
 }
     
