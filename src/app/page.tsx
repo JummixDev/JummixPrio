@@ -317,14 +317,18 @@ export default function LandingPage() {
     const router = useRouter();
 
     useEffect(() => {
+        // Wait until loading is false before making a decision
         if (!loading) {
             if (user) {
                 if (userData?.onboardingComplete) {
                     router.push('/dashboard');
                 } else {
+                    // If userData is still loading, we might get here. 
+                    // A check for `userData` being explicitly loaded might be needed if issues persist.
                     router.push('/onboarding');
                 }
             }
+            // If no user, do nothing and stay on the landing page.
         }
     }, [user, userData, loading, router]);
     

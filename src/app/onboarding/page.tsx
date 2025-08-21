@@ -129,7 +129,7 @@ export default function OnboardingPage() {
     };
 
 
-    if (loading || !user) {
+    if (loading || !user || userData?.onboardingComplete) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
