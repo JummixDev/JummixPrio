@@ -20,7 +20,7 @@ import {
   OAuthProvider,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"; 
+import { doc, setDoc, getDoc, onSnapshot, serverTimestamp } from "firebase/firestore"; 
 import { useRouter } from 'next/navigation';
 
 interface UserProfileData {
@@ -54,7 +54,6 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
-  updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,10 +62,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (!user) {
         setUserData(null);
@@ -113,8 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(db, "users", user.uid);
       const unsubscribe = onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
-          const data = doc.data() as UserProfileData;
-          setUserData(data);
+          setUserData(doc.data() as UserProfileData);
         } else {
           createUserDocument(user).then(setUserData);
         }
@@ -161,18 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
-    setUserData(null);
-    setUser(null);
-    router.push('/');
   };
-  
-  const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
-     if (!auth.currentUser) {
-        throw new Error("No user is signed in to update profile.");
-    }
-    const userDocRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userDocRef, { hostApplicationStatus: status });
-  }
 
   const value = {
     user,
@@ -184,7 +170,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     signInWithApple,
     sendPasswordReset,
-    updateUserHostApplicationStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

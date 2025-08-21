@@ -323,11 +323,9 @@ export default function LandingPage() {
                 if (userData?.onboardingComplete) {
                     router.push('/dashboard');
                 } else {
-                    // If userData is available but onboarding is not complete
                     router.push('/onboarding');
                 }
             }
-            // If no user, do nothing and stay on the landing page.
         }
     }, [user, userData, loading, router]);
     
