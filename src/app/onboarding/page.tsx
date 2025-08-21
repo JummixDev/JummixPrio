@@ -47,7 +47,7 @@ export default function OnboardingPage() {
      useEffect(() => {
         if (!loading) {
             if (!user) {
-                // If for some reason user gets here without being logged in, send to home
+                // If user is not logged in, send to home
                 router.push('/');
             } else if (userData?.onboardingComplete) {
                 // If user is already onboarded, send to dashboard
@@ -116,9 +116,7 @@ export default function OnboardingPage() {
                 title: 'Profile created!',
                 description: 'Welcome to Jummix!',
             });
-            // The useAuth hook's onSnapshot listener will update userData,
-            // which will trigger the useEffect on this page to redirect.
-            // For a faster perceived response, we can also redirect here.
+            
             router.push('/dashboard');
             
         } catch (error: any) {
@@ -133,7 +131,7 @@ export default function OnboardingPage() {
     };
 
 
-    if (loading || !user || !userData) {
+    if (loading || !user) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
