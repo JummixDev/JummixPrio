@@ -323,8 +323,7 @@ export default function LandingPage() {
                 if (userData?.onboardingComplete) {
                     router.push('/dashboard');
                 } else {
-                    // If userData is still loading, we might get here. 
-                    // A check for `userData` being explicitly loaded might be needed if issues persist.
+                    // If userData is available but onboarding is not complete
                     router.push('/onboarding');
                 }
             }

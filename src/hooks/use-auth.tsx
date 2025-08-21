@@ -18,13 +18,10 @@ import {
   signInWithPopup,
   sendPasswordResetEmail,
   OAuthProvider,
-  updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"; 
-import { usePathname, useRouter } from 'next/navigation';
-import { uploadFile } from '@/services/storage';
-
+import { useRouter } from 'next/navigation';
 
 interface UserProfileData {
   uid: string;
@@ -46,6 +43,7 @@ interface UserProfileData {
   following?: string[];
   createdAt: any;
 }
+
 interface AuthContextType {
   user: User | null;
   userData: UserProfileData | null;
@@ -67,18 +65,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
       if (!user) {
-          setUserData(null);
-          setLoading(false);
+        setUserData(null);
+        setLoading(false);
       }
     });
     return () => unsubscribe();
   }, []);
-  
 
   const createUserDocument = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
@@ -112,7 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return userDocSnap.data() as UserProfileData;
   };
 
-
   useEffect(() => {
     if (user) {
       const userDocRef = doc(db, "users", user.uid);
@@ -121,7 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const data = doc.data() as UserProfileData;
           setUserData(data);
         } else {
-          // This might happen on first login, create the doc
           createUserDocument(user).then(setUserData);
         }
         setLoading(false);
@@ -131,7 +125,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       return () => unsubscribe();
     } else {
-      // User is logged out
       setLoading(false);
     }
   }, [user]);
@@ -172,7 +165,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     router.push('/');
   };
-
   
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
      if (!auth.currentUser) {
