@@ -27,7 +27,7 @@ const onboardingSchema = z.object({
 type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-    const { user, userData, loading, uploadFile, updateUserProfile } = useAuth();
+    const { user, userData, loading, uploadFile } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -43,17 +43,26 @@ export default function OnboardingPage() {
             interests: '',
         },
     });
-    
-    useEffect(() => {
-        if (!loading && userData) {
-            form.setValue('displayName', userData.displayName || user?.displayName || '');
-            form.setValue('bio', userData.bio || '');
-            form.setValue('interests', (userData.interests || []).join(', '));
-            if (userData.photoURL) {
-                setImagePreview(userData.photoURL);
+
+     useEffect(() => {
+        if (!loading) {
+            if (!user) {
+                // If for some reason user gets here without being logged in, send to home
+                router.push('/');
+            } else if (userData?.onboardingComplete) {
+                // If user is already onboarded, send to dashboard
+                router.push('/dashboard');
+            } else if (userData) {
+                 // Pre-fill form if we have some data
+                form.setValue('displayName', userData.displayName || user?.displayName || '');
+                form.setValue('bio', userData.bio || '');
+                form.setValue('interests', (userData.interests || []).join(', '));
+                if (userData.photoURL) {
+                    setImagePreview(userData.photoURL);
+                }
             }
         }
-    }, [user, userData, loading, form]);
+    }, [user, userData, loading, router, form]);
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,7 +116,10 @@ export default function OnboardingPage() {
                 title: 'Profile created!',
                 description: 'Welcome to Jummix!',
             });
-            // The useAuth hook will handle redirection once the user data is updated.
+            // The useAuth hook's onSnapshot listener will update userData,
+            // which will trigger the useEffect on this page to redirect.
+            // For a faster perceived response, we can also redirect here.
+            router.push('/dashboard');
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);
@@ -121,7 +133,7 @@ export default function OnboardingPage() {
     };
 
 
-    if (loading || !user) {
+    if (loading || !user || !userData) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />

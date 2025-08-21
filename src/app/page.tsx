@@ -200,6 +200,23 @@ function LandingPageContent() {
   const signupCardRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('signin');
   const signInForm = useForm();
+  const { user, loading, userData } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Wait until loading is false to get a definitive state
+    if (!loading) {
+      if (user) {
+        if (userData?.onboardingComplete) {
+          router.push('/dashboard');
+        } else {
+          router.push('/onboarding');
+        }
+      }
+      // If no user, stay on this page
+    }
+  }, [user, userData, loading, router]);
+
 
   const scrollToSignup = () => {
     signupCardRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -210,6 +227,15 @@ function LandingPageContent() {
     signInForm.setValue('email', email);
   }
 
+  // If loading, or if user is logged in (and useEffect is about to redirect), show loading state
+   if (loading || user) {
+     return (
+       <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+         <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+         <h1 className="text-2xl font-bold font-headline text-primary">Loading your Jummix experience</h1>
+       </div>
+     );
+   }
 
   return (
     <div className="bg-background text-foreground font-body">
@@ -313,17 +339,5 @@ function LandingPageContent() {
 
 
 export default function LandingPage() {
-    const { loading } = useAuth();
-
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
-                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                <h1 className="text-2xl font-bold font-headline text-primary">Loading your Jummix experience</h1>
-            </div>
-        );
-    }
-    
-    // The useAuth hook now handles all redirection, so we can just render the content.
     return <LandingPageContent />;
 }

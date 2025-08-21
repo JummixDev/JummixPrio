@@ -63,20 +63,18 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const noHeaderPages = ['/', '/reset-password', '/onboarding'];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (!user) {
         setUserData(null);
+        setLoading(false);
       }
     });
     return () => unsubscribe();
@@ -129,47 +127,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
       return () => unsubscribe();
-    } else {
-      setLoading(false);
     }
+    // No 'else' here, loading is handled when user becomes null in the first useEffect
   }, [user]);
-
-  useEffect(() => {
-    // This effect handles redirection logic.
-    // It waits until loading is false to ensure both user and userData are settled.
-    if (!loading) {
-      const isAuthPage = noHeaderPages.includes(pathname);
-
-      if (user) {
-        // User is logged in
-        if (userData?.onboardingComplete) {
-          // If onboarded, they should NOT be on auth pages. Redirect to dashboard.
-          if (isAuthPage) {
-            router.push('/dashboard');
-          }
-        } else {
-          // If not onboarded, they MUST be on the onboarding page.
-          if (pathname !== '/onboarding') {
-            router.push('/onboarding');
-          }
-        }
-      } else {
-        // User is not logged in. They should only be on auth pages.
-        if (!isAuthPage) {
-          router.push('/');
-        }
-      }
-    }
-  }, [user, userData, loading, pathname, router]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await createUserDocument(userCredential.user);
+    // Let the onSnapshot handle setting the user data and the page components handle redirection
     return userCredential;
   }
 
   const signIn = (email: string, pass: string) => {
     return signInWithEmailAndPassword(auth, email, pass);
+    // Let the onSnapshot handle setting the user data and the page components handle redirection
   }
 
   const signInWithGoogle = () => {
