@@ -23,7 +23,6 @@ if (!admin.apps.length) {
     try {
         admin.initializeApp({
             credential: admin.credential.applicationDefault(),
-            projectId: 'jummix-yp2lc',
         });
     } catch (error) {
         console.error("Firebase Admin initialization error:", error);
