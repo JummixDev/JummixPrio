@@ -381,13 +381,18 @@ export async function completeOnboardingProfile(data: {
         const { userId, ...profileData } = data;
         const userRef = admin.firestore().collection('users').doc(userId);
         
+        // 1. Update Firebase Auth user profile
         await admin.auth().updateUser(userId, {
             displayName: profileData.displayName,
             photoURL: profileData.photoURL,
         });
 
+        // 2. Update Firestore user document
         await userRef.update({
-            ...profileData,
+            displayName: profileData.displayName,
+            photoURL: profileData.photoURL,
+            bio: profileData.bio,
+            interests: profileData.interests,
             onboardingComplete: true,
         });
         
@@ -397,5 +402,4 @@ export async function completeOnboardingProfile(data: {
         return { success: false, error: error.message };
     }
 }
-
     
