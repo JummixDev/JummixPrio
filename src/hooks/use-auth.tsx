@@ -27,6 +27,7 @@ import { uploadFile as uploadFileToStorage } from '@/services/storage';
 
 
 interface UserProfileData {
+  uid: string;
   displayName?: string;
   photoURL?: string;
   bio?: string;
@@ -52,7 +53,6 @@ interface AuthContextType {
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
-  updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>;
   uploadFile: (file: File, path: string) => Promise<string>;
 }
 
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const username = user.email!.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
     if (!userDocSnap.exists()) {
-       const newUserData = {
+       const newUserData: UserProfileData = {
         uid: user.uid,
         email: user.email,
         username: username,
@@ -164,24 +164,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await firebaseSignOut(auth);
     router.push('/');
   };
-  
-  const updateUserProfile = async (data: Partial<UserProfileData>) => {
-    if (!auth.currentUser) {
-        throw new Error("No user is signed in to update profile.");
-    }
-    const userDocRef = doc(db, "users", auth.currentUser.uid);
-    
-    // Also update the Firebase Auth profile if displayName or photoURL are changed
-    const authUpdateData: { displayName?: string, photoURL?: string } = {};
-    if (data.displayName) authUpdateData.displayName = data.displayName;
-    if (data.photoURL) authUpdateData.photoURL = data.photoURL;
-
-    if (Object.keys(authUpdateData).length > 0) {
-        await updateProfile(auth.currentUser, authUpdateData);
-    }
-    // Update Firestore document
-    await updateDoc(userDocRef, data);
-  };
 
   const uploadFile = async (file: File, path: string): Promise<string> => {
     return uploadFileToStorage(file, path);
@@ -206,7 +188,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithApple,
     sendPasswordReset,
     updateUserHostApplicationStatus,
-    updateUserProfile,
     uploadFile,
   };
 
