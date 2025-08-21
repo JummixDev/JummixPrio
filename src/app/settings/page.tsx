@@ -118,13 +118,11 @@ function ProfileSettings() {
 }
 
 function PhotoSettings() {
-    const { user, userData, loading } = useAuth();
+    const { user, userData, loading, uploadFile, updateUserProfile } = useAuth();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState<'profile' | 'banner' | null>(null);
-    const { updateUserProfile } = useAuth();
     const profileInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
-    const { uploadFile } = useAuth();
 
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'banner') => {
@@ -135,8 +133,8 @@ function PhotoSettings() {
         setIsUploading(type);
         try {
             const path = type === 'profile' 
-                ? `images/profile-pictures/${user.uid}/${file.name}` 
-                : `images/banner-images/${user.uid}/${file.name}`;
+                ? `images/${user.uid}/${file.name}` 
+                : `images/${user.uid}/banner/${file.name}`;
             const downloadURL = await uploadFile(file, path);
             
             if (type === 'profile') {

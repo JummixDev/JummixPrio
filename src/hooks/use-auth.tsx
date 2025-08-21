@@ -22,7 +22,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"; 
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { uploadFile as uploadFileToStorage } from '@/services/storage';
 
 
@@ -63,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -117,25 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (doc.exists()) {
           const data = doc.data();
           setUserData(data);
-          
-          // --- Centralized Redirect Logic ---
-          if (!loading) { // Only redirect after initial load
-              const isPublicPage = ['/','/terms','/privacy','/imprint','/reset-password'].includes(pathname);
-              const isOnboarding = pathname === '/onboarding';
-
-              if (data.onboardingComplete && (isOnboarding || isPublicPage)) {
-                  router.push('/dashboard');
-              } else if (!data.onboardingComplete && !isOnboarding && !isPublicPage) {
-                   router.push('/onboarding');
-              }
-          }
-
         } else {
-          // This case should be rare, but we handle it
-          createUserDocument(user).then(newUserData => {
-             setUserData(newUserData);
-             router.push('/onboarding');
-          });
+          createUserDocument(user).then(setUserData);
         }
         setLoading(false);
       }, (error) => {
@@ -146,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setLoading(false);
     }
-  }, [user, loading]);
+  }, [user]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);

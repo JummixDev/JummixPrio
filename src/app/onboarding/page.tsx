@@ -98,8 +98,7 @@ export default function OnboardingPage() {
 
             // 1. Upload image if a new one is selected
             if (imageFile) {
-                // Corrected path to match new storage rules
-                const filePath = `images/profile-pictures/${user.uid}/${imageFile.name}`;
+                const filePath = `images/${user.uid}/${imageFile.name}`;
                 finalPhotoURL = await uploadFile(imageFile, filePath);
             }
 
@@ -117,8 +116,6 @@ export default function OnboardingPage() {
                     title: 'Profile created!',
                     description: 'Welcome to Jummix! Redirecting you to the dashboard...',
                 });
-                // The useAuth hook will detect the change and redirect automatically.
-                // Explicit redirect as a fallback.
                 router.push('/dashboard');
             } else {
                  throw new Error(result.error || 'Failed to save profile.');
@@ -145,7 +142,6 @@ export default function OnboardingPage() {
         );
     }
     
-    // Render the form if the user is not yet onboarded
     return (
         <div className="min-h-screen bg-secondary/20 flex items-center justify-center p-4">
             <Card className="w-full max-w-lg">
