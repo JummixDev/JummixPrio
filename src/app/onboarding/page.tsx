@@ -44,17 +44,18 @@ export default function OnboardingPage() {
             interests: '',
         },
     });
-
+    
     useEffect(() => {
+        // This effect handles redirection based on auth state
         if (!loading) {
             if (!user) {
-                // If for some reason user gets here without being logged in
+                // Not logged in, send to landing page
                 router.push('/');
             } else if (userData?.onboardingComplete) {
-                // If user is already onboarded, send to dashboard
+                // Already onboarded, send to dashboard
                 router.push('/dashboard');
             } else if (userData) {
-                 // Pre-fill form if userData is available and onboarding is not complete
+                 // Pre-fill form if userData is available
                 form.setValue('displayName', userData.displayName || user?.displayName || '');
                 form.setValue('bio', userData.bio || '');
                 form.setValue('interests', (userData.interests || []).join(', '));
@@ -120,7 +121,7 @@ export default function OnboardingPage() {
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
             
-            // Explicitly redirect after successful onboarding
+            // 3. Explicitly redirect after successful onboarding
             router.push('/dashboard');
             
         } catch (error: any) {
@@ -135,7 +136,7 @@ export default function OnboardingPage() {
     };
 
 
-    if (loading || !user) {
+    if (loading || (user && !userData)) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -144,83 +145,94 @@ export default function OnboardingPage() {
         );
     }
     
-    return (
-        <div className="min-h-screen bg-secondary/20 flex items-center justify-center p-4">
-            <Card className="w-full max-w-lg">
-                <CardHeader>
-                    <CardTitle className="font-headline text-2xl">Welcome to Jummix!</CardTitle>
-                    <CardDescription>Let's set up your profile. Complete these steps to start discovering events.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            <div className="flex flex-col items-center space-y-4">
-                                <Avatar className="w-32 h-32 border-4 border-muted ring-2 ring-ring">
-                                    <AvatarImage src={imagePreview || undefined} />
-                                    <AvatarFallback>
-                                        <UserCircle className="w-full h-full text-muted-foreground" />
-                                    </AvatarFallback>
-                                </Avatar>
-                                <input 
-                                    type="file" 
-                                    ref={fileInputRef} 
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
+    // Render the form only if the user is logged in but not yet onboarded
+    if (user && !userData?.onboardingComplete) {
+        return (
+            <div className="min-h-screen bg-secondary/20 flex items-center justify-center p-4">
+                <Card className="w-full max-w-lg">
+                    <CardHeader>
+                        <CardTitle className="font-headline text-2xl">Welcome to Jummix!</CardTitle>
+                        <CardDescription>Let's set up your profile. Complete these steps to start discovering events.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                <div className="flex flex-col items-center space-y-4">
+                                    <Avatar className="w-32 h-32 border-4 border-muted ring-2 ring-ring">
+                                        <AvatarImage src={imagePreview || undefined} />
+                                        <AvatarFallback>
+                                            <UserCircle className="w-full h-full text-muted-foreground" />
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                    />
+                                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                        <ImageIcon className="mr-2 h-4 w-4" />
+                                        Upload Profile Photo
+                                    </Button>
+                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name="displayName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Display Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="How you'll appear to others" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
                                 />
-                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                                    <ImageIcon className="mr-2 h-4 w-4" />
-                                    Upload Profile Photo
+                                <FormField
+                                    control={form.control}
+                                    name="bio"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Bio (Optional)</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Tell us a little about yourself..." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="interests"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Interests (comma-separated)</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="e.g., Live Music, Hiking, Tech" {...field} />
+                                            </FormControl>
+                                            <FormDescription>This helps us recommend events you'll love.</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Complete Profile
                                 </Button>
-                            </div>
-                            <FormField
-                                control={form.control}
-                                name="displayName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Display Name</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="How you'll appear to others" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="bio"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Bio (Optional)</FormLabel>
-                                        <FormControl>
-                                            <Textarea placeholder="Tell us a little about yourself..." {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="interests"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Interests (comma-separated)</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="e.g., Live Music, Hiking, Tech" {...field} />
-                                        </FormControl>
-                                        <FormDescription>This helps us recommend events you'll love.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Complete Profile
-                            </Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+                            </form>
+                        </Form>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    // This will be shown while redirecting or if state is otherwise inconsistent
+    return (
+         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+            <h1 className="text-2xl font-bold font-headline text-primary">Loading...</h1>
         </div>
     );
 }

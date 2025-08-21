@@ -23,6 +23,7 @@ import {
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"; 
 import { usePathname, useRouter } from 'next/navigation';
+import { uploadFile } from '@/services/storage';
 
 
 interface UserProfileData {
@@ -56,7 +57,6 @@ interface AuthContextType {
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
-  updateUserProfile: (data: { displayName?: string; bio?: string; photoURL?: string; bannerURL?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -173,30 +173,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/');
   };
 
-  const updateUserProfile = async (data: { displayName?: string; bio?: string; photoURL?: string; bannerURL?: string }) => {
-     if (!auth.currentUser) {
-        throw new Error("No user is signed in to update profile.");
-    }
-    const userDocRef = doc(db, "users", auth.currentUser.uid);
-    
-    // Create a new object with only the fields that are provided
-    const updateData: { [key: string]: any } = {};
-    if (data.displayName) updateData.displayName = data.displayName;
-    if (data.bio) updateData.bio = data.bio;
-    if (data.photoURL) updateData.photoURL = data.photoURL;
-    if (data.bannerURL) updateData.bannerURL = data.bannerURL;
-
-    // Update Auth profile if name or photo changed
-    if (data.displayName || data.photoURL) {
-       await updateProfile(auth.currentUser, {
-         displayName: data.displayName || auth.currentUser.displayName,
-         photoURL: data.photoURL || auth.currentUser.photoURL,
-       });
-    }
-
-    // Update Firestore document
-    await updateDoc(userDocRef, updateData);
-  }
   
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
      if (!auth.currentUser) {
@@ -217,7 +193,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithApple,
     sendPasswordReset,
     updateUserHostApplicationStatus,
-    updateUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
