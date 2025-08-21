@@ -198,21 +198,19 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
   );
 }
 
-
-export default function LandingPage() {
+function LandingPageContent() {
   const { user, loading, userData } = useAuth();
   const router = useRouter();
   const signupCardRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('signin');
   const signInForm = useForm();
-  
+
   useEffect(() => {
-    // This effect handles the initial redirection logic for authenticated users.
     if (!loading && user) {
         if (userData?.onboardingComplete) {
             router.push('/dashboard');
         } else {
-            router.push('/onboarding');
+             router.push('/onboarding');
         }
     }
   }, [user, userData, loading, router]);
@@ -335,4 +333,9 @@ export default function LandingPage() {
       <Footer />
     </div>
   );
+}
+
+
+export default function LandingPage() {
+    return <LandingPageContent />;
 }
