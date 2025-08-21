@@ -12,21 +12,10 @@ import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getD
 import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput, storySchema, StoryInput } from "@/lib/schemas";
 import Stripe from 'stripe';
 import { uploadFile } from "@/services/storage";
-import * as admin from 'firebase-admin';
+
 
 interface AIResult extends PersonalizedEventRecommendationsOutput {
   error?: string;
-}
-
-// Initialize Firebase Admin SDK if not already initialized
-if (!admin.apps.length) {
-    try {
-        admin.initializeApp({
-            credential: admin.credential.applicationDefault(),
-        });
-    } catch (error) {
-        console.error("Firebase Admin initialization error:", error);
-    }
 }
 
 
@@ -368,38 +357,5 @@ export async function requestToBook(userId: string, eventId: string, hostUsernam
     console.error("Error creating booking request:", error);
     return { success: false, error: 'Failed to send booking request.' };
   }
-}
-
-export async function completeOnboardingProfile(data: {
-    userId: string;
-    displayName: string;
-    photoURL: string;
-    bio: string;
-    interests: string[];
-}) {
-    try {
-        const { userId, ...profileData } = data;
-        const userRef = admin.firestore().collection('users').doc(userId);
-        
-        // 1. Update Firebase Auth user profile
-        await admin.auth().updateUser(userId, {
-            displayName: profileData.displayName,
-            photoURL: profileData.photoURL,
-        });
-
-        // 2. Update Firestore user document
-        await userRef.update({
-            displayName: profileData.displayName,
-            photoURL: profileData.photoURL,
-            bio: profileData.bio,
-            interests: profileData.interests,
-            onboardingComplete: true,
-        });
-        
-        return { success: true };
-    } catch (error: any) {
-        console.error("Error completing onboarding profile:", error);
-        return { success: false, error: error.message };
-    }
 }
     

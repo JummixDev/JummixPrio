@@ -16,7 +16,6 @@ import { Loader2, UserCircle, Image as ImageIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FormDescription } from '@/components/ui/form';
-import { completeOnboardingProfile } from '../actions';
 import { uploadFile } from '@/services/storage';
 
 const onboardingSchema = z.object({
@@ -28,7 +27,7 @@ const onboardingSchema = z.object({
 type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-    const { user, userData, loading } = useAuth();
+    const { user, userData, loading, completeOnboarding } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -46,21 +45,24 @@ export default function OnboardingPage() {
     });
 
     useEffect(() => {
-        if (!loading && userData?.onboardingComplete) {
-            router.push('/dashboard');
+        if (!loading) {
+            if (!user) {
+                // If no user and not loading, redirect to login
+                router.push('/');
+            } else if (userData?.onboardingComplete) {
+                // If user is already onboarded, redirect to dashboard
+                router.push('/dashboard');
+            } else if (userData) {
+                // Pre-fill form if userData is available
+                form.setValue('displayName', userData.displayName || user.displayName || '');
+                form.setValue('bio', userData.bio || '');
+                form.setValue('interests', (userData.interests || []).join(', '));
+                if (userData.photoURL) {
+                    setImagePreview(userData.photoURL);
+                }
+            }
         }
-    }, [user, userData, loading, router]);
-    
-    useEffect(() => {
-        if (user && userData) {
-             form.setValue('displayName', userData.displayName || user.displayName || '');
-             form.setValue('bio', userData.bio || '');
-             form.setValue('interests', (userData.interests || []).join(', '));
-             if (userData.photoURL) {
-                setImagePreview(userData.photoURL);
-             }
-        }
-    }, [userData, user, form]);
+    }, [user, userData, loading, router, form]);
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,28 +96,27 @@ export default function OnboardingPage() {
         try {
             let finalPhotoURL = userData?.photoURL || '';
 
+            // 1. Upload new image if one is selected
             if (imageFile) {
                 const filePath = `images/${user.uid}/profile-picture`;
                 finalPhotoURL = await uploadFile(imageFile, filePath);
             }
-
-            const result = await completeOnboardingProfile({
-                userId: user.uid,
+            
+            // 2. Call the new onboarding function
+            await completeOnboarding({
                 displayName: data.displayName,
                 bio: data.bio || '',
                 interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
                 photoURL: finalPhotoURL,
             });
 
-            if (result.success) {
-                toast({
-                    title: 'Profile created!',
-                    description: 'Welcome to Jummix! Redirecting you to the dashboard...',
-                });
-                router.push('/dashboard');
-            } else {
-                 throw new Error(result.error || 'Failed to save profile.');
-            }
+            toast({
+                title: 'Profile created!',
+                description: 'Welcome to Jummix! Redirecting you to the dashboard...',
+            });
+            
+            // 3. Redirect to dashboard
+            router.push('/dashboard');
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);

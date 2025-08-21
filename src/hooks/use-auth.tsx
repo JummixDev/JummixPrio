@@ -28,6 +28,7 @@ import { uploadFile as uploadFileToStorage } from '@/services/storage';
 
 interface UserProfileData {
   uid: string;
+  email: string | null;
   displayName?: string;
   photoURL?: string;
   bio?: string;
@@ -35,12 +36,15 @@ interface UserProfileData {
   interests?: string[];
   likedEvents?: string[];
   savedEvents?: string[];
+  isVerifiedHost?: boolean;
   hostApplicationStatus?: 'pending' | 'approved' | 'rejected' | 'none';
   onboardingComplete?: boolean;
   username?: string;
   eventsCount?: number;
   friendsCount?: number;
   followers?: number;
+  following?: string[];
+  createdAt: any;
 }
 interface AuthContextType {
   user: User | null;
@@ -52,8 +56,14 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
-  updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
   uploadFile: (file: File, path: string) => Promise<string>;
+  updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected' | 'none') => Promise<void>;
+  completeOnboarding: (data: {
+    displayName: string;
+    photoURL: string;
+    bio: string;
+    interests: string[];
+  }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -94,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hostApplicationStatus: 'none',
         onboardingComplete: false,
         interests: [],
-        followers: [],
+        followers: 0,
         following: [],
         friendsCount: 0,
         eventsCount: 0,
@@ -117,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const data = doc.data();
           setUserData(data);
         } else {
+          // This might happen on first login, create the doc
           createUserDocument(user).then(setUserData);
         }
         setLoading(false);
@@ -126,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       return () => unsubscribe();
     } else {
+      // User is logged out
       setLoading(false);
     }
   }, [user]);
@@ -162,11 +173,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
-    router.push('/');
   };
 
   const uploadFile = async (file: File, path: string): Promise<string> => {
     return uploadFileToStorage(file, path);
+  }
+  
+  const completeOnboarding = async (data: {
+    displayName: string;
+    photoURL: string;
+    bio: string;
+    interests: string[];
+  }) => {
+    if (!auth.currentUser) {
+        throw new Error("No user is signed in to complete onboarding.");
+    }
+    
+    // 1. Update Firebase Auth user profile (this triggers onAuthStateChanged)
+    await updateProfile(auth.currentUser, {
+        displayName: data.displayName,
+        photoURL: data.photoURL,
+    });
+    
+    // 2. Update Firestore user document
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(userDocRef, {
+        displayName: data.displayName,
+        photoURL: data.photoURL,
+        bio: data.bio,
+        interests: data.interests,
+        onboardingComplete: true,
+    });
   }
 
   const updateUserHostApplicationStatus = async (status: 'pending' | 'approved' | 'rejected' | 'none') => {
@@ -187,8 +224,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     signInWithApple,
     sendPasswordReset,
-    updateUserHostApplicationStatus,
     uploadFile,
+    updateUserHostApplicationStatus,
+    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
