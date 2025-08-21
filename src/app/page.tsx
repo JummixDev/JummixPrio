@@ -313,9 +313,27 @@ function LandingPageContent() {
 
 
 export default function LandingPage() {
-    const { user, loading } = useAuth();
+    const { user, userData, loading } = useAuth();
+    const router = useRouter();
 
-    if (loading) {
+    useEffect(() => {
+        // Wait until loading is false to ensure we have the latest auth state
+        if (!loading) {
+            if (user) {
+                // If the user is logged in, decide where to go
+                if (userData?.onboardingComplete) {
+                    router.push('/dashboard');
+                } else {
+                    router.push('/onboarding');
+                }
+            }
+            // If there's no user, do nothing and stay on the landing page.
+        }
+    }, [user, userData, loading, router]);
+    
+
+    if (loading || user) {
+        // While loading or if user is logged in (and redirect is pending), show a loader.
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -324,7 +342,6 @@ export default function LandingPage() {
         );
     }
     
-    // The useAuth hook now handles all redirection logic.
-    // If we are here and not loading, it means the user is logged out.
+    // If not loading and no user, show the landing page.
     return <LandingPageContent />;
 }

@@ -23,7 +23,6 @@ import {
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"; 
 import { usePathname, useRouter } from 'next/navigation';
-import { uploadFile as uploadFileToStorage } from '@/services/storage';
 
 
 interface UserProfileData {
@@ -67,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
 
   useEffect(() => {
@@ -137,34 +135,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   }, [user]);
-
-  useEffect(() => {
-    if (loading) {
-      return; // Do nothing while loading
-    }
-
-    const isAuthPage = pathname === '/' || pathname === '/onboarding' || pathname === '/reset-password';
-
-    if (user) {
-      // User is logged in
-      if (userData?.onboardingComplete) {
-        // and onboarded
-        if (isAuthPage) {
-          router.push('/dashboard');
-        }
-      } else {
-        // and not onboarded
-        if (pathname !== '/onboarding') {
-          router.push('/onboarding');
-        }
-      }
-    } else {
-      // User is not logged in
-      if (!isAuthPage) {
-        router.push('/');
-      }
-    }
-  }, [user, userData, loading, pathname, router]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);

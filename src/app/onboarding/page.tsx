@@ -46,16 +46,24 @@ export default function OnboardingPage() {
     });
 
     useEffect(() => {
-        if (userData) {
-            // Pre-fill form if userData is available
-            form.setValue('displayName', userData.displayName || user?.displayName || '');
-            form.setValue('bio', userData.bio || '');
-            form.setValue('interests', (userData.interests || []).join(', '));
-            if (userData.photoURL) {
-                setImagePreview(userData.photoURL);
+        if (!loading) {
+            if (!user) {
+                // If for some reason user gets here without being logged in
+                router.push('/');
+            } else if (userData?.onboardingComplete) {
+                // If user is already onboarded, send to dashboard
+                router.push('/dashboard');
+            } else if (userData) {
+                 // Pre-fill form if userData is available and onboarding is not complete
+                form.setValue('displayName', userData.displayName || user?.displayName || '');
+                form.setValue('bio', userData.bio || '');
+                form.setValue('interests', (userData.interests || []).join(', '));
+                if (userData.photoURL) {
+                    setImagePreview(userData.photoURL);
+                }
             }
         }
-    }, [user, userData, form]);
+    }, [user, userData, loading, router, form]);
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +120,8 @@ export default function OnboardingPage() {
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
             
-            // The useAuth hook will now handle the redirect automatically.
+            // Explicitly redirect after successful onboarding
+            router.push('/dashboard');
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);
@@ -215,4 +224,3 @@ export default function OnboardingPage() {
         </div>
     );
 }
-
