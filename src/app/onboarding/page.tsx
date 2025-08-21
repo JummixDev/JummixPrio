@@ -46,24 +46,16 @@ export default function OnboardingPage() {
     });
 
     useEffect(() => {
-        if (!loading) {
-            if (!user) {
-                // If no user and not loading, redirect to login
-                router.push('/');
-            } else if (userData?.onboardingComplete) {
-                // If user is already onboarded, redirect to dashboard
-                router.push('/dashboard');
-            } else if (userData) {
-                // Pre-fill form if userData is available
-                form.setValue('displayName', userData.displayName || user.displayName || '');
-                form.setValue('bio', userData.bio || '');
-                form.setValue('interests', (userData.interests || []).join(', '));
-                if (userData.photoURL) {
-                    setImagePreview(userData.photoURL);
-                }
+        if (userData) {
+            // Pre-fill form if userData is available
+            form.setValue('displayName', userData.displayName || user?.displayName || '');
+            form.setValue('bio', userData.bio || '');
+            form.setValue('interests', (userData.interests || []).join(', '));
+            if (userData.photoURL) {
+                setImagePreview(userData.photoURL);
             }
         }
-    }, [user, userData, loading, router, form]);
+    }, [user, userData, form]);
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,8 +112,7 @@ export default function OnboardingPage() {
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
             
-            // 3. Redirect to dashboard
-            router.push('/dashboard');
+            // The useAuth hook will now handle the redirect automatically.
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);
@@ -225,4 +216,3 @@ export default function OnboardingPage() {
     );
 }
 
-    

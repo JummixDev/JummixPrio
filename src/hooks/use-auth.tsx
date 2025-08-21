@@ -22,7 +22,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"; 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { uploadFile as uploadFileToStorage } from '@/services/storage';
 
 
@@ -48,7 +48,7 @@ interface UserProfileData {
 }
 interface AuthContextType {
   user: User | null;
-  userData: any | null;
+  userData: UserProfileData | null;
   loading: boolean;
   signUp: (email: string, pass: string) => Promise<any>;
   signIn: (email: string, pass: string) => Promise<any>;
@@ -64,9 +64,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<any | null>(null);
+  const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await setDoc(userDocRef, newUserData);
       return newUserData;
     }
-    return userDocSnap.data();
+    return userDocSnap.data() as UserProfileData;
   };
 
 
@@ -119,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(db, "users", user.uid);
       const unsubscribe = onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
-          const data = doc.data();
+          const data = doc.data() as UserProfileData;
           setUserData(data);
         } else {
           // This might happen on first login, create the doc
@@ -136,6 +137,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (loading) {
+      return; // Do nothing while loading
+    }
+
+    const isAuthPage = pathname === '/' || pathname === '/onboarding' || pathname === '/reset-password';
+
+    if (user) {
+      // User is logged in
+      if (userData?.onboardingComplete) {
+        // and onboarded
+        if (isAuthPage) {
+          router.push('/dashboard');
+        }
+      } else {
+        // and not onboarded
+        if (pathname !== '/onboarding') {
+          router.push('/onboarding');
+        }
+      }
+    } else {
+      // User is not logged in
+      if (!isAuthPage) {
+        router.push('/');
+      }
+    }
+  }, [user, userData, loading, pathname, router]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -169,6 +198,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
+    setUserData(null);
+    setUser(null);
     router.push('/');
   };
 
@@ -229,5 +260,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-    
