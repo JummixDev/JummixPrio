@@ -317,15 +317,17 @@ export default function LandingPage() {
     const router = useRouter();
 
     useEffect(() => {
+        // Wait until the loading is complete before making any routing decisions.
         if (!loading) {
             if (user) {
+                // Now that we're sure loading is done, we can safely check userData.
                 if (userData?.onboardingComplete) {
                     router.push('/dashboard');
-                } else if (userData) { // userData exists but onboarding is not complete
+                } else if (userData) { // This implies onboarding is not complete
                     router.push('/onboarding');
                 }
-                // If userData is null, the main listener in useAuth is still working,
-                // so we don't do anything here to avoid race conditions.
+                // If userData is still null here, it means the document doesn't exist or
+                // there was an error, but useAuth handles that. We stay on the landing page.
             }
         }
     }, [user, userData, loading, router]);
@@ -342,5 +344,7 @@ export default function LandingPage() {
     
     return <LandingPageContent />;
 }
+
+    
 
     
