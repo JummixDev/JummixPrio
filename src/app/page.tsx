@@ -131,7 +131,7 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
   const onSubmit = async (data: any) => {
     try {
       await signUp(data.email, data.password);
-      // Let the useAuth hook handle the redirect
+      // The useAuth hook will handle redirection
     } catch (error) {
         if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
             toast({
@@ -313,24 +313,9 @@ function LandingPageContent() {
 
 
 export default function LandingPage() {
-    const { user, userData, loading } = useAuth();
-    const router = useRouter();
+    const { loading } = useAuth();
 
-    useEffect(() => {
-        // Wait until loading is false before making a decision
-        if (!loading) {
-            if (user) {
-                if (userData?.onboardingComplete) {
-                    router.push('/dashboard');
-                } else {
-                    router.push('/onboarding');
-                }
-            }
-        }
-    }, [user, userData, loading, router]);
-    
-
-    if (loading || user) {
+    if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -339,5 +324,6 @@ export default function LandingPage() {
         );
     }
     
+    // The useAuth hook now handles all redirection, so we can just render the content.
     return <LandingPageContent />;
 }

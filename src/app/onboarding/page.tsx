@@ -16,7 +16,6 @@ import { Loader2, UserCircle, Image as ImageIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FormDescription } from '@/components/ui/form';
-import { uploadFile } from '@/services/storage';
 import { completeOnboardingProfile } from '../actions';
 
 const onboardingSchema = z.object({
@@ -28,7 +27,7 @@ const onboardingSchema = z.object({
 type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
-    const { user, userData, loading } = useAuth();
+    const { user, userData, loading, uploadFile, updateUserProfile } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -46,21 +45,15 @@ export default function OnboardingPage() {
     });
     
     useEffect(() => {
-        if (!loading) {
-            if (!user) {
-                router.push('/');
-            } else if (userData?.onboardingComplete) {
-                router.push('/dashboard');
-            } else if (userData) {
-                form.setValue('displayName', userData.displayName || user?.displayName || '');
-                form.setValue('bio', userData.bio || '');
-                form.setValue('interests', (userData.interests || []).join(', '));
-                if (userData.photoURL) {
-                    setImagePreview(userData.photoURL);
-                }
+        if (!loading && userData) {
+            form.setValue('displayName', userData.displayName || user?.displayName || '');
+            form.setValue('bio', userData.bio || '');
+            form.setValue('interests', (userData.interests || []).join(', '));
+            if (userData.photoURL) {
+                setImagePreview(userData.photoURL);
             }
         }
-    }, [user, userData, loading, router, form]);
+    }, [user, userData, loading, form]);
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,10 +105,9 @@ export default function OnboardingPage() {
 
             toast({
                 title: 'Profile created!',
-                description: 'Welcome to Jummix! Redirecting you to the dashboard...',
+                description: 'Welcome to Jummix!',
             });
-            
-            router.push('/dashboard');
+            // The useAuth hook will handle redirection once the user data is updated.
             
         } catch (error: any) {
             console.error('Onboarding failed:', error);
