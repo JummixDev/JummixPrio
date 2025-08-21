@@ -46,16 +46,12 @@ export default function OnboardingPage() {
     });
     
     useEffect(() => {
-        // This effect handles redirection based on auth state
         if (!loading) {
             if (!user) {
-                // Not logged in, send to landing page
                 router.push('/');
             } else if (userData?.onboardingComplete) {
-                // Already onboarded, send to dashboard
                 router.push('/dashboard');
             } else if (userData) {
-                 // Pre-fill form if userData is available
                 form.setValue('displayName', userData.displayName || user?.displayName || '');
                 form.setValue('bio', userData.bio || '');
                 form.setValue('interests', (userData.interests || []).join(', '));
@@ -98,13 +94,11 @@ export default function OnboardingPage() {
         try {
             let finalPhotoURL = userData?.photoURL || '';
 
-            // 1. Upload new image if one is selected
             if (imageFile) {
                 const filePath = `images/${user.uid}/profile-picture.jpg`;
                 finalPhotoURL = await uploadFile(imageFile, filePath);
             }
             
-            // 2. Call the server action to complete the profile
             const result = await completeOnboardingProfile(user.uid, {
                 displayName: data.displayName,
                 bio: data.bio || '',
@@ -121,7 +115,6 @@ export default function OnboardingPage() {
                 description: 'Welcome to Jummix! Redirecting you to the dashboard...',
             });
             
-            // 3. Explicitly redirect after successful onboarding
             router.push('/dashboard');
             
         } catch (error: any) {
@@ -136,7 +129,7 @@ export default function OnboardingPage() {
     };
 
 
-    if (loading || (user && !userData)) {
+    if (loading || !user) {
         return (
              <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -145,7 +138,7 @@ export default function OnboardingPage() {
         );
     }
     
-    // Render the form only if the user is logged in but not yet onboarded
+    // Render form if user exists but is not yet onboarded
     if (user && !userData?.onboardingComplete) {
         return (
             <div className="min-h-screen bg-secondary/20 flex items-center justify-center p-4">
@@ -227,10 +220,10 @@ export default function OnboardingPage() {
             </div>
         );
     }
-
-    // This will be shown while redirecting or if state is otherwise inconsistent
+    
+    // Fallback loading state while redirecting
     return (
-         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
             <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
             <h1 className="text-2xl font-bold font-headline text-primary">Loading...</h1>
         </div>
