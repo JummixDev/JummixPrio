@@ -45,24 +45,22 @@ export default function OnboardingPage() {
         },
     });
 
-    // Effect to redirect if user is already onboarded
     useEffect(() => {
         if (!loading && userData?.onboardingComplete) {
             router.push('/dashboard');
         }
     }, [user, userData, loading, router]);
     
-    // Effect to populate form with existing data
     useEffect(() => {
-        if (!loading && userData) {
-             form.setValue('displayName', userData.displayName || '');
+        if (user && userData) {
+             form.setValue('displayName', userData.displayName || user.displayName || '');
              form.setValue('bio', userData.bio || '');
              form.setValue('interests', (userData.interests || []).join(', '));
              if (userData.photoURL) {
                 setImagePreview(userData.photoURL);
              }
         }
-    }, [userData, loading, form]);
+    }, [userData, user, form]);
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,13 +94,11 @@ export default function OnboardingPage() {
         try {
             let finalPhotoURL = userData?.photoURL || '';
 
-            // 1. Upload image if a new one is selected
             if (imageFile) {
-                const filePath = `images/${user.uid}/${imageFile.name}`;
+                const filePath = `images/${user.uid}/profile-picture`;
                 finalPhotoURL = await uploadFile(imageFile, filePath);
             }
 
-            // 2. Call server action with all data
             const result = await completeOnboardingProfile({
                 userId: user.uid,
                 displayName: data.displayName,
