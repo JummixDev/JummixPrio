@@ -119,7 +119,7 @@ export function GlobalHeader() {
                         </SheetClose>
                          <SheetClose asChild>
                             <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
-                            <Link href="/my-tickets">
+                            <Link href="/my-bookings">
                                 <Ticket className="mr-2 h-5 w-5" /> My Bookings
                             </Link>
                             </Button>

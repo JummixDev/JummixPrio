@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { ArrowLeft, Loader2, QrCode, Ticket, Clock, Wallet, CheckCircle, XCircle } from 'lucide-react';
