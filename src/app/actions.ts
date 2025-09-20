@@ -285,7 +285,7 @@ export async function createStory(storyData: StoryInput) {
 
     try {
         const { userId, imageDataUri, caption } = validation.data;
-        
+
         // Correctly handle the data URI on the server
         const base64Data = imageDataUri.split(';base64,').pop();
         if (!base64Data) {
@@ -294,9 +294,10 @@ export async function createStory(storyData: StoryInput) {
 
         const imageBuffer = Buffer.from(base64Data, 'base64');
         const fileType = imageDataUri.substring("data:".length, imageDataUri.indexOf(";"));
+        const fileExtension = fileType.split('/')[1] || 'jpg'; // Fallback to jpg
 
         // Upload buffer to storage
-        const filePath = `stories/${userId}/story_${Date.now()}.${fileType.split('/')[1]}`;
+        const filePath = `stories/${userId}/story_${Date.now()}.${fileExtension}`;
         const imageUrl = await uploadFile(imageBuffer, filePath);
 
         // Save to Firestore
