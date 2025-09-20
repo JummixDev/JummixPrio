@@ -113,13 +113,13 @@ export function UserPostsFeed({ onZoom }: { onZoom: () => void }) {
 
 export function UserPostsFeedExpanded() {
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
         <CardHeader>
             <CardTitle className="font-headline text-2xl">Full Community Feed</CardTitle>
             <CardDescription>Stay up to date with the latest posts from the community.</CardDescription>
         </CardHeader>
-        <CardContent>
-            <ScrollArea className="h-[80vh] border-t">
+        <CardContent className="flex-grow">
+            <ScrollArea className="h-full border-t">
                 <div className="space-y-6 p-4">
                     {mockFeed.map((post, index) => (
                         <PostCard key={index} post={post} />

@@ -51,13 +51,13 @@ export function Leaderboard({ onZoom }: { onZoom: () => void }) {
 
 export function LeaderboardExpanded() {
   return (
-     <Card>
+     <Card className="h-full flex flex-col">
         <CardHeader>
             <CardTitle className="font-headline text-2xl flex items-center gap-2"><Trophy className="text-primary"/> Community Leaderboard</CardTitle>
             <CardDescription>See who's making the biggest impact in the Jummix community.</CardDescription>
         </CardHeader>
-        <CardContent>
-            <ScrollArea className="h-[80vh]">
+        <CardContent className="flex-grow">
+            <ScrollArea className="h-full">
                 <ul className="space-y-2 pr-4">
                 {fullLeaderboard.map((user) => (
                     <li key={user.rank}>

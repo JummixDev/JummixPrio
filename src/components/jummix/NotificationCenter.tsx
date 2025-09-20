@@ -108,13 +108,13 @@ export function NotificationCenter({ onZoom }: { onZoom: () => void }) {
 
 export function NotificationCenterExpanded() {
     return (
-        <Card className="h-full">
+        <Card className="h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="font-headline text-2xl flex items-center gap-2"><Bell/> All Notifications</CardTitle>
                 <CardDescription>Your latest notifications, mentions, and event updates.</CardDescription>
             </CardHeader>
-            <CardContent>
-                <ScrollArea className="h-[80vh]">
+            <CardContent className="flex-grow">
+                <ScrollArea className="h-full">
                     <ul className="space-y-2 pr-4 pt-4">
                     {allNotifications.map((notification, index) => (
                         <li key={index}>

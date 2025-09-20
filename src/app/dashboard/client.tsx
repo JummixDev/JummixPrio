@@ -30,14 +30,14 @@ type DashboardClientProps = {
 };
 
 const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, loadingInteractions }: { initialUpcomingEvents: Event[], savedEvents: Event[], likedEvents: Event[], loadingInteractions: boolean }) => (
-    <div className='col-span-12'>
-        <Tabs defaultValue="upcoming" className="w-full">
+    <div className='col-span-12 h-full'>
+        <Tabs defaultValue="upcoming" className="w-full h-full flex flex-col">
             <TabsList>
                 <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
                 <TabsTrigger value="liked">Liked</TabsTrigger>
                 <TabsTrigger value="saved">Saved For You</TabsTrigger>
             </TabsList>
-            <TabsContent value="upcoming" className="mt-6">
+            <TabsContent value="upcoming" className="mt-6 flex-grow">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {initialUpcomingEvents.length > 0 ? (
                     initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
@@ -46,7 +46,7 @@ const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, load
                 )}
                 </div>
             </TabsContent>
-            <TabsContent value="liked" className="mt-6">
+            <TabsContent value="liked" className="mt-6 flex-grow">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
                     likedEvents.map(event => <EventCard key={event.id} event={event} />)
@@ -55,7 +55,7 @@ const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, load
                 )}
                 </div>
             </TabsContent>
-            <TabsContent value="saved" className="mt-6">
+            <TabsContent value="saved" className="mt-6 flex-grow">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
                     savedEvents.map(event => <EventCard key={event.id} event={event} />)
@@ -221,12 +221,12 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
             </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mt-6">
             <div className="lg:col-span-8">
                 {mainWidget?.expanded}
             </div>
 
-             <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+             <aside className="lg:col-span-4 space-y-6">
                 {shuffledWidgets.sidebarWidgets.map(widget => (
                     <React.Fragment key={widget.id}>
                         {widget.compact}

@@ -134,13 +134,13 @@ export function LiveActivityFeed({ onZoom }: { onZoom: () => void }) {
 
 export function LiveActivityFeedExpanded() {
   return (
-     <Card className="h-full">
+     <Card className="h-full flex flex-col">
         <CardHeader>
             <CardTitle className="font-headline text-2xl">Full Activity Feed</CardTitle>
             <CardDescription>All recent activities from you and your friends.</CardDescription>
         </CardHeader>
-         <CardContent>
-            <ScrollArea className="h-[80vh]">
+         <CardContent className="flex-grow">
+            <ScrollArea className="h-full">
                 <ul className="space-y-4 pr-4 pt-4">
                 {allActivities.map((activity, index) => (
                     <li key={index} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-muted/50">

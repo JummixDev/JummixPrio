@@ -58,13 +58,13 @@ export function PeopleNearby({ onZoom }: { onZoom: () => void }) {
 
 export function PeopleNearbyExpanded() {
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
         <CardHeader>
             <CardTitle className="font-headline text-2xl flex items-center gap-2"><Users /> All People Nearby</CardTitle>
             <CardDescription>Discover all people in your vicinity.</CardDescription>
         </CardHeader>
-        <CardContent>
-            <ScrollArea className="h-[80vh]">
+        <CardContent className="flex-grow">
+            <ScrollArea className="h-full">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 p-4">
                     {allMockUsers.map((user) => (
                         <Link
