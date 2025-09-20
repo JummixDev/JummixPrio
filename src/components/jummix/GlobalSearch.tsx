@@ -21,20 +21,24 @@ type Result = {
 };
 
 // Caches to avoid re-fetching on every search
+// Note: This client-side fetching pattern is inefficient and insecure for large datasets.
+// It is disabled to fix permission errors and should be replaced with a server-side search solution (e.g., Algolia, Cloud Functions).
 let allEventsCache: any[] | null = null;
 const fetchAllEvents = async () => {
-    if (allEventsCache) return allEventsCache;
-    const eventsSnapshot = await getDocs(collection(db, 'events'));
-    allEventsCache = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return allEventsCache;
+    // if (allEventsCache) return allEventsCache;
+    // const eventsSnapshot = await getDocs(collection(db, 'events'));
+    // allEventsCache = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // return allEventsCache;
+    return []; // Temporarily disabled
 };
 
 let allUsersCache: any[] | null = null;
 const fetchAllUsers = async () => {
-    if (allUsersCache) return allUsersCache;
-    const usersSnapshot = await getDocs(collection(db, 'users'));
-    allUsersCache = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return allUsersCache;
+    // if (allUsersCache) return allUsersCache;
+    // const usersSnapshot = await getDocs(collection(db, 'users'));
+    // allUsersCache = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // return allUsersCache;
+    return []; // Temporarily disabled
 };
 
 export function GlobalSearch() {
@@ -78,7 +82,12 @@ export function GlobalSearch() {
       setLoading(true);
 
       try {
-        const [allEvents, allUsers] = await Promise.all([fetchAllEvents(), fetchAllUsers()]);
+        // Temporarily disable fetching to fix permission errors.
+        // Replace this with a secure server-side search implementation.
+        // const [allEvents, allUsers] = await Promise.all([fetchAllEvents(), fetchAllUsers()]);
+        const allEvents: any[] = [];
+        const allUsers: any[] = [];
+        
         const lowercasedTerm = debouncedSearchTerm.toLowerCase();
         
         const matchingEvents = allEvents.filter(event => 
@@ -124,6 +133,9 @@ export function GlobalSearch() {
     setOpen(false);
     setSearchTerm('');
   };
+
+  // Temporarily hide the search functionality until a proper server-side implementation is in place.
+  return null;
 
   return (
     <div ref={containerRef} className="relative">
