@@ -126,67 +126,76 @@ export function GlobalSearch() {
   };
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-md">
-      {!open && (
-        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setOpen(true)}>
+    <div ref={containerRef} className="relative">
+      {!open ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setOpen(true)}
+        >
           <Search />
         </Button>
-      )}
-      
-      <div className={cn("relative transition-all duration-300 ease-in-out", open ? "opacity-100" : "opacity-0 pointer-events-none")}>
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
+      ) : (
+        <div className="relative">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
             <Search className="h-5 w-5 text-primary" />
-        </div>
-        <input
+          </div>
+          <input
             ref={inputRef}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search events, people..."
-            className="h-10 w-full rounded-full border bg-background pl-12 pr-10 text-sm outline-none placeholder:text-muted-foreground"
-        />
-        {searchTerm && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full absolute right-1 top-1" onClick={() => setSearchTerm('')}>
-                <X className="h-4 w-4"/>
+            className="h-10 w-full rounded-md border bg-background pl-10 pr-10 text-sm outline-none placeholder:text-muted-foreground sm:w-64"
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full absolute right-1 top-1"
+              onClick={() => setSearchTerm('')}
+            >
+              <X className="h-4 w-4" />
             </Button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {open && (
-        <div className="absolute top-full mt-2 w-full">
-            <Command className="rounded-lg border shadow-md">
-                <CommandList>
-                    {loading && (
-                        <div className="p-4 flex items-center justify-center text-sm">
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin"/> Searching...
-                        </div>
-                    )}
-                    {!loading && !eventResults.length && !userResults.length && debouncedSearchTerm.length > 1 && (
-                        <CommandEmpty>No results found.</CommandEmpty>
-                    )}
-                    
-                    {userResults.length > 0 && (
-                        <CommandGroup heading="People">
-                            {userResults.map((res) => (
-                                <CommandItem key={res.id} onSelect={() => handleSelect(res.url)} value={`${res.name} ${res.detail}`}>
-                                    {res.type === 'host' ? <Building className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
-                                    <span>{res.name}</span>
-                                    <span className="text-xs text-muted-foreground ml-2">{res.detail}</span>
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    )}
-                    {eventResults.length > 0 && (
-                        <CommandGroup heading="Events">
-                            {eventResults.map((res) => (
-                                <CommandItem key={res.id} onSelect={() => handleSelect(res.url)} value={res.name}>
-                                    <Calendar className="mr-2 h-4 w-4" />
-                                    <span>{res.name}</span>
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    )}
-                </CommandList>
-            </Command>
+        <div className="absolute top-full mt-2 w-full sm:w-96">
+          <Command className="rounded-lg border shadow-md">
+            <CommandList>
+              {loading && (
+                <div className="p-4 flex items-center justify-center text-sm">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Searching...
+                </div>
+              )}
+              {!loading && !eventResults.length && !userResults.length && debouncedSearchTerm.length > 1 && (
+                <CommandEmpty>No results found.</CommandEmpty>
+              )}
+              
+              {userResults.length > 0 && (
+                <CommandGroup heading="People">
+                  {userResults.map((res) => (
+                    <CommandItem key={res.id} onSelect={() => handleSelect(res.url)} value={`${res.name} ${res.detail}`}>
+                      {res.type === 'host' ? <Building className="mr-2 h-4 w-4" /> : <User className="mr-2 h-4 w-4" />}
+                      <span>{res.name}</span>
+                      <span className="text-xs text-muted-foreground ml-2">{res.detail}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+              {eventResults.length > 0 && (
+                <CommandGroup heading="Events">
+                  {eventResults.map((res) => (
+                    <CommandItem key={res.id} onSelect={() => handleSelect(res.url)} value={res.name}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      <span>{res.name}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
         </div>
       )}
     </div>
