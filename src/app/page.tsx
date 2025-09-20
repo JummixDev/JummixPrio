@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -167,6 +168,9 @@ function AuthForm() {
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
                 <Input id="signup-password" type="password" required {...registerSignUp('password')} />
+                <p className="text-xs text-muted-foreground px-1">
+                    min. 8 characters, one uppercase, one lowercase, one number, one special character.
+                </p>
               </div>
                <div className="space-y-2">
                 <Label htmlFor="signup-confirm-password">Confirm Password</Label>
@@ -288,3 +292,4 @@ export default function LandingPage() {
     
 
     
+
