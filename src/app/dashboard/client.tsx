@@ -3,13 +3,12 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventCard } from '@/components/jummix/EventCard';
 import { LiveActivityFeed, LiveActivityFeedExpanded } from '@/components/jummix/LiveActivityFeed';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { collection, getDocs, query, where, documentId, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PeopleNearby, PeopleNearbyExpanded } from '@/components/jummix/PeopleNearby';
 import { EventReels } from '@/components/jummix/EventReels';
@@ -29,40 +28,42 @@ type DashboardClientProps = {
 };
 
 const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, loadingInteractions }: { initialUpcomingEvents: Event[], savedEvents: Event[], likedEvents: Event[], loadingInteractions: boolean }) => (
-    <Tabs defaultValue="upcoming" className="w-full">
-        <TabsList>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-            <TabsTrigger value="liked">Liked</TabsTrigger>
-            <TabsTrigger value="saved">Saved For You</TabsTrigger>
-        </TabsList>
-        <TabsContent value="upcoming" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {initialUpcomingEvents.length > 0 ? (
-                initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
-            ) : (
-                <p className="text-muted-foreground col-span-full">No upcoming events right now. Check back soon!</p>
-            )}
-            </div>
-        </TabsContent>
-        <TabsContent value="liked" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
-                likedEvents.map(event => <EventCard key={event.id} event={event} />)
-            ) : (
-                <p className="text-muted-foreground col-span-full">You haven't liked any events yet. Start exploring!</p>
-            )}
-            </div>
-        </TabsContent>
-        <TabsContent value="saved" className="mt-6">
+    <div className='col-span-12'>
+        <Tabs defaultValue="upcoming" className="w-full">
+            <TabsList>
+                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                <TabsTrigger value="liked">Liked</TabsTrigger>
+                <TabsTrigger value="saved">Saved For You</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upcoming" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
-                savedEvents.map(event => <EventCard key={event.id} event={event} />)
-            ) : (
-                <p className="text-muted-foreground col-span-full">You have no saved events. Bookmark events to see them here.</p>
-            )}
-            </div>
-        </TabsContent>
-    </Tabs>
+                {initialUpcomingEvents.length > 0 ? (
+                    initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
+                ) : (
+                    <p className="text-muted-foreground col-span-full">No upcoming events right now. Check back soon!</p>
+                )}
+                </div>
+            </TabsContent>
+            <TabsContent value="liked" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
+                    likedEvents.map(event => <EventCard key={event.id} event={event} />)
+                ) : (
+                    <p className="text-muted-foreground col-span-full">You haven't liked any events yet. Start exploring!</p>
+                )}
+                </div>
+            </TabsContent>
+            <TabsContent value="saved" className="mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
+                    savedEvents.map(event => <EventCard key={event.id} event={event} />)
+                ) : (
+                    <p className="text-muted-foreground col-span-full">You have no saved events. Bookmark events to see them here.</p>
+                )}
+                </div>
+            </TabsContent>
+        </Tabs>
+    </div>
 );
 
 // Helper function to shuffle an array
@@ -86,44 +87,24 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   const [savedEvents, setSavedEvents] = useState<Event[]>([]);
   const [loadingInteractions, setLoadingInteractions] = useState(true);
 
-  // Define all possible widgets with their compact and expanded views
+  // Define all possible widgets for the dynamic sections
   const allWidgets = useMemo(() => [
-      { id: 'events', compact: null, expanded: <EventListWidget initialUpcomingEvents={initialUpcomingEvents} savedEvents={savedEvents} likedEvents={likedEvents} loadingInteractions={loadingInteractions}/> },
       { id: 'leaderboard', compact: <Leaderboard />, expanded: <LeaderboardExpanded /> },
       { id: 'badges', compact: <Badges />, expanded: <BadgesExpanded /> },
       { id: 'people-nearby', compact: <PeopleNearby />, expanded: <PeopleNearbyExpanded /> },
       { id: 'activity', compact: <LiveActivityFeed />, expanded: <LiveActivityFeedExpanded /> },
       { id: 'posts', compact: <UserPostsFeed />, expanded: <UserPostsFeedExpanded /> },
       { id: 'notifications', compact: <NotificationCenter />, expanded: <NotificationCenterExpanded /> },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [initialUpcomingEvents, savedEvents, likedEvents, loadingInteractions]);
+  ], []);
 
-  // The 'events' widget is special and should only appear in the main content area
-  const mainContentWidgets = allWidgets.filter(w => w.id === 'events');
-  const sidebarWidgetsCandidates = allWidgets.filter(w => w.id !== 'events');
-
-  // Shuffle widgets on each render
+  // Shuffle widgets once on component mount
   const shuffledWidgets = useMemo(() => {
-    // Decide if the main slot shows events or something else
-    const showEventsInMain = Math.random() > 0.5;
-    
-    let mainWidget;
-    let sidebarPool;
-
-    if (showEventsInMain) {
-        mainWidget = mainContentWidgets[0];
-        sidebarPool = sidebarWidgetsCandidates;
-    } else {
-        const shuffledSide = shuffleArray([...sidebarWidgetsCandidates]);
-        mainWidget = shuffledSide.pop();
-        sidebarPool = shuffledSide;
-    }
-
-    const shuffledSidebar = shuffleArray(sidebarPool);
-
+    const shuffled = shuffleArray([...allWidgets]);
     return {
-        mainWidget,
-        sidebarWidgets: shuffledSidebar.slice(0, 3) // Take 3 for the sidebar
+        // The first widget is for the full-width slot below events
+        fullWidthWidget: shuffled.pop(),
+        // The rest are for the sidebar
+        sidebarWidgets: shuffled, 
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -180,9 +161,18 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Main Content (Events) */}
+            {/* Main Content Area */}
             <div className="lg:col-span-8 space-y-8">
-                {shuffledWidgets.mainWidget?.expanded}
+                {/* Fixed Event List Widget */}
+                <EventListWidget 
+                    initialUpcomingEvents={initialUpcomingEvents} 
+                    savedEvents={savedEvents} 
+                    likedEvents={likedEvents} 
+                    loadingInteractions={loadingInteractions}
+                />
+
+                {/* Random Full-Width Widget */}
+                {shuffledWidgets.fullWidthWidget?.expanded}
             </div>
 
              {/* Right Sidebar */}
