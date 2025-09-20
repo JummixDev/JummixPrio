@@ -134,9 +134,6 @@ export function GlobalSearch() {
     setSearchTerm('');
   };
 
-  // Temporarily hide the search functionality until a proper server-side implementation is in place.
-  return null;
-
   return (
     <div ref={containerRef} className="relative">
       {!open ? (
