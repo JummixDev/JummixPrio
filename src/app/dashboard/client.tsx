@@ -16,7 +16,6 @@ import { UserPostsFeed, UserPostsFeedExpanded } from '@/components/jummix/UserPo
 import { NotificationCenter, NotificationCenterExpanded } from '@/components/jummix/NotificationCenter';
 import { Leaderboard, LeaderboardExpanded } from '@/components/jummix/Leaderboard';
 import { Badges, BadgesExpanded } from '@/components/jummix/Badges';
-import { UserProfileCard } from '@/components/jummix/UserProfileCard';
 
 export type Event = {
   id: string;
@@ -101,7 +100,9 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   const shuffledWidgets = useMemo(() => {
     const shuffled = shuffleArray([...allWidgets]);
     return {
-        // The first widget is for the full-width slot below events
+        // Widget for next to the stories
+        topWidget: shuffled.pop(),
+        // Widget for the full-width slot below events
         fullWidthWidget: shuffled.pop(),
         // The rest are for the sidebar
         sidebarWidgets: shuffled, 
@@ -155,9 +156,14 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
 
   return (
     <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24 space-y-8">
-        {/* Event Stories Reel */}
-        <div className="w-full">
-            <EventReels />
+        {/* Top section with Event Stories and a random widget */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+                <EventReels />
+            </div>
+            <div className="hidden lg:block">
+                 {shuffledWidgets.topWidget?.compact}
+            </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -177,7 +183,6 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
 
              {/* Right Sidebar */}
              <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-                <UserProfileCard />
                 {shuffledWidgets.sidebarWidgets.map(widget => (
                     <React.Fragment key={widget.id}>
                         {widget.compact}
