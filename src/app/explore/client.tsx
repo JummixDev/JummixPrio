@@ -220,12 +220,12 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                         <h1 className="text-3xl font-bold font-headline mb-2 text-center sm:text-left">Discover Events</h1>
                         <p className="text-muted-foreground text-center sm:text-left">Find your next great experience from our curated list of events.</p>
                     </div>
-                     <div className="flex flex-col gap-2 w-full sm:w-auto">
+                     <div className="flex flex-col gap-2 items-center sm:items-end">
                          {(userData?.isVerifiedHost || userData?.email === 'service@jummix.com') && (
                             <Button asChild>
                                 <Link href="/host/create-event">
-                                <PlusCircle className="mr-0 sm:mr-2 h-4 w-4" />
-                                <span className="hidden sm:inline">Create Event</span>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Create Event
                                 </Link>
                             </Button>
                         )}
