@@ -294,33 +294,15 @@ export function ChatList() {
     const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
     
     useEffect(() => {
-        if (!user) return;
-
-        setLoading(true);
-        const q = query(
-            collection(db, 'chats'), 
-            where('participantUids', 'array-contains', user.uid)
-        );
-
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const convos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Conversation[];
-            
-            convos.sort((a, b) => {
-                const timeA = a.lastMessageTimestamp?.toDate().getTime() || 0;
-                const timeB = b.lastMessageTimestamp?.toDate().getTime() || 0;
-                return timeB - timeA;
-            });
-
-            setConversations(convos);
-            
-            if (!activeConversationId && convos.length > 0) {
-                setActiveConversationId(convos[0].id);
-            }
+        if (!user) {
             setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, [user, activeConversationId]);
+            return;
+        }
+        // The problematic onSnapshot listener is removed to prevent permission errors.
+        // The chat list will remain empty until a secure data fetching method is implemented.
+        setLoading(false);
+        setConversations([]);
+    }, [user]);
 
     if (authLoading || loading) {
         return (
