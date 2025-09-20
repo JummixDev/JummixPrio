@@ -115,17 +115,20 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
           setIsSaved(userData.savedEvents?.includes(event.id));
         }
         
-        // Listen for booking status changes
+        // Fetch booking status once on load
         if (user && event.id) {
             const bookingDocRef = doc(db, "bookings", `${user.uid}_${event.id}`);
-            const unsubscribe = onSnapshot(bookingDocRef, (doc) => {
-                if (doc.exists()) {
+            getDoc(bookingDocRef).then(doc => {
+                 if (doc.exists()) {
                     setBookingStatus(doc.data().status as BookingStatus);
                 } else {
                     setBookingStatus('idle');
                 }
+            }).catch(error => {
+                console.error("Error fetching booking status:", error);
+                // Don't set an error state, just default to idle
+                setBookingStatus('idle');
             });
-            return () => unsubscribe();
         }
 
     }, [userData, event.id, user]);
@@ -192,6 +195,7 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         const result = await requestToBook(user.uid, event.id, event.organizer?.username);
         if (result.success) {
             toast({ title: "Request Sent!", description: "The host has been notified of your request." });
+            setBookingStatus('pending'); // Manually update status after successful request
         } else {
             toast({ variant: 'destructive', title: "Request Failed", description: result.error });
         }
@@ -422,4 +426,3 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
-
