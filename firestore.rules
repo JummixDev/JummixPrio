@@ -1,69 +1,114 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    
+    // =================================
     // Helper Functions
+    // =================================
     function isSignedIn() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
+    // Check if the signed-in user is a verified host by looking up their user document.
     function isVerifiedHost() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerifiedHost == true;
     }
-    
-    function isEventParticipant(chatId) {
-      return request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
-    }
 
-    // Collections
+
+    // =================================
+    // User Profiles
+    // =================================
     match /users/{userId} {
-      allow read;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId)
-                    // Fields that can't be changed by the user
-                    && !( 'isVerifiedHost' in request.resource.data && request.resource.data.isVerifiedHost != resource.data.isVerifiedHost )
-                    && !( 'hostApplicationStatus' in request.resource.data && request.resource.data.hostApplicationStatus != resource.data.hostApplicationStatus )
-                    && !( 'email' in request.resource.data && request.resource.data.email != resource.data.email );
-      allow delete: if isSignedIn() && isOwner(userId);
-    }
-
-    match /events/{eventId} {
-      allow read;
-      allow create: if isSignedIn() && isVerifiedHost() && request.resource.data.hostUid == request.auth.uid;
-      allow update: if isSignedIn() && isOwner(resource.data.hostUid);
-      allow delete: if isSignedIn() && isOwner(resource.data.hostUid);
-    }
-
-    match /bookings/{bookingId} {
-        allow read: if isSignedIn() && (isOwner(resource.data.userId) || isOwner(resource.data.hostId));
-        allow create: if isSignedIn() && isOwner(request.resource.data.userId);
-        allow update: if isSignedIn() && isOwner(resource.data.hostId); // Only host can approve/reject
-        allow delete: if isSignedIn() && (isOwner(resource.data.userId) || isOwner(resource.data.hostId));
-    }
-    
-    match /chats/{chatId} {
-      allow read, update: if isSignedIn() && isEventParticipant(chatId);
+      // Anyone can read a user's public profile.
+      allow read: if true;
       
-      match /messages/{messageId} {
-        allow read, create: if isSignedIn() && isEventParticipant(chatId);
+      // A user can only create their own profile document.
+      allow create: if isOwner(userId);
+
+      // A user can only update their own profile.
+      // Critical fields like 'isVerifiedHost' and 'hostApplicationStatus' cannot be changed by the user.
+      allow update: if isOwner(userId)
+                    && request.resource.data.isVerifiedHost == resource.data.isVerifiedHost
+                    && request.resource.data.hostApplicationStatus == resource.data.hostApplicationStatus;
+
+      // A user can delete their own profile.
+      allow delete: if isOwner(userId);
+
+      // Reviews are a sub-collection of a user (the host being reviewed).
+      match /reviews/{reviewId} {
+        // Anyone can read reviews for a host.
+        allow read: if true;
+        // Only a signed-in user can create a review, and they cannot review themselves.
+        allow create: if isSignedIn() && request.auth.uid != userId;
       }
     }
 
+
+    // =================================
+    // Events
+    // =================================
+    match /events/{eventId} {
+      // Anyone can read event data.
+      allow read: if true;
+
+      // Only verified hosts can create events.
+      // The hostUid in the new event must match the creator's UID.
+      allow create: if isVerifiedHost() && request.resource.data.hostUid == request.auth.uid;
+      
+      // Only the original host can update or delete their event.
+      allow update, delete: if isOwner(resource.data.hostUid);
+    }
+    
+    // =================================
+    // Bookings
+    // =================================
+    match /bookings/{bookingId} {
+        // A booking can be read by the user who made it or the host of the event.
+        allow read: if isOwner(resource.data.userId) || isOwner(resource.data.hostId);
+        
+        // A user can only create a booking for themselves.
+        allow create: if isOwner(request.resource.data.userId);
+
+        // Only the host can update the booking status (e.g., approve/reject).
+        // The user who made the request cannot change the status.
+        allow update: if isOwner(resource.data.hostId) && request.resource.data.userId == resource.data.userId;
+    }
+
+
+    // =================================
+    // Chats
+    // =================================
+    match /chats/{chatId} {
+      // A user can read/write to a chat only if their UID is in the participantUids array.
+      allow read, update: if isSignedIn() && request.auth.uid in resource.data.participantUids;
+
+      match /messages/{messageId} {
+        // A user can read messages in a chat they are part of.
+        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
+        // A user can only create messages as themselves in a chat they are part of.
+        allow create: if isOwner(request.resource.data.senderUid) && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
+      }
+    }
+
+
+    // =================================
+    // Stories
+    // =================================
     match /stories/{storyId} {
-        allow read;
-        allow create: if isSignedIn() && isOwner(request.resource.data.userId);
-        allow delete: if isSignedIn() && isOwner(resource.data.userId);
-    }
+      // Anyone can read stories.
+      allow read: if true;
+      
+      // A user can only create stories for themselves.
+      allow create: if isOwner(request.resource.data.userId);
 
-    match /users/{userId}/reviews/{reviewId} {
-        allow read;
-        allow create: if isSignedIn() && isOwner(request.resource.data.reviewerId);
+      // A user can only delete their own stories.
+      allow delete: if isOwner(resource.data.userId);
     }
-
   }
 }
