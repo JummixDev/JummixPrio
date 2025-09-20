@@ -57,17 +57,6 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
       <UserPostsFeed key="posts" />,
       <NotificationCenter key="notifications" />,
   ]), []);
-  
-  const bottomWidget = useMemo(() => {
-    const widgets = [
-      <Leaderboard key="leaderboard" />,
-      <Badges key="badges" />,
-      <LiveActivityFeed key="activity" />,
-      <UserPostsFeed key="posts" />,
-      <NotificationCenter key="notifications" />,
-    ];
-    return widgets[Math.floor(Math.random() * widgets.length)];
-  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -122,7 +111,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Main Content (Events) */}
-            <div className="lg:col-span-12 space-y-8">
+            <div className="lg:col-span-8 space-y-8">
                 <Tabs defaultValue="upcoming" className="w-full">
                     <TabsList>
                         <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
@@ -158,11 +147,11 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
                     </TabsContent>
                 </Tabs>
             </div>
-        </div>
 
-         {/* Bottom Widget Area */}
-        <div className="w-full">
-            {bottomWidget}
+             {/* Right Sidebar */}
+             <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+                {sidebarWidgets}
+            </aside>
         </div>
     </main>
   );

@@ -68,15 +68,14 @@ export function EventCard({ event }: EventCardProps) {
   }
   
   const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
-    month: 'long',
+    month: 'short',
     day: 'numeric',
-    year: 'numeric',
     timeZone: 'UTC', // Ensure date is not affected by client's timezone
   });
 
 
   return (
-    <Link href={`/event/${event.id}`} className="block">
+    <Link href={`/event/${event.id}`} className="block h-full">
         <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 h-full flex flex-col bg-card">
         <CardHeader className="p-0 relative">
             <Image
@@ -110,10 +109,10 @@ export function EventCard({ event }: EventCardProps) {
             </div>
         </CardHeader>
         <CardContent className="p-4 flex-grow">
-            <CardTitle className="font-headline text-lg mb-2 truncate">{event.name}</CardTitle>
-            <div className="text-muted-foreground text-sm space-y-1">
-                <p className="flex items-center"><Calendar className="w-4 h-4 mr-2" /> {formattedDate}</p>
-                <p className="flex items-center"><MapPin className="w-4 h-4 mr-2" /> {event.location}</p>
+            <CardTitle className="font-headline text-base leading-tight mb-2 truncate group-hover:text-primary">{event.name}</CardTitle>
+            <div className="text-muted-foreground text-xs space-y-1">
+                <p className="flex items-center"><Calendar className="w-3 h-3 mr-1.5" /> {formattedDate}</p>
+                <p className="flex items-center"><MapPin className="w-3 h-3 mr-1.5" /> {event.location}</p>
             </div>
         </CardContent>
         </Card>
