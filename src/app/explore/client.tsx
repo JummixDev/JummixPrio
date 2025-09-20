@@ -106,8 +106,8 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
 
     if (searchTerm) {
       filtered = filtered.filter(event => 
-        event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.location.toLowerCase().includes(searchTerm.toLowerCase())
+        (event.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (event.location || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -220,95 +220,8 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                         <h1 className="text-3xl font-bold font-headline mb-2 text-center sm:text-left">Discover Events</h1>
                         <p className="text-muted-foreground text-center sm:text-left">Find your next great experience from our curated list of events.</p>
                     </div>
-                     <div className="flex gap-2 w-full sm:w-auto">
-                        <div className="relative w-full">
-                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                             <Input 
-                                placeholder="Search events..." 
-                                className="pl-10" 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="outline">
-                                <SlidersHorizontal className="mr-0 sm:mr-2 h-4 w-4" />
-                                <span className="hidden sm:inline">Filters</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent className="flex flex-col">
-                            <SheetHeader>
-                                <SheetTitle>Filter & Sort Events</SheetTitle>
-                                <SheetDescription>
-                                    Refine your search to find the perfect event.
-                                </SheetDescription>
-                            </SheetHeader>
-                            <div className="py-4 space-y-6 overflow-y-auto flex-grow pr-6">
-                                {/* Sort by */}
-                                <div className="space-y-4">
-                                    <Label className="font-semibold">Sort by</Label>
-                                    <RadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="s1" /><Label htmlFor="s1">Relevance</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="newest" id="s2" /><Label htmlFor="s2">Newest First</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="popularity" id="s3" /><Label htmlFor="s3">Popularity</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="rating" id="s4" /><Label htmlFor="s4">Best Rating</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="distance" id="s5" /><Label htmlFor="s5">Distance</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="date_asc" id="s6" /><Label htmlFor="s6">Date (Ascending)</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="date_desc" id="s7" /><Label htmlFor="s7">Date (Descending)</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="price_asc" id="s8" /><Label htmlFor="s8">Price (Ascending)</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="price_desc" id="s9" /><Label htmlFor="s9">Price (Descending)</Label></div>
-                                    </RadioGroup>
-                                </div>
-                                <Separator />
-                                {/* Date */}
-                                <div className="space-y-4">
-                                    <Label className="font-semibold">Date</Label>
-                                    <RadioGroup value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="d1" /><Label htmlFor="d1">Anytime</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="today" id="d2" /><Label htmlFor="d2">Today</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="weekend" id="d3" /><Label htmlFor="d3">This Weekend</Label></div>
-                                        <div className="flex items-center space-x-2"><RadioGroupItem value="month" id="d4" /><Label htmlFor="d4">This Month</Label></div>
-                                    </RadioGroup>
-                                </div>
-                                <Separator />
-                                {/* Price */}
-                                <div className="space-y-4">
-                                    <Label className="font-semibold">Price</Label>
-                                    <div className="flex items-center space-x-2"><Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/><Label htmlFor="price-free">Free</Label></div>
-                                    <div className="flex items-center space-x-2"><Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} /><Label htmlFor="price-paid">Paid</Label></div>
-                                </div>
-                                <Separator />
-                                {/* Other Filters */}
-                                <div className="space-y-4">
-                                    <Label className="font-semibold">Other Filters</Label>
-                                    <div className="flex items-center space-x-2"><Checkbox id="woman-only"/><Label htmlFor="woman-only">Woman Only</Label></div>
-                                </div>
-                                <Separator />
-                                {/* Interests */}
-                                <div className="space-y-4">
-                                    <Label className="font-semibold">Interests & Topics</Label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {["Reading", "Gaming", "Yoga", "Coding", "Dancing", "Politics"].map(interest => (
-                                            <div key={interest} className="flex items-center space-x-2">
-                                                <Checkbox id={`interest-${interest}`} />
-                                                <Label htmlFor={`interest-${interest}`}>{interest}</Label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-4 border-t">
-                                <SheetClose asChild>
-                                    <Button className="w-full">Apply Filters</Button>
-                                </SheetClose>
-                            </div>
-                        </SheetContent>
-                        </Sheet>
-                        <Button onClick={() => setView('friends')}>
-                            <Users className="mr-0 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Friends</span>
-                        </Button>
-                        {(userData?.isVerifiedHost || userData?.email === 'service@jummix.com') && (
+                     <div className="flex flex-col gap-2 w-full sm:w-auto">
+                         {(userData?.isVerifiedHost || userData?.email === 'service@jummix.com') && (
                             <Button asChild>
                                 <Link href="/host/create-event">
                                 <PlusCircle className="mr-0 sm:mr-2 h-4 w-4" />
@@ -316,6 +229,95 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                                 </Link>
                             </Button>
                         )}
+                        <div className="flex gap-2">
+                            <div className="relative w-full">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                <Input 
+                                    placeholder="Search events..." 
+                                    className="pl-10" 
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="outline">
+                                    <SlidersHorizontal className="mr-0 sm:mr-2 h-4 w-4" />
+                                    <span className="hidden sm:inline">Filters</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent className="flex flex-col">
+                                <SheetHeader>
+                                    <SheetTitle>Filter & Sort Events</SheetTitle>
+                                    <SheetDescription>
+                                        Refine your search to find the perfect event.
+                                    </SheetDescription>
+                                </SheetHeader>
+                                <div className="py-4 space-y-6 overflow-y-auto flex-grow pr-6">
+                                    {/* Sort by */}
+                                    <div className="space-y-4">
+                                        <Label className="font-semibold">Sort by</Label>
+                                        <RadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="s1" /><Label htmlFor="s1">Relevance</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="newest" id="s2" /><Label htmlFor="s2">Newest First</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="popularity" id="s3" /><Label htmlFor="s3">Popularity</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="rating" id="s4" /><Label htmlFor="s4">Best Rating</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="distance" id="s5" /><Label htmlFor="s5">Distance</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="date_asc" id="s6" /><Label htmlFor="s6">Date (Ascending)</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="date_desc" id="s7" /><Label htmlFor="s7">Date (Descending)</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="price_asc" id="s8" /><Label htmlFor="s8">Price (Ascending)</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="price_desc" id="s9" /><Label htmlFor="s9">Price (Descending)</Label></div>
+                                        </RadioGroup>
+                                    </div>
+                                    <Separator />
+                                    {/* Date */}
+                                    <div className="space-y-4">
+                                        <Label className="font-semibold">Date</Label>
+                                        <RadioGroup value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="d1" /><Label htmlFor="d1">Anytime</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="today" id="d2" /><Label htmlFor="d2">Today</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="weekend" id="d3" /><Label htmlFor="d3">This Weekend</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="month" id="d4" /><Label htmlFor="d4">This Month</Label></div>
+                                        </RadioGroup>
+                                    </div>
+                                    <Separator />
+                                    {/* Price */}
+                                    <div className="space-y-4">
+                                        <Label className="font-semibold">Price</Label>
+                                        <div className="flex items-center space-x-2"><Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/><Label htmlFor="price-free">Free</Label></div>
+                                        <div className="flex items-center space-x-2"><Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} /><Label htmlFor="price-paid">Paid</Label></div>
+                                    </div>
+                                    <Separator />
+                                    {/* Other Filters */}
+                                    <div className="space-y-4">
+                                        <Label className="font-semibold">Other Filters</Label>
+                                        <div className="flex items-center space-x-2"><Checkbox id="woman-only"/><Label htmlFor="woman-only">Woman Only</Label></div>
+                                    </div>
+                                    <Separator />
+                                    {/* Interests */}
+                                    <div className="space-y-4">
+                                        <Label className="font-semibold">Interests & Topics</Label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {["Reading", "Gaming", "Yoga", "Coding", "Dancing", "Politics"].map(interest => (
+                                                <div key={interest} className="flex items-center space-x-2">
+                                                    <Checkbox id={`interest-${interest}`} />
+                                                    <Label htmlFor={`interest-${interest}`}>{interest}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-4 border-t">
+                                    <SheetClose asChild>
+                                        <Button className="w-full">Apply Filters</Button>
+                                    </SheetClose>
+                                </div>
+                            </SheetContent>
+                            </Sheet>
+                            <Button onClick={() => setView('friends')}>
+                                <Users className="mr-0 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Friends</span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
                 
