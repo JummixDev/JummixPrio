@@ -16,7 +16,7 @@ import { UserPostsFeed, UserPostsFeedExpanded } from '@/components/jummix/UserPo
 import { NotificationCenter, NotificationCenterExpanded } from '@/components/jummix/NotificationCenter';
 import { Leaderboard, LeaderboardExpanded } from '@/components/jummix/Leaderboard';
 import { Badges, BadgesExpanded } from '@/components/jummix/Badges';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -159,10 +159,14 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   const sidebarWidgets = allWidgets.filter(w => w.id !== mainWidgetId);
 
   // Shuffle sidebar widgets once on initial render (or when the set of widgets changes)
-  const shuffledSidebarWidgets = useMemo(() => {
-    return shuffleArray(sidebarWidgets);
+  const shuffledWidgets = useMemo(() => {
+    const shuffled = shuffleArray([...sidebarWidgets]);
+    return {
+        topWidget: shuffled[0],
+        sidebarWidgets: shuffled.slice(1),
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mainWidgetId]); // Re-shuffle when the main widget changes
+  }, [mainWidgetId]); 
 
   useEffect(() => {
     if (!loading && !user) {
@@ -215,7 +219,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
                 <EventReels />
             </div>
             <div className="hidden lg:block">
-                 {shuffledSidebarWidgets[0]?.compact}
+                 {shuffledWidgets.topWidget?.compact}
             </div>
         </div>
 
@@ -225,7 +229,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
             </div>
 
              <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-                {shuffledSidebarWidgets.slice(1).map(widget => (
+                {shuffledWidgets.sidebarWidgets.map(widget => (
                     <React.Fragment key={widget.id}>
                         {widget.compact}
                     </React.Fragment>

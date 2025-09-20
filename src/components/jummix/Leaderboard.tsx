@@ -57,7 +57,7 @@ export function LeaderboardExpanded() {
             <CardDescription>See who's making the biggest impact in the Jummix community.</CardDescription>
         </CardHeader>
         <CardContent>
-            <ScrollArea className="h-[70vh]">
+            <ScrollArea className="h-[80vh]">
                 <ul className="space-y-2 pr-4">
                 {fullLeaderboard.map((user) => (
                     <li key={user.rank}>

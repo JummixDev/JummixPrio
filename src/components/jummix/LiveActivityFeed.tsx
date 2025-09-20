@@ -140,7 +140,7 @@ export function LiveActivityFeedExpanded() {
             <CardDescription>All recent activities from you and your friends.</CardDescription>
         </CardHeader>
          <CardContent>
-            <ScrollArea className="h-[70vh]">
+            <ScrollArea className="h-[80vh]">
                 <ul className="space-y-4 pr-4 pt-4">
                 {allActivities.map((activity, index) => (
                     <li key={index} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-muted/50">

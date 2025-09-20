@@ -114,7 +114,7 @@ export function NotificationCenterExpanded() {
                 <CardDescription>Your latest notifications, mentions, and event updates.</CardDescription>
             </CardHeader>
             <CardContent>
-                <ScrollArea className="h-[70vh]">
+                <ScrollArea className="h-[80vh]">
                     <ul className="space-y-2 pr-4 pt-4">
                     {allNotifications.map((notification, index) => (
                         <li key={index}>

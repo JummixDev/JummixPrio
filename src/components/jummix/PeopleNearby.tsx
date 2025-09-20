@@ -64,7 +64,7 @@ export function PeopleNearbyExpanded() {
             <CardDescription>Discover all people in your vicinity.</CardDescription>
         </CardHeader>
         <CardContent>
-            <ScrollArea className="h-[70vh]">
+            <ScrollArea className="h-[80vh]">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 p-4">
                     {allMockUsers.map((user) => (
                         <Link

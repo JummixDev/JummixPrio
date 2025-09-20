@@ -59,7 +59,7 @@ export function BadgesExpanded() {
             <CardDescription>{earnedBadges.length} / {allBadges.length} Badges earned</CardDescription>
         </CardHeader>
         <CardContent>
-            <ScrollArea className="h-[50vh] pr-4">
+            <ScrollArea className="h-[80vh] pr-4">
                 <div className="space-y-6">
                     <div>
                         <h3 className="font-semibold mb-4">Earned Badges</h3>

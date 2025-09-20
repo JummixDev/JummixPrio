@@ -119,7 +119,7 @@ export function UserPostsFeedExpanded() {
             <CardDescription>Stay up to date with the latest posts from the community.</CardDescription>
         </CardHeader>
         <CardContent>
-            <ScrollArea className="h-[70vh] border-t">
+            <ScrollArea className="h-[80vh] border-t">
                 <div className="space-y-6 p-4">
                     {mockFeed.map((post, index) => (
                         <PostCard key={index} post={post} />
