@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Ticket, Clock, Library, Compass } from 'lucide-react';
+import { Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Ticket, Clock, Library, Compass, Trophy, Award, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { GlobalSearch } from './GlobalSearch';
 
 // Pages where the global header should NOT be shown
 const noHeaderPages = ['/', '/reset-password', '/onboarding'];
@@ -102,6 +103,9 @@ export function GlobalHeader() {
             </Link>
             
             <div className="flex items-center gap-2">
+               <div className="w-full max-w-xs hidden sm:block">
+                  <GlobalSearch />
+                </div>
                <Button asChild variant="ghost" className="hidden sm:inline-flex">
                 <Link href="/explore">
                   <Compass/>
@@ -153,6 +157,20 @@ export function GlobalHeader() {
                             <Link href="/my-events">
                                 <Library className="mr-2 h-5 w-5" /> My Events
                             </Link>
+                            </Button>
+                        </SheetClose>
+                        <SheetClose asChild>
+                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                                <Link href="/leaderboard">
+                                    <Trophy className="mr-2 h-5 w-5" /> Leaderboard
+                                </Link>
+                            </Button>
+                        </SheetClose>
+                        <SheetClose asChild>
+                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
+                                <Link href="/badges">
+                                    <Award className="mr-2 h-5 w-5" /> Badges
+                                </Link>
                             </Button>
                         </SheetClose>
                         

@@ -8,17 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventCard } from '@/components/jummix/EventCard';
 import { UserProfileCard } from '@/components/jummix/UserProfileCard';
 import { LiveActivityFeed } from '@/components/jummix/LiveActivityFeed';
-import { Badges } from '@/components/jummix/Badges';
-import { AIRecommender } from '@/components/jummix/AIRecommender';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { collection, getDocs, query, where, documentId, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Leaderboard } from '@/components/jummix/Leaderboard';
 import { PeopleNearby } from '@/components/jummix/PeopleNearby';
 import { EventReels } from '@/components/jummix/EventReels';
 import { UserPostsFeed } from '@/components/jummix/UserPostsFeed';
 import { NotificationCenter } from '@/components/jummix/NotificationCenter';
+import { Leaderboard } from '@/components/jummix/Leaderboard';
+import { Badges } from '@/components/jummix/Badges';
 
 export type Event = {
   id: string;
@@ -121,17 +120,22 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
                 </div>
               </TabsContent>
             </Tabs>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <UserPostsFeed />
+                <PeopleNearby />
+            </div>
+
         </div>
 
         {/* Right Sidebar */}
         <div className="lg:col-span-4 space-y-8">
           <UserProfileCard />
-          <AIRecommender />
           <LiveActivityFeed />
+          <EventReels />
+          <NotificationCenter />
           <Leaderboard />
           <Badges />
-          <UserPostsFeed />
-          <NotificationCenter />
         </div>
       </div>
     </main>

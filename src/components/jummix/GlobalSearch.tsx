@@ -16,7 +16,6 @@ import { collection, getDocs, query, where, documentId } from 'firebase/firestor
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
-import { getAISearchResults } from '@/app/actions';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Button } from '../ui/button';
 
@@ -66,18 +65,13 @@ export function GlobalSearch() {
 
       try {
         const allEvents = await fetchAllEvents();
-        const aiInput = {
-            query: debouncedSearchTerm,
-            events: allEvents.map(e => ({
-                id: e.id,
-                name: e.name,
-                description: e.description,
-                location: e.location
-            }))
-        };
-        const aiResult = await getAISearchResults(aiInput);
+        const lowercasedTerm = debouncedSearchTerm.toLowerCase();
         
-        const matchingEvents = allEvents.filter(e => aiResult.matchingEventIds.includes(e.id));
+        const matchingEvents = allEvents.filter(event => 
+            event.name.toLowerCase().includes(lowercasedTerm) || 
+            event.description.toLowerCase().includes(lowercasedTerm) || 
+            event.location.toLowerCase().includes(lowercasedTerm)
+        );
         
         const eventResults: Result[] = matchingEvents.map(event => ({
             id: event.id,
@@ -89,7 +83,7 @@ export function GlobalSearch() {
         setResults(eventResults);
 
       } catch (error) {
-        console.error('AI Search failed:', error);
+        console.error('Search failed:', error);
       } finally {
         setLoading(false);
       }
@@ -122,8 +116,8 @@ export function GlobalSearch() {
             onClick={() => setOpen(true)}
           >
             <div className='flex items-center gap-2'>
-              <Wand2 className="h-4 w-4 text-primary" />
-              <span className="flex-grow text-left">Search with AI...</span>
+              <Search className="h-4 w-4" />
+              <span className="flex-grow text-left">Search...</span>
             </div>
             <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 sm:flex">
               <span className="text-xs">⌘</span>K
@@ -135,25 +129,23 @@ export function GlobalSearch() {
               <CommandInput 
                 value={searchTerm}
                 onValueChange={setSearchTerm}
-                placeholder='Try "a relaxed jazz event for this weekend"'
+                placeholder='Search events...'
               />
             <CommandList>
               {loading && (
                 <div className="p-4 flex items-center justify-center text-sm">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin"/> Searching with AI...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin"/> Searching...
                 </div>
               )}
               {!loading && !results.length && debouncedSearchTerm.length > 2 && <CommandEmpty>No results found.</CommandEmpty>}
               
               {results.length > 0 && (
-                <CommandGroup heading="AI Recommendations">
+                <CommandGroup heading="Events">
                     {results.map((res) => (
                         <CommandItem key={res.id} onSelect={() => handleSelect(res)} value={res.name}>
-                            {res.type === 'event' && <Calendar className="mr-2 h-4 w-4" />}
-                            {res.type === 'user' && <User className="mr-2 h-4 w-4" />}
-                            {res.type === 'host' && <Building className="mr-2 h-4 w-4" />}
+                            <Calendar className="mr-2 h-4 w-4" />
                             <span>{res.name}</span>
-                            {res.type === 'event' && <span className="text-xs text-muted-foreground ml-auto">{res.detail}</span>}
+                            <span className="text-xs text-muted-foreground ml-auto">{res.detail}</span>
                         </CommandItem>
                     ))}
                 </CommandGroup>
