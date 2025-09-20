@@ -35,6 +35,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { createCheckoutSession, toggleEventInteraction, requestToBook } from '@/app/actions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { db } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 type Event = {
     id: string;
@@ -103,6 +104,7 @@ function getCirclePath(lat: number, lon: number, radiusMeters: number) {
 export function EventDetailClient({ event }: EventDetailClientProps) {
     const { user, userData } = useAuth();
     const { toast } = useToast();
+    const router = useRouter();
     const [isProcessing, setIsProcessing] = useState(false);
     const [bookingStatus, setBookingStatus] = useState<BookingStatus>('idle');
     const [isLiked, setIsLiked] = useState(false);
@@ -111,24 +113,24 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     
     useEffect(() => {
         if (userData) {
-          setIsLiked(userData.likedEvents?.includes(event.id));
-          setIsSaved(userData.savedEvents?.includes(event.id));
+          setIsLiked(userData.likedEvents?.includes(event.id) ?? false);
+          setIsSaved(userData.savedEvents?.includes(event.id) ?? false);
         }
         
-        // Fetch booking status once on load
         if (user && event.id) {
             const bookingDocRef = doc(db, "bookings", `${user.uid}_${event.id}`);
-            getDoc(bookingDocRef).then(doc => {
+            const unsubscribe = onSnapshot(bookingDocRef, (doc) => {
                  if (doc.exists()) {
                     setBookingStatus(doc.data().status as BookingStatus);
                 } else {
                     setBookingStatus('idle');
                 }
-            }).catch(error => {
-                console.error("Error fetching booking status:", error);
-                // Don't set an error state, just default to idle
-                setBookingStatus('idle');
+            }, (error) => {
+                 console.error("Error with booking status snapshot listener:", error);
+                 setBookingStatus('idle');
             });
+
+            return () => unsubscribe();
         }
 
     }, [userData, event.id, user]);
@@ -152,13 +154,6 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
             if (type === 'saved') setIsSaved(prev => !prev);
             
             toast({ variant: 'destructive', title: 'Error', description: result.error });
-        } else {
-            const actionVerb = type === 'liked' ? 'Liked' : 'Saved';
-            const pastTenseVerb = type === 'liked' ? 'liked' : 'saved';
-            toast({
-                title: `Event ${result.newState ? actionVerb : 'Un' + pastTenseVerb}!`,
-                description: `You've ${result.newState ? '' : 'un'}${pastTenseVerb} ${event.name}.`,
-            });
         }
     };
     
@@ -193,11 +188,21 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         }
         setIsProcessing(true);
         const result = await requestToBook(user.uid, event.id, event.organizer?.username);
+
         if (result.success) {
             toast({ title: "Request Sent!", description: "The host has been notified of your request." });
             setBookingStatus('pending'); // Manually update status after successful request
         } else {
-            toast({ variant: 'destructive', title: "Request Failed", description: result.error });
+            if (result.error === 'onboarding_required') {
+                toast({
+                    variant: 'destructive',
+                    title: "Profile Incomplete",
+                    description: "Please complete your profile before booking events.",
+                    action: <Button onClick={() => router.push('/onboarding')}>Complete Profile</Button>,
+                });
+            } else {
+                toast({ variant: 'destructive', title: "Request Failed", description: result.error });
+            }
         }
         setIsProcessing(false);
     }
@@ -426,3 +431,5 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
+
+    

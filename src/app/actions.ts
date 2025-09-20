@@ -5,8 +5,8 @@
 import "dotenv/config";
 import type { EventSearchOutput } from "@/ai/flows/event-search";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove, getDoc, setDoc } from "firebase/firestore";
-import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput, storySchema, StoryInput } from "@/lib/schemas";
+import { addDoc, collection, doc, updateDoc, serverTimestamp, query, where, getDocs, orderBy, arrayUnion, arrayRemove, getDoc, setDoc, Transaction, runTransaction } from "firebase/firestore";
+import { createEventSchema, CreateEventInput, updateEventSchema, UpdateEventInput, reviewSchema, ReviewInput, storySchema, StoryInput, OnboardingProfileInput, onboardingProfileSchema } from "@/lib/schemas";
 import Stripe from 'stripe';
 import { uploadFile } from "@/services/storage";
 
@@ -110,30 +110,28 @@ export async function toggleEventInteraction(userId: string, eventId: string, ty
 
     try {
         const userRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userRef);
         
-        if (!userDoc.exists()) {
-            return { success: false, error: 'User not found.' };
-        }
+        await runTransaction(db, async (transaction: Transaction) => {
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists()) {
+                throw "User not found.";
+            }
 
-        const userData = userDoc.data();
-        const field = type === 'liked' ? 'likedEvents' : 'savedEvents';
-        const currentList = userData[field] || [];
-        const isInteracted = currentList.includes(eventId);
+            const field = type === 'liked' ? 'likedEvents' : 'savedEvents';
+            const currentList = userDoc.data()?.[field] || [];
+            const isInteracted = currentList.includes(eventId);
 
-        if (isInteracted) {
-            // If it's already in the array, remove it.
-            await updateDoc(userRef, {
-                [field]: arrayRemove(eventId)
-            });
-            return { success: true, newState: false };
-        } else {
-            // If it's not in the array, add it.
-            await updateDoc(userRef, {
-                [field]: arrayUnion(eventId)
-            });
-            return { success: true, newState: true };
-        }
+            if (isInteracted) {
+                // If it's already in the array, remove it.
+                transaction.update(userRef, { [field]: arrayRemove(eventId) });
+            } else {
+                // If it's not in the array, add it.
+                transaction.update(userRef, { [field]: arrayUnion(eventId) });
+            }
+        });
+
+        return { success: true, newState: !((await getDoc(userRef)).data()?.[type === 'liked' ? 'likedEvents' : 'savedEvents'] || []).includes(eventId) };
+
     } catch (error) {
         console.error(`Error toggling ${type} event:`, error);
         return { success: false, error: `Failed to update your ${type} list.` };
@@ -291,75 +289,88 @@ export async function createStory(storyData: StoryInput) {
 
 
 export async function requestToBook(userId: string, eventId: string, hostUsername: string | undefined) {
-  if (!userId || !eventId || !hostUsername) {
-    return { success: false, error: 'Missing required information.' };
-  }
-
-  try {
-    const bookingId = `${userId}_${eventId}`;
-    const bookingRef = doc(db, "bookings", bookingId);
-    const bookingDoc = await getDoc(bookingRef);
-
-    if (bookingDoc.exists()) {
-      return { success: false, error: 'You have already sent a request for this event.' };
+    if (!userId || !eventId || !hostUsername) {
+        return { success: false, error: 'Missing required information.' };
     }
-    
-    // Fetch event and user details
-    const eventDoc = await getDoc(doc(db, "events", eventId));
-    const userDoc = await getDoc(doc(db, "users", userId));
 
-    if (!eventDoc.exists() || !userDoc.exists()) {
-        return { success: false, error: 'Event or user not found.' };
+    try {
+        // Check if user has completed onboarding
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists() || !userDoc.data()?.onboardingComplete) {
+            return { success: false, error: 'onboarding_required' };
+        }
+
+        const bookingId = `${userId}_${eventId}`;
+        const bookingRef = doc(db, "bookings", bookingId);
+        const bookingDoc = await getDoc(bookingRef);
+
+        if (bookingDoc.exists()) {
+            return { success: false, error: 'You have already sent a request for this event.' };
+        }
+
+        // Fetch event details
+        const eventDoc = await getDoc(doc(db, "events", eventId));
+
+        if (!eventDoc.exists()) {
+            return { success: false, error: 'Event not found.' };
+        }
+        const eventData = eventDoc.data();
+        const userData = userDoc.data();
+
+        await setDoc(bookingRef, {
+            userId,
+            eventId,
+            hostId: eventData.hostUid,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            // Denormalize data for easier display in host dashboard
+            eventName: eventData.name,
+            eventDate: eventData.date,
+            eventLocation: eventData.location,
+            eventImage: eventData.image,
+            eventHint: eventData.hint,
+            eventPrice: eventData.price,
+            userName: userData.displayName,
+            userAvatar: userData.photoURL,
+            userHint: 'person portrait', // Assuming a default hint
+            userUsername: userData.username
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error creating booking request:", error);
+        return { success: false, error: 'Failed to send booking request.' };
     }
-    const eventData = eventDoc.data();
-    const userData = userDoc.data();
-
-    await setDoc(bookingRef, {
-        userId,
-        eventId,
-        hostId: eventData.hostUid,
-        status: 'pending',
-        createdAt: serverTimestamp(),
-        // Denormalize data for easier display in host dashboard
-        eventName: eventData.name,
-        eventDate: eventData.date,
-        eventLocation: eventData.location,
-        eventImage: eventData.image,
-        eventHint: eventData.hint,
-        eventPrice: eventData.price,
-        userName: userData.displayName,
-        userAvatar: userData.photoURL,
-        userHint: 'person portrait', // Assuming a default hint
-        userUsername: userData.username
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error creating booking request:", error);
-    return { success: false, error: 'Failed to send booking request.' };
-  }
 }
 
-export async function completeOnboardingProfile(
-    userId: string,
-    data: {
-        displayName: string;
-        photoURL: string;
-        bio: string;
-        interests: string[];
-    }
-) {
+
+export async function completeOnboardingProfile(userId: string, data: OnboardingProfileInput) {
     if (!userId) {
         return { success: false, error: "User ID is missing." };
     }
 
+    const validation = onboardingProfileSchema.safeParse(data);
+    if (!validation.success) {
+        return {
+            success: false,
+            errors: validation.error.errors.map((e) => e.message),
+        };
+    }
+    
+    // Check if username is already taken
+    const usernameQuery = query(collection(db, "users"), where("username", "==", validation.data.username));
+    const usernameSnapshot = await getDocs(usernameQuery);
+    if (!usernameSnapshot.empty && usernameSnapshot.docs[0].id !== userId) {
+        return { success: false, errors: ["This username is already taken. Please choose another one."] };
+    }
+
+
     try {
         const userDocRef = doc(db, "users", userId);
         await updateDoc(userDocRef, {
-            displayName: data.displayName,
-            photoURL: data.photoURL,
-            bio: data.bio,
-            interests: data.interests,
+            ...validation.data,
+            interests: validation.data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
             onboardingComplete: true,
         });
         return { success: true };
@@ -368,4 +379,6 @@ export async function completeOnboardingProfile(
         return { success: false, error: "Failed to update profile in the database." };
     }
 }
+    
+
     

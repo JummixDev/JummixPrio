@@ -6,9 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -17,14 +16,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FormDescription } from '@/components/ui/form';
 import { completeOnboardingProfile } from '../actions';
-
-const onboardingSchema = z.object({
-    displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
-    bio: z.string().max(160, { message: "Bio cannot be longer than 160 characters." }).optional(),
-    interests: z.string().optional(),
-});
-
-type OnboardingInput = z.infer<typeof onboardingSchema>;
+import { OnboardingProfileInput, onboardingProfileSchema } from '@/lib/schemas';
+import Link from 'next/link';
 
 export default function OnboardingPage() {
     const { user, userData, loading, uploadFile } = useAuth();
@@ -35,30 +28,35 @@ export default function OnboardingPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const form = useForm<OnboardingInput>({
-        resolver: zodResolver(onboardingSchema),
+    const form = useForm<OnboardingProfileInput>({
+        resolver: zodResolver(onboardingProfileSchema),
         defaultValues: {
             displayName: '',
+            username: '',
             bio: '',
             interests: '',
+            photoURL: '',
         },
     });
 
      useEffect(() => {
         if (!loading) {
             if (!user) {
-                // If user is not logged in, send to home
                 router.push('/');
             } else if (userData?.onboardingComplete) {
-                // If user is already onboarded, send to dashboard
                 router.push('/dashboard');
-            } else if (userData) {
-                 // Pre-fill form if we have some data
-                form.setValue('displayName', userData.displayName || user?.displayName || '');
-                form.setValue('bio', userData.bio || '');
-                form.setValue('interests', (userData.interests || []).join(', '));
-                if (userData.photoURL) {
+            } else if (user || userData) {
+                const defaultUsername = user?.email?.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') || '';
+                form.setValue('displayName', userData?.displayName || user?.displayName || '');
+                form.setValue('username', userData?.username || defaultUsername);
+                form.setValue('bio', userData?.bio || '');
+                form.setValue('interests', (userData?.interests || []).join(', '));
+                if (userData?.photoURL) {
                     setImagePreview(userData.photoURL);
+                    form.setValue('photoURL', userData.photoURL);
+                } else if (user?.photoURL) {
+                     setImagePreview(user.photoURL);
+                    form.setValue('photoURL', user.photoURL);
                 }
             }
         }
@@ -77,12 +75,12 @@ export default function OnboardingPage() {
         }
     };
 
-    const onSubmit = async (data: OnboardingInput) => {
+    const onSubmit = async (data: OnboardingProfileInput) => {
         if (!user) {
             toast({ variant: 'destructive', title: 'Error', description: 'You are not logged in.' });
             return;
         }
-        if (!imageFile && !userData?.photoURL) {
+        if (!imageFile && !imagePreview) {
             toast({
                 variant: 'destructive',
                 title: 'Profile picture is required',
@@ -94,7 +92,7 @@ export default function OnboardingPage() {
         setIsSubmitting(true);
         
         try {
-            let finalPhotoURL = userData?.photoURL || '';
+            let finalPhotoURL = imagePreview || '';
 
             if (imageFile) {
                 const filePath = `images/${user.uid}/profile-picture.jpg`;
@@ -102,14 +100,12 @@ export default function OnboardingPage() {
             }
             
             const result = await completeOnboardingProfile(user.uid, {
-                displayName: data.displayName,
-                bio: data.bio || '',
-                interests: data.interests?.split(',').map(i => i.trim()).filter(Boolean) || [],
+                ...data,
                 photoURL: finalPhotoURL,
             });
 
             if (!result.success) {
-                throw new Error(result.error);
+                throw new Error(result.errors?.join('\n') || "An unknown error occurred.");
             }
 
             toast({
@@ -146,30 +142,42 @@ export default function OnboardingPage() {
             <Card className="w-full max-w-lg">
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">Welcome to Jummix!</CardTitle>
-                    <CardDescription>Let's set up your profile. Complete these steps to start discovering events.</CardDescription>
+                    <CardDescription>Let's set up your profile. This information is needed to join events.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            <div className="flex flex-col items-center space-y-4">
-                                <Avatar className="w-32 h-32 border-4 border-muted ring-2 ring-ring">
-                                    <AvatarImage src={imagePreview || undefined} />
-                                    <AvatarFallback>
-                                        <UserCircle className="w-full h-full text-muted-foreground" />
-                                    </AvatarFallback>
-                                </Avatar>
-                                <input 
-                                    type="file" 
-                                    ref={fileInputRef} 
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                />
-                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                                    <ImageIcon className="mr-2 h-4 w-4" />
-                                    Upload Profile Photo
-                                </Button>
-                            </div>
+                            <FormField
+                                control={form.control}
+                                name="photoURL"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-col items-center space-y-4">
+                                    <FormLabel>Profile Picture</FormLabel>
+                                    <FormControl>
+                                        <>
+                                            <Avatar className="w-32 h-32 border-4 border-muted ring-2 ring-ring">
+                                                <AvatarImage src={imagePreview || undefined} />
+                                                <AvatarFallback>
+                                                    <UserCircle className="w-full h-full text-muted-foreground" />
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                            />
+                                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                                <ImageIcon className="mr-2 h-4 w-4" />
+                                                Upload Profile Photo
+                                            </Button>
+                                        </>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
                             <FormField
                                 control={form.control}
                                 name="displayName"
@@ -179,6 +187,23 @@ export default function OnboardingPage() {
                                         <FormControl>
                                             <Input placeholder="How you'll appear to others" {...field} />
                                         </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="username"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Username</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">@</span>
+                                                <Input placeholder="your_unique_username" className="pl-7" {...field} />
+                                            </div>
+                                        </FormControl>
+                                        <FormDescription>This will be your unique URL.</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -217,7 +242,14 @@ export default function OnboardingPage() {
                         </form>
                     </Form>
                 </CardContent>
+                 <CardFooter className="flex justify-center">
+                    <Button variant="link" asChild>
+                        <Link href="/dashboard">Skip for now</Link>
+                    </Button>
+                </CardFooter>
             </Card>
         </div>
     );
 }
+
+    

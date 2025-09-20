@@ -56,4 +56,17 @@ export const storySchema = z.object({
 });
 
 export type StoryInput = z.infer<typeof storySchema>;
+
+// Schema for the extended onboarding profile
+export const onboardingProfileSchema = z.object({
+    displayName: z.string().min(3, { message: "Display name must be at least 3 characters." }),
+    username: z.string().min(3, { message: "Username must be at least 3 characters." }).regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores."),
+    photoURL: z.string().url({ message: "A valid profile picture URL is required." }),
+    bio: z.string().max(160, { message: "Bio cannot be longer than 160 characters." }).optional(),
+    interests: z.string().optional(),
+});
+
+export type OnboardingProfileInput = z.infer<typeof onboardingProfileSchema>;
+    
+
     

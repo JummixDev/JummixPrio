@@ -71,6 +71,14 @@ function AuthForm() {
   };
 
   const onSignUpSubmit = async (data: any) => {
+    if (data.password !== data.confirmPassword) {
+        toast({
+            variant: "destructive",
+            title: "Passwords do not match",
+            description: "Please make sure your passwords match.",
+        });
+        return;
+    }
     try {
       await signUp(data.email, data.password);
       router.push('/onboarding');
@@ -160,6 +168,10 @@ function AuthForm() {
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
                 <Input id="signup-password" type="password" required {...registerSignUp('password')} />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                <Input id="signup-confirm-password" type="password" required {...registerSignUp('confirmPassword')} />
               </div>
               <Button type="submit" className="w-full" disabled={isSigningUp}>
                  {isSigningUp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -277,5 +289,7 @@ function LandingPageContent() {
 export default function LandingPage() {
     return <LandingPageContent />;
 }
+
+    
 
     
