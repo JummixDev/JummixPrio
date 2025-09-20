@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -61,7 +62,7 @@ const EventTile = ({ event, index }: { event: Event, index: number }) => (
 )
 
 const UserCard = ({ user, onFollow }: { user: UserProfile, onFollow: (uid: string) => void }) => (
-    <div className="text-center p-6 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:-translate-y-1 border rounded-lg">
+    <div className="text-center p-6 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:-translate-y-1 border rounded-lg bg-card">
         <Link href={`/profile/${user.username}`} className="contents">
              <Avatar className="w-24 h-24 mb-4 border-2 border-primary/20">
                 <AvatarImage src={user.photoURL} alt={user.displayName} data-ai-hint={user.hint} />
@@ -165,6 +166,8 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
         setView('friends');
     } else if (view === 'friends') {
         setView('explore');
+    } else {
+        router.push('/dashboard');
     }
  };
  
@@ -202,7 +205,31 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
 
   return (
     <div className="bg-secondary/20 min-h-screen flex flex-col">
-       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-24 pb-24 h-full flex flex-col">
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
+            <Button variant="ghost" size="icon" onClick={handleBackClick}>
+                <ArrowLeft />
+            </Button>
+            <div className="ml-4 flex-grow">
+                 <h1 className="text-xl font-bold ml-4 truncate">
+                    {view === 'explore' && 'Discover Events'}
+                    {view === 'friends' && 'Discover People'}
+                    {view === 'chats' && 'Your Conversations'}
+                </h1>
+            </div>
+            {view === 'explore' && (
+                <Button onClick={() => setView('friends')} className="ml-auto">
+                    Friends <Users className="ml-2 h-4 w-4" />
+                </Button>
+            )}
+             {view === 'friends' && (
+                <Button onClick={() => setView('chats')} className="ml-auto">
+                    Messages <MessageSquare className="ml-2 h-4 w-4" />
+                </Button>
+            )}
+        </div>
+      </header>
+       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16 pb-24 h-full flex flex-col">
             <div className={cn("transition-transform duration-500 ease-in-out h-full", {
                 'translate-x-0': view === 'explore',
                 '-translate-x-[110%]': view === 'friends' || view === 'chats',
@@ -297,9 +324,6 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                                 </div>
                             </SheetContent>
                             </Sheet>
-                            <Button onClick={() => setView('friends')}>
-                                <Users className="mr-0 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Friends</span>
-                            </Button>
                         </div>
                     </div>
                 </div>
@@ -310,23 +334,15 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                     ))}
                 </div>
             </div>
-             <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[calc(100vh-6rem)]", {
+             <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[calc(100vh-12rem)]", {
                 'translate-x-[110%]': view === 'explore',
                 'translate-x-0': view === 'friends',
-                '-translate-x-[110%]': view === 'chats',
+                '-translatex-[110%]': view === 'chats',
             })}>
                 <div className="flex justify-between items-center mb-8 flex-shrink-0">
                     <div>
                         <h1 className="text-3xl font-bold font-headline mb-2">Discover Friends</h1>
                         <p className="text-muted-foreground">Connect with new people and find common interests.</p>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button onClick={() => setView('explore')} variant="outline">
-                             <ArrowLeft className="mr-2 h-4 w-4" /> Events
-                        </Button>
-                        <Button onClick={() => setView('chats')}>
-                            Messages <MessageSquare className="ml-2 h-4 w-4" />
-                        </Button>
                     </div>
                 </div>
                  <ScrollArea className="flex-grow min-h-0">
@@ -337,7 +353,7 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                     </div>
                  </ScrollArea>
             </div>
-            <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[calc(100vh-6rem)]", {
+            <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[calc(100vh-12rem)]", {
                 'translate-x-[220%]': view === 'explore' || view === 'friends',
                 'translate-x-0': view === 'chats',
             })}>
@@ -347,7 +363,7 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                         <p className="text-muted-foreground">Continue the conversation with your friends and groups.</p>
                     </div>
                 </div>
-                <div className="h-[calc(100vh-20rem)]">
+                <div className="h-[calc(100vh-22rem)]">
                     <ChatList />
                 </div>
             </div>
@@ -355,3 +371,4 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
     </div>
   );
 }
+
