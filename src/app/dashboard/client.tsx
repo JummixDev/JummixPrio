@@ -6,18 +6,18 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventCard } from '@/components/jummix/EventCard';
-import { LiveActivityFeed } from '@/components/jummix/LiveActivityFeed';
+import { LiveActivityFeed, LiveActivityFeedExpanded } from '@/components/jummix/LiveActivityFeed';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { collection, getDocs, query, where, documentId, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PeopleNearby } from '@/components/jummix/PeopleNearby';
+import { PeopleNearby, PeopleNearbyExpanded } from '@/components/jummix/PeopleNearby';
 import { EventReels } from '@/components/jummix/EventReels';
-import { UserPostsFeed } from '@/components/jummix/UserPostsFeed';
-import { NotificationCenter } from '@/components/jummix/NotificationCenter';
-import { Leaderboard } from '@/components/jummix/Leaderboard';
-import { Badges } from '@/components/jummix/Badges';
-import { Card, CardContent } from '@/components/ui/card';
+import { UserPostsFeed, UserPostsFeedExpanded } from '@/components/jummix/UserPostsFeed';
+import { NotificationCenter, NotificationCenterExpanded } from '@/components/jummix/NotificationCenter';
+import { Leaderboard, LeaderboardExpanded } from '@/components/jummix/Leaderboard';
+import { Badges, BadgesExpanded } from '@/components/jummix/Badges';
+import { UserProfileCard } from '@/components/jummix/UserProfileCard';
 
 export type Event = {
   id: string;
@@ -27,6 +27,43 @@ export type Event = {
 type DashboardClientProps = {
   initialUpcomingEvents: Event[];
 };
+
+const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, loadingInteractions }: { initialUpcomingEvents: Event[], savedEvents: Event[], likedEvents: Event[], loadingInteractions: boolean }) => (
+    <Tabs defaultValue="upcoming" className="w-full">
+        <TabsList>
+            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="liked">Liked</TabsTrigger>
+            <TabsTrigger value="saved">Saved For You</TabsTrigger>
+        </TabsList>
+        <TabsContent value="upcoming" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {initialUpcomingEvents.length > 0 ? (
+                initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
+            ) : (
+                <p className="text-muted-foreground col-span-full">No upcoming events right now. Check back soon!</p>
+            )}
+            </div>
+        </TabsContent>
+        <TabsContent value="liked" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
+                likedEvents.map(event => <EventCard key={event.id} event={event} />)
+            ) : (
+                <p className="text-muted-foreground col-span-full">You haven't liked any events yet. Start exploring!</p>
+            )}
+            </div>
+        </TabsContent>
+        <TabsContent value="saved" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
+                savedEvents.map(event => <EventCard key={event.id} event={event} />)
+            ) : (
+                <p className="text-muted-foreground col-span-full">You have no saved events. Bookmark events to see them here.</p>
+            )}
+            </div>
+        </TabsContent>
+    </Tabs>
+);
 
 // Helper function to shuffle an array
 const shuffleArray = (array: any[]) => {
@@ -49,15 +86,47 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   const [savedEvents, setSavedEvents] = useState<Event[]>([]);
   const [loadingInteractions, setLoadingInteractions] = useState(true);
 
-  // Memoize the shuffled sidebar components to prevent re-shuffling on re-renders
-  const sidebarWidgets = useMemo(() => shuffleArray([
-      <Card key="people-nearby"><CardContent className="p-4"><PeopleNearby /></CardContent></Card>,
-      <Leaderboard key="leaderboard" />,
-      <Badges key="badges" />,
-      <LiveActivityFeed key="activity" />,
-      <UserPostsFeed key="posts" />,
-      <NotificationCenter key="notifications" />,
-  ]), []);
+  // Define all possible widgets with their compact and expanded views
+  const allWidgets = useMemo(() => [
+      { id: 'events', compact: null, expanded: <EventListWidget initialUpcomingEvents={initialUpcomingEvents} savedEvents={savedEvents} likedEvents={likedEvents} loadingInteractions={loadingInteractions}/> },
+      { id: 'leaderboard', compact: <Leaderboard />, expanded: <LeaderboardExpanded /> },
+      { id: 'badges', compact: <Badges />, expanded: <BadgesExpanded /> },
+      { id: 'people-nearby', compact: <PeopleNearby />, expanded: <PeopleNearbyExpanded /> },
+      { id: 'activity', compact: <LiveActivityFeed />, expanded: <LiveActivityFeedExpanded /> },
+      { id: 'posts', compact: <UserPostsFeed />, expanded: <UserPostsFeedExpanded /> },
+      { id: 'notifications', compact: <NotificationCenter />, expanded: <NotificationCenterExpanded /> },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [initialUpcomingEvents, savedEvents, likedEvents, loadingInteractions]);
+
+  // The 'events' widget is special and should only appear in the main content area
+  const mainContentWidgets = allWidgets.filter(w => w.id === 'events');
+  const sidebarWidgetsCandidates = allWidgets.filter(w => w.id !== 'events');
+
+  // Shuffle widgets on each render
+  const shuffledWidgets = useMemo(() => {
+    // Decide if the main slot shows events or something else
+    const showEventsInMain = Math.random() > 0.5;
+    
+    let mainWidget;
+    let sidebarPool;
+
+    if (showEventsInMain) {
+        mainWidget = mainContentWidgets[0];
+        sidebarPool = sidebarWidgetsCandidates;
+    } else {
+        const shuffledSide = shuffleArray([...sidebarWidgetsCandidates]);
+        mainWidget = shuffledSide.pop();
+        sidebarPool = shuffledSide;
+    }
+
+    const shuffledSidebar = shuffleArray(sidebarPool);
+
+    return {
+        mainWidget,
+        sidebarWidgets: shuffledSidebar.slice(0, 3) // Take 3 for the sidebar
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -113,45 +182,17 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Main Content (Events) */}
             <div className="lg:col-span-8 space-y-8">
-                <Tabs defaultValue="upcoming" className="w-full">
-                    <TabsList>
-                        <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                        <TabsTrigger value="liked">Liked</TabsTrigger>
-                        <TabsTrigger value="saved">Saved For You</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="upcoming" className="mt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {initialUpcomingEvents.length > 0 ? (
-                            initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
-                        ) : (
-                            <p className="text-muted-foreground col-span-full">No upcoming events right now. Check back soon!</p>
-                        )}
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="liked" className="mt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
-                            likedEvents.map(event => <EventCard key={event.id} event={event} />)
-                        ) : (
-                            <p className="text-muted-foreground col-span-full">You haven't liked any events yet. Start exploring!</p>
-                        )}
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="saved" className="mt-6">
-                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
-                            savedEvents.map(event => <EventCard key={event.id} event={event} />)
-                        ) : (
-                            <p className="text-muted-foreground col-span-full">You have no saved events. Bookmark events to see them here.</p>
-                        )}
-                        </div>
-                    </TabsContent>
-                </Tabs>
+                {shuffledWidgets.mainWidget?.expanded}
             </div>
 
              {/* Right Sidebar */}
              <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-                {sidebarWidgets}
+                <UserProfileCard />
+                {shuffledWidgets.sidebarWidgets.map(widget => (
+                    <React.Fragment key={widget.id}>
+                        {widget.compact}
+                    </React.Fragment>
+                ))}
             </aside>
         </div>
     </main>

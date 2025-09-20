@@ -94,36 +94,38 @@ const PostCard = ({ post }: { post: typeof mockPost }) => (
 
 export function UserPostsFeed() {
   return (
-    <Dialog>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle className="font-headline">Community Feed</CardTitle>
-                    <CardDescription className="text-xs">Posts from the community.</CardDescription>
-                </div>
-                <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0">
-                        <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                </DialogTrigger>
-            </CardHeader>
-            <CardContent>
-                <PostCard post={mockPost} />
-            </CardContent>
-        </Card>
-    <DialogContent className="max-w-2xl">
-        <DialogHeader>
-            <DialogTitle className="font-headline">Full Community Feed</DialogTitle>
-            <DialogDescription>Stay up to date with the latest posts from the community.</DialogDescription>
-        </DialogHeader>
-        <ScrollArea className="h-[70vh] border-t">
-            <div className="space-y-6 p-4">
-                {mockFeed.map((post, index) => (
-                    <PostCard key={index} post={post} />
-                ))}
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle className="font-headline">Community Feed</CardTitle>
+                <CardDescription className="text-xs">Posts from the community.</CardDescription>
             </div>
-        </ScrollArea>
-    </DialogContent>
-    </Dialog>
+            {/* The DialogTrigger is now handled by the parent component logic */}
+        </CardHeader>
+        <CardContent>
+            <PostCard post={mockPost} />
+        </CardContent>
+    </Card>
   );
+}
+
+
+export function UserPostsFeedExpanded() {
+  return (
+    <Card className="h-full">
+        <CardHeader>
+            <CardTitle className="font-headline text-2xl">Full Community Feed</CardTitle>
+            <CardDescription>Stay up to date with the latest posts from the community.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <ScrollArea className="h-[70vh] border-t">
+                <div className="space-y-6 p-4">
+                    {mockFeed.map((post, index) => (
+                        <PostCard key={index} post={post} />
+                    ))}
+                </div>
+            </ScrollArea>
+        </CardContent>
+    </Card>
+  )
 }

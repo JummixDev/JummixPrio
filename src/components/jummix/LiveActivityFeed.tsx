@@ -94,51 +94,52 @@ const allActivities = [
 
 export function LiveActivityFeed() {
   return (
-    <Dialog>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle className="font-headline">My Activities</CardTitle>
-                    <CardDescription className="text-xs">Recent activities from your friends.</CardDescription>
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle className="font-headline">My Activities</CardTitle>
+                <CardDescription className="text-xs">Recent activities from your friends.</CardDescription>
+            </div>
+            {/* The DialogTrigger is now handled by the parent component logic */}
+        </CardHeader>
+        <CardContent>
+            <ul className="space-y-4">
+            {activities.map((activity, index) => (
+                <li key={index} className="flex items-start space-x-4">
+                <Link href={activity.userProfile} passHref>
+                    <Avatar className="w-10 h-10 border-2 border-secondary flex-shrink-0 cursor-pointer">
+                        <AvatarImage src={activity.avatar} alt={activity.user} data-ai-hint={activity.hint} />
+                        <AvatarFallback>{activity.user.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
+                </Link>
+                <div className="flex-grow">
+                    <p className="text-sm">
+                        <Link href={activity.userProfile} passHref><span className="font-bold text-foreground hover:underline">{activity.user}</span></Link>{" "}
+                        {activity.action}{" "}
+                        <Link href={activity.targetLink} passHref><span className="font-semibold text-primary hover:underline">{activity.target}</span></Link>
+                    </p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                    {activity.icon}
+                    {activity.time}
+                    </p>
                 </div>
-                <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0">
-                        <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                </DialogTrigger>
-            </CardHeader>
-            <CardContent>
-                <ul className="space-y-4">
-                {activities.map((activity, index) => (
-                    <li key={index} className="flex items-start space-x-4">
-                    <Link href={activity.userProfile} passHref>
-                        <Avatar className="w-10 h-10 border-2 border-secondary flex-shrink-0 cursor-pointer">
-                            <AvatarImage src={activity.avatar} alt={activity.user} data-ai-hint={activity.hint} />
-                            <AvatarFallback>{activity.user.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
-                    </Link>
-                    <div className="flex-grow">
-                        <p className="text-sm">
-                            <Link href={activity.userProfile} passHref><span className="font-bold text-foreground hover:underline">{activity.user}</span></Link>{" "}
-                            {activity.action}{" "}
-                            <Link href={activity.targetLink} passHref><span className="font-semibold text-primary hover:underline">{activity.target}</span></Link>
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
-                        {activity.icon}
-                        {activity.time}
-                        </p>
-                    </div>
-                    </li>
-                ))}
-                </ul>
-            </CardContent>
-        </Card>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle className="font-headline">Full Activity Feed</DialogTitle>
-                <DialogDescription>Alle kürzlichen Aktivitäten von dir und deinen Freunden im Überblick.</DialogDescription>
-            </DialogHeader>
-             <ScrollArea className="h-96">
+                </li>
+            ))}
+            </ul>
+        </CardContent>
+    </Card>
+  );
+}
+
+export function LiveActivityFeedExpanded() {
+  return (
+     <Card className="h-full">
+        <CardHeader>
+            <CardTitle className="font-headline text-2xl">Full Activity Feed</CardTitle>
+            <CardDescription>All recent activities from you and your friends.</CardDescription>
+        </CardHeader>
+         <CardContent>
+            <ScrollArea className="h-[70vh]">
                 <ul className="space-y-4 pr-4 pt-4">
                 {allActivities.map((activity, index) => (
                     <li key={index} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-muted/50">
@@ -163,7 +164,7 @@ export function LiveActivityFeed() {
                 ))}
                 </ul>
             </ScrollArea>
-        </DialogContent>
-    </Dialog>
-  );
+         </CardContent>
+    </Card>
+  )
 }

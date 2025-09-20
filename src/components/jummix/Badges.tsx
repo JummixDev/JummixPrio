@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,17 +8,14 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
 import Link from "next/link";
+import { allBadges } from "@/app/achievements/page";
 
-const badges = [
-  { icon: <Trophy className="w-8 h-8 text-yellow-500" />, name: "Top Contributor", description: "For outstanding community contributions." },
-  { icon: <Award className="w-8 h-8 text-blue-500" />, name: "First Event", description: "For creating your first event." },
-  { icon: <Star className="w-8 h-8 text-amber-400" />, name: "Super Fan", description: "For attending 10+ events." },
-  { icon: <Zap className="w-8 h-8 text-purple-500" />, name: "Power User", description: "For regular and active use." },
-  { icon: <ShieldCheck className="w-8 h-8 text-green-500" />, name: "Verified Host", description: "You are a verified host." },
-  { icon: <Star className="w-8 h-8 text-red-500" />, name: "Early Bird", description: "One of the first 1000 users." },
-];
+
+const earnedBadges = allBadges.filter(b => b.earned);
+const unearnedBadges = allBadges.filter(b => !b.earned);
 
 export function Badges() {
+  const displayedBadges = earnedBadges.slice(0, 6);
   return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -34,15 +32,16 @@ export function Badges() {
             <CardContent>
                 <TooltipProvider>
                 <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-4">
-                    {badges.map((badge, index) => (
+                    {displayedBadges.map((badge, index) => (
                     <Tooltip key={index}>
                         <TooltipTrigger asChild>
-                        <div className="flex items-center justify-center bg-secondary p-4 rounded-lg aspect-square cursor-pointer transition-transform hover:scale-110">
+                         <div className="flex items-center justify-center bg-secondary p-4 rounded-lg aspect-square cursor-pointer transition-transform hover:scale-110 border-2 border-primary/50 shadow-md">
                             {badge.icon}
                         </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                        <p>{badge.name}</p>
+                            <p className="font-bold">{badge.name}</p>
+                            <p>{badge.description}</p>
                         </TooltipContent>
                     </Tooltip>
                     ))}
@@ -51,4 +50,62 @@ export function Badges() {
             </CardContent>
         </Card>
   );
+}
+
+
+export function BadgesExpanded() {
+  return (
+    <Card className="h-full">
+        <CardHeader>
+            <CardTitle className="font-headline text-2xl">All Your Badges</CardTitle>
+            <CardDescription>{earnedBadges.length} / {allBadges.length} Badges earned</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <ScrollArea className="h-[50vh] pr-4">
+                <div className="space-y-6">
+                    <div>
+                        <h3 className="font-semibold mb-4">Earned Badges</h3>
+                        <TooltipProvider>
+                            <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
+                                {earnedBadges.map((badge, index) => (
+                                    <Tooltip key={index}>
+                                        <TooltipTrigger>
+                                            <div className="flex items-center justify-center bg-secondary p-4 rounded-lg aspect-square cursor-pointer transition-transform hover:scale-110 border-2 border-primary/50 shadow-md">
+                                                {badge.icon}
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="font-bold">{badge.name}</p>
+                                            <p>{badge.description}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ))}
+                            </div>
+                        </TooltipProvider>
+                    </div>
+                     <div>
+                        <h3 className="font-semibold mb-4">Next Challenges</h3>
+                         <TooltipProvider>
+                            <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
+                                {unearnedBadges.map((badge, index) => (
+                                    <Tooltip key={index}>
+                                        <TooltipTrigger>
+                                                <div className="flex items-center justify-center bg-secondary p-4 rounded-lg aspect-square cursor-pointer transition-transform hover:scale-110 opacity-50 hover:opacity-100">
+                                                {badge.icon}
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="font-bold">{badge.name}</p>
+                                            <p>{badge.description}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ))}
+                            </div>
+                        </TooltipProvider>
+                    </div>
+                </div>
+            </ScrollArea>
+        </CardContent>
+    </Card>
+  )
 }

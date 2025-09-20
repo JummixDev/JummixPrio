@@ -12,7 +12,7 @@ import { Footer } from "@/components/jummix/Footer";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
-const fullLeaderboard = [
+export const fullLeaderboard = [
   { name: "Carlos Ray", username: "carlosray", avatar: "https://placehold.co/40x40.png", hint: "man portrait", points: 2450, rank: 1 },
   { name: "Jenna Smith", username: "jennasmith", avatar: "https://placehold.co/40x40.png", hint: "woman portrait", points: 2310, rank: 2 },
   { name: "Alex Doe", username: "alexdoe", avatar: "https://placehold.co/40x40.png", hint: "person portrait", points: 2100, rank: 3 },
@@ -28,13 +28,13 @@ const fullLeaderboard = [
 ];
 
 
-const rankColors: { [key: number]: string } = {
+export const rankColors: { [key: number]: string } = {
   1: "text-yellow-500 border-yellow-500/50",
   2: "text-gray-400 border-gray-400/50",
   3: "text-orange-600 border-orange-600/50",
 };
 
-const allBadges = [
+export const allBadges = [
     { icon: <Trophy className="w-10 h-10 text-yellow-500" />, name: "Top Contributor", description: "For outstanding community contributions.", earned: true },
     { icon: <Award className="w-10 h-10 text-blue-500" />, name: "First Event", description: "For creating your first event.", earned: true },
     { icon: <Star className="w-10 h-10 text-amber-400" />, name: "Super Fan", description: "For attending 10+ events.", earned: true },

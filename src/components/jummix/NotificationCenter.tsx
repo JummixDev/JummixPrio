@@ -71,72 +71,73 @@ const allNotifications = [
 
 export function NotificationCenter() {
   return (
-    <Dialog>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                 <div>
-                    <CardTitle className="font-headline flex items-center gap-2"><Bell /> Notifications</CardTitle>
-                    <CardDescription className="text-xs">Recent updates and mentions.</CardDescription>
-                </div>
-                <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0">
-                        <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                </DialogTrigger>
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                <CardTitle className="font-headline flex items-center gap-2"><Bell /> Notifications</CardTitle>
+                <CardDescription className="text-xs">Recent updates and mentions.</CardDescription>
+            </div>
+            {/* The DialogTrigger is now handled by the parent component logic */}
+        </CardHeader>
+        <CardContent>
+            <ul className="space-y-4">
+            {notifications.map((notification, index) => (
+                <li key={index}>
+                <Link href={notification.link} className="flex items-start space-x-4 p-2 -m-2 rounded-lg hover:bg-muted/50">
+                    <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-secondary rounded-full">
+                        {notification.icon}
+                    </div>
+                    <div className="flex-grow">
+                    <p className="text-sm">
+                        <span className="font-bold text-foreground">{notification.user}</span>{" "}
+                        {notification.action}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {notification.time}
+                    </p>
+                    </div>
+                </Link>
+                </li>
+            ))}
+            </ul>
+        </CardContent>
+    </Card>
+  );
+}
+
+export function NotificationCenterExpanded() {
+    return (
+        <Card className="h-full">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl flex items-center gap-2"><Bell/> All Notifications</CardTitle>
+                <CardDescription>Your latest notifications, mentions, and event updates.</CardDescription>
             </CardHeader>
             <CardContent>
-                <ul className="space-y-4">
-                {notifications.map((notification, index) => (
-                    <li key={index}>
-                    <Link href={notification.link} className="flex items-start space-x-4 p-2 -m-2 rounded-lg hover:bg-muted/50">
-                        <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-secondary rounded-full">
-                            {notification.icon}
-                        </div>
-                        <div className="flex-grow">
-                        <p className="text-sm">
-                            <span className="font-bold text-foreground">{notification.user}</span>{" "}
-                            {notification.action}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {notification.time}
-                        </p>
-                        </div>
-                    </Link>
-                    </li>
-                ))}
-                </ul>
+                <ScrollArea className="h-[70vh]">
+                    <ul className="space-y-2 pr-4 pt-4">
+                    {allNotifications.map((notification, index) => (
+                        <li key={index}>
+                        <Link href={notification.link} className="flex items-center space-x-4 p-3 -m-2 rounded-lg hover:bg-muted/50 border-b">
+                            <Avatar className="w-12 h-12 flex-shrink-0">
+                            <AvatarImage src={notification.avatar} alt={notification.user} data-ai-hint={notification.hint} />
+                            <AvatarFallback>{notification.user.substring(0, 2)}</AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex-grow">
+                            <p className="text-sm">
+                                <span className="font-bold text-foreground hover:underline">{notification.user}</span>{" "}
+                                {notification.action}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {notification.time}
+                            </p>
+                            </div>
+                        </Link>
+                        </li>
+                    ))}
+                    </ul>
+                </ScrollArea>
             </CardContent>
         </Card>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle className="font-headline flex items-center gap-2"><Bell/> All Notifications</DialogTitle>
-                <DialogDescription>Your latest notifications, mentions, and event updates.</DialogDescription>
-            </DialogHeader>
-            <ScrollArea className="h-96">
-                <ul className="space-y-2 pr-4 pt-4">
-                {allNotifications.map((notification, index) => (
-                    <li key={index}>
-                    <Link href={notification.link} className="flex items-center space-x-4 p-3 -m-2 rounded-lg hover:bg-muted/50 border-b">
-                        <Avatar className="w-12 h-12 flex-shrink-0">
-                           <AvatarImage src={notification.avatar} alt={notification.user} data-ai-hint={notification.hint} />
-                           <AvatarFallback>{notification.user.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
-
-                        <div className="flex-grow">
-                        <p className="text-sm">
-                            <span className="font-bold text-foreground hover:underline">{notification.user}</span>{" "}
-                            {notification.action}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {notification.time}
-                        </p>
-                        </div>
-                    </Link>
-                    </li>
-                ))}
-                </ul>
-            </ScrollArea>
-        </DialogContent>
-    </Dialog>
-  );
+    )
 }
