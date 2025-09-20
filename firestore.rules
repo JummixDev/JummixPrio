@@ -2,89 +2,30 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function for authentication
-    function isAuthenticated() {
-      return request.auth != null;
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
     }
 
-    // Rules for the 'users' collection
-    match /users/{userId} {
-      // Allow anyone to read public user profiles
-      allow read;
-      // Allow users to create their own profile document
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      // Allow users to update ONLY their own document
-      allow update: if isAuthenticated() && request.auth.uid == userId;
-      // Disallow deletion of user profiles for data integrity
-      allow delete: if false;
-
-      // Rules for user-specific subcollections
-      match /reviews/{reviewId} {
-        // Allow anyone to read reviews for a host
-        allow read;
-        // Only allow authenticated users to create reviews, and they can't review themselves
-        allow create: if isAuthenticated() && request.auth.uid == request.resource.data.reviewerId && request.resource.data.hostId != request.auth.uid;
-        // Generally, disallow updates/deletes to maintain review integrity
-        allow update, delete: if false;
-      }
-    }
-
-    // Rules for the 'events' collection
+    // Allow public read access to events, but only authenticated users can write them.
     match /events/{eventId} {
-      // Allow anyone to read event data
-      allow read;
-      // Allow verified hosts to create events
-      allow create: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerifiedHost == true;
-      // Allow the original host to update their own event
-      allow update: if isAuthenticated() && resource.data.hostUid == request.auth.uid;
-      // Disallow deletion of events for archival purposes
-      allow delete: if false;
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
     }
 
-    // Rules for the 'chats' collection
-    match /chats/{chatId} {
-      // Allow a user to get a chat document if they are a participant
-      allow get: if isAuthenticated() && request.auth.uid in resource.data.participantUids;
-      // Disallow listing all chats for security reasons
-      allow list: if false;
-      // Allow chat creation if the user is one of the participants
-      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.participantUids;
-
-      // Rules for the 'messages' subcollection within a chat
-      match /messages/{messageId} {
-        // Allow read/write of messages only if the user is a participant of the parent chat
-        allow read, create: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
-        // Disallow updates/deletes to preserve chat history
-        allow update, delete: if false;
-      }
+    // Users can read and write to their own user document
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
     }
-    
-    // Rules for 'bookings' collection
+
+    // Allow users to read their own bookings
     match /bookings/{bookingId} {
-        // A user can create a booking
-        allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-        // A user can read their own booking, a host can read bookings for their events
-        allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.hostId);
-        // Host can update status (approve/reject), user cannot update
-        allow update: if isAuthenticated() && request.auth.uid == resource.data.hostId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
-        // Disallow deletion
-        allow delete: if false;
-        // Allow a host to list bookings for their events
-        allow list: if isAuthenticated() && request.query.where.hostId == request.auth.uid;
+      allow read, create, update: if request.auth != null && request.auth.uid == resource.data.userId;
     }
-    
-     // Rules for the 'stories' collection
-    match /stories/{storyId} {
-      // Allow any authenticated user to read stories
-      allow read;
-      // Allow authenticated users to create their own stories
-      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
-      // Only the user who created the story can delete it
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      // Disallow updates to stories
-      allow update: if false;
+     match /bookings/{bookingId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.hostId;
     }
-
   }
 }
