@@ -45,14 +45,13 @@ export default function StoryArchivePage() {
                     <h1 className="text-xl font-bold ml-4">Story Archive</h1>
                 </div>
             </header>
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow pt-16">
+            <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow pt-16 pb-24">
                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {mockArchivedStories.map((story) => (
                         <StoryTile key={story.id} story={story} />
                     ))}
                 </div>
             </main>
-            <Footer />
         </div>
     );
 }

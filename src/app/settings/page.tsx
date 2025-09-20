@@ -548,7 +548,7 @@ export default function SettingsPage() {
           <h1 className="text-xl font-bold ml-4">Settings</h1>
         </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16 pb-24">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <aside className="md:col-span-1 md:sticky top-36">
                 <nav className="flex flex-col space-y-2">

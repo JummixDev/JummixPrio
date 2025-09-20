@@ -46,7 +46,7 @@ export default function FaqPage() {
               <h1 className="text-xl font-bold ml-4">Frequently Asked Questions (FAQ)</h1>
           </div>
       </header>
-      <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
+      <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 pt-16 pb-24">
         <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl font-bold font-headline mb-2 text-center">Do you have questions?</h2>
             <p className="text-muted-foreground mb-8 text-center">Here you will find answers to the most common questions about Jummix.</p>
@@ -63,7 +63,6 @@ export default function FaqPage() {
             </Accordion>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

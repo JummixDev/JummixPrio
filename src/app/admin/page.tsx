@@ -359,7 +359,7 @@ export default function AdminPage() {
                     <h1 className="text-xl font-bold ml-4">Admin Dashboard</h1>
                 </div>
             </header>
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
+            <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16 pb-24">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     <aside className="lg:col-span-1 lg:sticky lg:top-36">
                         <nav className="flex flex-col space-y-2">

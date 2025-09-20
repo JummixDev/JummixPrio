@@ -191,6 +191,3 @@ export function FriendsClient({ initialUsers }: { initialUsers: UserProfile[] })
     </div>
   );
 }
-
-
-
