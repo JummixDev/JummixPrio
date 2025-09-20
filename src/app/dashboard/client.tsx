@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventCard } from '@/components/jummix/EventCard';
-import { UserProfileCard } from '@/components/jummix/UserProfileCard';
 import { LiveActivityFeed } from '@/components/jummix/LiveActivityFeed';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
@@ -79,61 +78,59 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   }
 
   return (
-    <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Main Content */}
-        <div className="lg:col-span-8 space-y-8">
-            {/* Event Tabs */}
-            <Tabs defaultValue="upcoming" className="w-full">
-              <TabsList>
-                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                <TabsTrigger value="liked">Liked</TabsTrigger>
-                <TabsTrigger value="saved">Saved For You</TabsTrigger>
-              </TabsList>
-              <TabsContent value="upcoming" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {initialUpcomingEvents.length > 0 ? (
-                    initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
-                  ) : (
-                    <p className="text-muted-foreground col-span-full">No upcoming events right now. Check back soon!</p>
-                  )}
-                </div>
-              </TabsContent>
-              <TabsContent value="liked" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
-                    likedEvents.map(event => <EventCard key={event.id} event={event} />)
-                  ) : (
-                    <p className="text-muted-foreground col-span-full">You haven't liked any events yet. Start exploring!</p>
-                  )}
-                </div>
-              </TabsContent>
-              <TabsContent value="saved" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
-                    savedEvents.map(event => <EventCard key={event.id} event={event} />)
-                  ) : (
-                    <p className="text-muted-foreground col-span-full">You have no saved events. Bookmark events to see them here.</p>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <UserPostsFeed />
-                <PeopleNearby />
+    <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24 space-y-8">
+        {/* Event Stories Reel */}
+        <div className="w-full">
+            <EventReels />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Main Content (Events) */}
+            <div className="lg:col-span-8 space-y-8">
+                <Tabs defaultValue="upcoming" className="w-full">
+                    <TabsList>
+                        <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                        <TabsTrigger value="liked">Liked</TabsTrigger>
+                        <TabsTrigger value="saved">Saved For You</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="upcoming" className="mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {initialUpcomingEvents.length > 0 ? (
+                            initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
+                        ) : (
+                            <p className="text-muted-foreground col-span-full">No upcoming events right now. Check back soon!</p>
+                        )}
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="liked" className="mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
+                            likedEvents.map(event => <EventCard key={event.id} event={event} />)
+                        ) : (
+                            <p className="text-muted-foreground col-span-full">You haven't liked any events yet. Start exploring!</p>
+                        )}
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="saved" className="mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
+                            savedEvents.map(event => <EventCard key={event.id} event={event} />)
+                        ) : (
+                            <p className="text-muted-foreground col-span-full">You have no saved events. Bookmark events to see them here.</p>
+                        )}
+                        </div>
+                    </TabsContent>
+                </Tabs>
             </div>
 
+            {/* Right Sidebar (Feeds) */}
+            <div className="lg:col-span-4 space-y-8">
+                <UserPostsFeed />
+                <PeopleNearby />
+                <LiveActivityFeed />
+                <NotificationCenter />
+            </div>
         </div>
-
-        {/* Right Sidebar */}
-        <div className="lg:col-span-4 space-y-8">
-          <UserProfileCard />
-          <LiveActivityFeed />
-          <EventReels />
-          <NotificationCenter />
-        </div>
-      </div>
     </main>
   );
 }
