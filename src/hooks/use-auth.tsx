@@ -23,6 +23,7 @@ import {
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, serverTimestamp, updateDoc } from "firebase/firestore"; 
 import { uploadFile } from '@/services/storage';
+import { useRouter } from 'next/navigation';
 
 interface UserProfileData {
   uid: string;
@@ -66,17 +67,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      if (!user) {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
+      if (user) {
+        setUser(user);
+        // First, get the document once to ensure we have initial data
+        const userDocRef = doc(db, "users", user.uid);
+        try {
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const initialUserData = userDocSnap.data() as UserProfileData;
+            setUserData(initialUserData);
+          } else {
+            // If the document doesn't exist, create it.
+            const newUserData = await createUserDocument(user);
+            setUserData(newUserData);
+          }
+        } catch (error) {
+            console.error("Error fetching user document:", error);
+        }
+
+      } else {
+        setUser(null);
         setUserData(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
-    return () => unsubscribe();
+
+    return () => unsubscribeAuth();
   }, []);
+
+  useEffect(() => {
+    // Set up the real-time listener only if a user is logged in.
+    if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const unsubscribeSnapshot = onSnapshot(userDocRef, (doc) => {
+            if (doc.exists()) {
+                setUserData(doc.data() as UserProfileData);
+            }
+        }, (error) => {
+            console.error("Error with onSnapshot listener:", error);
+        });
+        return () => unsubscribeSnapshot();
+    }
+  }, [user]);
 
   const createUserDocument = async (user: User): Promise<UserProfileData> => {
     const userDocRef = doc(db, "users", user.uid);
@@ -110,26 +147,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return userDocSnap.data() as UserProfileData;
   };
 
-  useEffect(() => {
-    if (user) {
-      const userDocRef = doc(db, "users", user.uid);
-      const unsubscribe = onSnapshot(userDocRef, (doc) => {
-        if (doc.exists()) {
-          setUserData(doc.data() as UserProfileData);
-        } else {
-          createUserDocument(user).then(setUserData);
-        }
-        setLoading(false);
-      }, (error) => {
-        console.error("Error with onSnapshot:", error);
-        setLoading(false);
-      });
-      return () => unsubscribe();
-    } else {
-      // If user is null, we are not loading anymore.
-      setLoading(false);
-    }
-  }, [user]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
