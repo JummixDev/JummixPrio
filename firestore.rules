@@ -1,67 +1,67 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
+
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-
+    
+    // USERS
+    // Users can be created by anyone (during signup).
+    // Users can only read or update their own profile.
     match /users/{userId} {
-      // Anyone can read public user profiles.
-      // The owner of a document can update it, and create it.
-      allow read: if true;
-      allow update, create: if isAuthenticated() && isOwner(userId);
+      allow create;
+      allow read, update: if isAuthenticated() && isOwner(userId);
 
-      // Subcollection for reviews on a host
+      // Reviews are a subcollection of a host's user profile
       match /reviews/{reviewId} {
-        // Anyone authenticated can write a review about a host.
-        // Only the review author can update/delete their own review.
-        allow read: if true;
-        allow create: if isAuthenticated();
-        allow update, delete: if isAuthenticated() && isOwner(resource.data.reviewerId);
+        allow create: if isAuthenticated(); // Allow any authenticated user to create a review
+        allow read; // Allow anyone to read reviews
       }
     }
-    
+
+    // EVENTS
+    // Events can be read by anyone.
+    // Events can only be created, updated, or deleted by authenticated users
+    // who are the designated host of the event.
     match /events/{eventId} {
-        // Events are public to everyone.
-        // Only authenticated users can create events (via a server-side action that sets hostUid).
-        // Only the host who owns the event can update it.
-        allow read: if true;
-        allow create: if isAuthenticated();
-        allow update: if isAuthenticated() && request.auth.uid == resource.data.hostUid;
+      allow read;
+      allow create: if isAuthenticated() && request.resource.data.hostUid == request.auth.uid;
+      allow update: if isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.hostUid == request.auth.uid;
     }
 
-    match /chats/{chatId} {
-        // A user can read a chat document if their UID is in the participantUids array.
-        // List queries are insecure here, so we only allow direct gets.
-        allow get: if isAuthenticated() && request.auth.uid in resource.data.participantUids;
-
-        match /messages/{messageId} {
-            // A user can read/write messages in a chat if they are a participant.
-            allow read, create: if isAuthenticated() && get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids.hasAny([request.auth.uid]);
-        }
-    }
-    
+    // STORIES
+    // Stories can be read by any authenticated user.
+    // A user can only create stories for themselves.
     match /stories/{storyId} {
-        // Anyone authenticated can see stories.
-        // Only the user who created the story can create, update or delete it.
-        allow read: if isAuthenticated();
-        allow create, update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // BOOKINGS
+    // Users can create bookings for themselves.
+    // Users can read/update their own bookings.
+    // Hosts can read bookings associated with them.
+    match /bookings/{bookingId} {
+      allow create, read, update: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow list: if isAuthenticated() && request.query.where.hostId == request.auth.uid;
+      allow get: if isAuthenticated() && (resource.data.userId == request.auth.uid || resource.data.hostId == request.auth.uid);
     }
     
-    match /bookings/{bookingId} {
-        // The user who made the booking or the host of the event can read the booking.
-        allow read: if isAuthenticated() && (isOwner(resource.data.userId) || request.auth.uid == resource.data.hostId);
-        // A user can create a booking for themselves.
-        allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-        // The host can update the booking status (approve/reject).
-        allow update: if isAuthenticated() && request.auth.uid == resource.data.hostId;
+    // CHATS
+    // Only participants of a chat can read or write messages to it.
+    match /chats/{chatId} {
+      allow get: if isAuthenticated() && request.auth.uid in resource.data.participantUids;
+      
+      match /messages/{messageId} {
+        allow read, create: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
+      }
     }
   }
 }
