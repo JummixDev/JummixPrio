@@ -88,24 +88,36 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
 
   // Define all possible widgets for the dynamic sections
   const allWidgets = useMemo(() => [
+      { id: 'events', 
+        compact: (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {initialUpcomingEvents.slice(0,3).map(event => <EventCard key={event.id} event={event} />)}
+            </div>
+        ), 
+        expanded: (
+            <EventListWidget 
+                initialUpcomingEvents={initialUpcomingEvents}
+                likedEvents={likedEvents}
+                savedEvents={savedEvents}
+                loadingInteractions={loadingInteractions}
+            />
+        ) 
+      },
       { id: 'leaderboard', compact: <Leaderboard />, expanded: <LeaderboardExpanded /> },
       { id: 'badges', compact: <Badges />, expanded: <BadgesExpanded /> },
       { id: 'people-nearby', compact: <PeopleNearby />, expanded: <PeopleNearbyExpanded /> },
       { id: 'activity', compact: <LiveActivityFeed />, expanded: <LiveActivityFeedExpanded /> },
       { id: 'posts', compact: <UserPostsFeed />, expanded: <UserPostsFeedExpanded /> },
       { id: 'notifications', compact: <NotificationCenter />, expanded: <NotificationCenterExpanded /> },
-  ], []);
+  ], [initialUpcomingEvents, likedEvents, savedEvents, loadingInteractions]);
 
   // Shuffle widgets once on component mount
   const shuffledWidgets = useMemo(() => {
     const shuffled = shuffleArray([...allWidgets]);
     return {
-        // Widget for next to the stories
+        mainWidget: shuffled.pop(),
         topWidget: shuffled.pop(),
-        // Widget for the full-width slot below events
-        fullWidthWidget: shuffled.pop(),
-        // The rest are for the sidebar
-        sidebarWidgets: shuffled, 
+        sidebarWidgets: shuffled,
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -167,21 +179,12 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Main Content Area */}
+            {/* Main Content Area - Shows one expanded widget */}
             <div className="lg:col-span-8 space-y-8">
-                {/* Fixed Event List Widget */}
-                <EventListWidget 
-                    initialUpcomingEvents={initialUpcomingEvents} 
-                    savedEvents={savedEvents} 
-                    likedEvents={likedEvents} 
-                    loadingInteractions={loadingInteractions}
-                />
-
-                {/* Random Full-Width Widget */}
-                {shuffledWidgets.fullWidthWidget?.expanded}
+                {shuffledWidgets.mainWidget?.expanded}
             </div>
 
-             {/* Right Sidebar */}
+             {/* Right Sidebar - Shows the rest of the widgets, compact */}
              <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
                 {shuffledWidgets.sidebarWidgets.map(widget => (
                     <React.Fragment key={widget.id}>
