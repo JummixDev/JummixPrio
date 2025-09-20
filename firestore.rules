@@ -2,7 +2,7 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
+
     // Helper Functions
     function isSignedIn() {
       return request.auth != null;
@@ -11,111 +11,91 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-
+    
     function isAdmin() {
-      return request.auth.token.email == 'service@jummix.com';
+        return request.auth.token.email == 'service@jummix.com';
     }
-
+    
     function isVerifiedHost() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerifiedHost == true;
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerifiedHost == true;
     }
     
-    // Function to check if a user can update their own profile.
-    function canUpdateProfile(request, resource) {
-        let allowedFields = ['displayName', 'photoURL', 'bio', 'interests', 'likedEvents', 'savedEvents', 'fcmTokens', 'onboardingComplete'];
-        let incomingKeys = request.resource.data.keys();
-        // The user can only change fields that are in the allowedFields list
-        return incomingKeys.hasOnly(allowedFields);
-    }
+    // --- Collections ---
     
-     // Function to check if a user is applying to be a host.
-    function isApplyingToBeHost(request, resource) {
-        // This is true if the only field being changed is hostApplicationStatus to 'pending'.
-        return request.resource.data.keys().hasAll(['hostApplicationStatus']) &&
-               request.resource.data.hostApplicationStatus == 'pending';
-    }
-    
-     // Function to check if an admin is updating verification status.
-    function isAdminManagingHost(request, resource) {
-        return isAdmin() && 
-               request.resource.data.keys().hasAny(['isVerifiedHost', 'hostApplicationStatus']);
-    }
-
-    // --- Collections Rules ---
+    // Users Collection
     match /users/{userId} {
-      // Anyone can read user profiles.
-      allow read: if isSignedIn();
+      // READ: Anyone can read user profiles.
+      allow read: if true;
       
-      // A user can create their own document.
-      allow create: if isOwner(userId);
+      // CREATE: A user can only create their own profile document.
+      allow create: if isSignedIn() && isOwner(userId);
       
-      // A user can update their own profile with allowed fields,
-      // or if they are applying to be a host,
-      // or if an admin is managing their host status.
-      allow update: if isSignedIn() && isOwner(userId) && (canUpdateProfile(request, resource) || isApplyingToBeHost(request, resource));
-      allow update: if isAdmin() && (isAdminManagingHost(request, resource) || request.resource.data.keys().hasAny(['status']));
-
-      // No one can delete user profiles for now.
+      // UPDATE: 
+      // - An admin can update any user profile.
+      // - A user can only update their own profile.
+      // - A user cannot make themselves a verified host or change their application status directly.
+      allow update: if (isSignedIn() && isOwner(userId)
+                      && !('isVerifiedHost' in request.resource.data)
+                      && !('hostApplicationStatus' in request.resource.data && request.resource.data.hostApplicationStatus != 'pending'))
+                    || isAdmin();
+      
+      // DELETE: Not allowed for now.
       allow delete: if false;
 
-      // Reviews subcollection
+      // Reviews Sub-collection
       match /reviews/{reviewId} {
         allow read: if true;
-        allow create: if isSignedIn();
-        allow update, delete: if false; // No editing/deleting reviews for now
+        allow create: if isSignedIn(); // Any signed-in user can leave a review.
+        allow update, delete: if false; // Reviews are immutable.
       }
     }
 
+    // Events Collection
     match /events/{eventId} {
-      // Anyone can read events.
+      // READ: Anyone can read event data.
       allow read: if true;
-      
-      // Only verified hosts can create events.
+
+      // CREATE: Only signed-in, verified hosts can create events.
       allow create: if isSignedIn() && isVerifiedHost();
       
-      // Only the host who created the event can update or delete it.
+      // UPDATE, DELETE: Only the host who created the event can update or delete it.
       allow update, delete: if isSignedIn() && resource.data.hostUid == request.auth.uid;
     }
 
-    match /bookings/{bookingId} {
-        // User can create their own booking request. bookingId is userId_eventId
-        allow create: if isSignedIn() && request.auth.uid == bookingId.split('_')[0];
-        
-        // The user who made the booking or the host of the event can read it.
-        allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.hostId);
-        
-        // The host can update the status (e.g., to 'approved').
-        allow update: if isSignedIn() && request.auth.uid == resource.data.hostId;
-        
-        allow delete: if false;
-    }
-
+    // Chats Collection
     match /chats/{chatId} {
-      // Users can only access chats they are a participant of.
-      allow read, create: if isSignedIn() && request.auth.uid in resource.data.participantUids;
+      // READ, WRITE: Only participants of the chat can read or write to the chat document.
+      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participantUids;
       
-      // Only participants can update a chat (e.g., last message).
-      allow update: if isSignedIn() && request.auth.uid in resource.data.participantUids;
-
+      // Messages Sub-collection
       match /messages/{messageId} {
-        // Read: Only participants of the chat can read messages.
-        allow read: if isSignedIn() && get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids.hasAny([request.auth.uid]);
-        
-        // Create: Only participants of the chat can create messages.
-        allow create: if isSignedIn() && get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids.hasAny([request.auth.uid])
-                      && request.resource.data.senderUid == request.auth.uid;
-                      
-        allow update, delete: if false;
+          // READ, CREATE: Only participants can read or create messages.
+          allow read, create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
+          
+          // UPDATE, DELETE: Messages are immutable.
+          allow update, delete: if false;
       }
     }
-    
+
+    // Bookings Collection
+    match /bookings/{bookingId} {
+        // READ: The user who made the booking or the host of the event can read it.
+        allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.hostId);
+        
+        // CREATE: A user can only create a booking for themselves.
+        allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+        
+        // UPDATE: Only the host can update the status (e.g., to approve/reject).
+        allow update: if isSignedIn() && request.auth.uid == resource.data.hostId;
+    }
+
+    // Stories Collection
     match /stories/{storyId} {
         allow read: if true;
-        // Only verified hosts can create stories
+        // CREATE: Only verified hosts can create stories.
         allow create: if isSignedIn() && isVerifiedHost();
-        // Only the creator of the story can delete it
-        allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-        allow update: if false;
+        // UPDATE, DELETE: Only the user who created the story can manage it.
+        allow update, delete: if isSignedIn() && request.auth.uid == resource.data.userId;
     }
   }
 }
