@@ -206,25 +206,19 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
   return (
     <div className="bg-secondary/20 min-h-screen flex flex-col">
        <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
             <Button variant="ghost" size="icon" onClick={handleBackClick}>
                 <ArrowLeft />
             </Button>
-            <div className="ml-4 flex-grow">
-                 <h1 className="text-xl font-bold ml-4 truncate">
-                    {view === 'explore' && 'Discover Events'}
-                    {view === 'friends' && 'Discover People'}
-                    {view === 'chats' && 'Your Conversations'}
-                </h1>
-            </div>
+            
             {view === 'explore' && (
-                <Button onClick={() => setView('friends')} className="ml-auto">
-                    Friends <Users className="ml-2 h-4 w-4" />
+                <Button onClick={() => setView('friends')} variant="outline" className="ml-auto">
+                    Gehe zu Friends <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             )}
              {view === 'friends' && (
-                <Button onClick={() => setView('chats')} className="ml-auto">
-                    Messages <MessageSquare className="ml-2 h-4 w-4" />
+                <Button onClick={() => setView('chats')} variant="outline" className="ml-auto">
+                    Gehe zu Messages <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             )}
         </div>
