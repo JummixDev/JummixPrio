@@ -391,8 +391,12 @@ export async function completeOnboardingProfile(userId: string, data: Onboarding
     // Check if username is already taken by ANOTHER user
     const usernameQuery = query(collection(db, "users"), where("username", "==", validation.data.username));
     const usernameSnapshot = await getDocs(usernameQuery);
-    if (!usernameSnapshot.empty && usernameSnapshot.docs[0].id !== userId) {
-        return { success: false, error: "This username is already taken. Please choose another one." };
+    if (!usernameSnapshot.empty) {
+        // Check if the found user is the current user. If it is, it's fine. If not, it's an error.
+        const isTakenByAnotherUser = usernameSnapshot.docs.some(doc => doc.id !== userId);
+        if (isTakenByAnotherUser) {
+            return { success: false, error: "This username is already taken. Please choose another one." };
+        }
     }
 
 
@@ -458,3 +462,4 @@ export async function updateHostVerification(userId: string, action: 'approve' |
     
 
     
+
