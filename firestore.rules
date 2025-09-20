@@ -1,51 +1,67 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Default deny all
+    
+    // Default deny all access unless explicitly allowed by rules below
     match /{document=**} {
       allow read, write: if false;
     }
     
-    // Allow public read on events
+    // USERS:
+    // Allow anyone to read a user's public profile.
+    // Allow users to create and update their own profile.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+      
+      // Allow users to read their own reviews subcollection
+      match /reviews/{reviewId} {
+        allow read: if request.auth.uid == userId;
+        allow create: if request.auth.uid == request.resource.data.reviewerId;
+      }
+    }
+    
+    // EVENTS:
+    // Allow any authenticated user to read events.
+    // Allow verified hosts to create events.
+    // Allow the host who created the event to update it.
     match /events/{eventId} {
-      allow read: if true;
-      allow create, update, delete: if request.auth != null;
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerifiedHost == true;
+      allow update: if request.auth != null && request.resource.data.hostUid == request.auth.uid;
     }
 
-    // Users can read/write their own data
-    match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    // CHATS & MESSAGES:
+    // Allow users to read/write chats they are a participant in.
+    match /chats/{chatId} {
+        allow read, update: if request.auth != null && request.auth.uid in resource.data.participantUids;
+        
+        // Allow participants to write messages.
+        match /messages/{messageId} {
+            allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
+        }
     }
     
-    // Users can read/write their own reviews
-    match /users/{userId}/reviews/{reviewId} {
-       allow read: if true;
-       allow write: if request.auth != null && request.auth.uid == resource.data.reviewerId;
-    }
-    
-    // Users can read/write their own stories
-    match /stories/{storyId} {
-       allow read: if true;
-       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-    
-    // Users can read/write their own bookings
+    // BOOKINGS:
+    // Allow users to create their own booking.
+    // Allow users and the host to read the booking.
+    // Allow the host to update the status of the booking.
     match /bookings/{bookingId} {
-        allow read, write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+        allow read: if request.auth != null && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.hostId);
+        allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
         allow update: if request.auth != null && request.auth.uid == resource.data.hostId;
     }
     
-    // Chats: Allow read/write for participants of the chat
-    match /chats/{chatId} {
-      allow read, write: if request.auth != null && request.auth.uid in resource.data.participantUids;
+    // STORIES:
+    // Allow authenticated users to read stories.
+    // Allow verified hosts to create stories.
+    match /stories/{storyId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerifiedHost == true;
     }
-    
-    // Chat Messages: Allow read/write for participants of the parent chat
-    match /chats/{chatId}/messages/{messageId} {
-      allow read, write: if request.auth != null && get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids.hasAny([request.auth.uid]);
-    }
+
   }
 }
