@@ -108,7 +108,7 @@ export function GlobalHeader() {
             
             <div className="flex items-center gap-2">
                <Button asChild variant="ghost" className="hidden sm:inline-flex">
-                <Link href="/dashboard">
+                <Link href="/explore">
                   <Compass/>
                   Explore
                 </Link>
@@ -231,5 +231,3 @@ export function GlobalHeader() {
       </header>
   )
 }
-
-    

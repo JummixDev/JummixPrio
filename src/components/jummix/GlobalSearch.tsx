@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Search, Calendar, User, Building, Loader2, X } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -127,28 +127,29 @@ export function GlobalSearch() {
 
   return (
     <div ref={containerRef} className="relative w-full max-w-md">
-      <div 
-        className={cn(
-            "relative flex items-center h-10 w-full rounded-full border bg-secondary transition-all duration-300 ease-in-out",
-            open ? "bg-background shadow-md" : "hover:bg-muted"
-        )}>
-        <div className="pl-4 pr-2 absolute left-0 top-0 bottom-0 flex items-center">
-            <Search className={cn("h-5 w-5 text-muted-foreground transition-colors", open && "text-primary")} />
-        </div>
-        <input
-            ref={inputRef}
-            value={searchTerm}
-            onFocus={() => setOpen(true)}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search events, people..."
-            className="h-full w-full bg-transparent pl-12 pr-4 text-sm outline-none placeholder:text-muted-foreground"
-        />
-        {searchTerm && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full absolute right-1" onClick={() => setSearchTerm('')}>
-                <X className="h-4 w-4"/>
+        {!open && (
+            <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground" onClick={() => setOpen(true)}>
+                <Search className="mr-2" />
+                Search...
             </Button>
         )}
-      </div>
+        <div className={cn("relative transition-all duration-300 ease-in-out", open ? "opacity-100" : "opacity-0 pointer-events-none")}>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
+                <Search className="h-5 w-5 text-primary" />
+            </div>
+            <input
+                ref={inputRef}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search events, people..."
+                className="h-10 w-full rounded-full border bg-background pl-12 pr-10 text-sm outline-none placeholder:text-muted-foreground"
+            />
+            {searchTerm && (
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full absolute right-1 top-1" onClick={() => setSearchTerm('')}>
+                    <X className="h-4 w-4"/>
+                </Button>
+            )}
+        </div>
 
       {open && (
         <div className="absolute top-full mt-2 w-full">
@@ -191,5 +192,3 @@ export function GlobalSearch() {
     </div>
   );
 }
-
-    
