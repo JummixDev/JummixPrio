@@ -2,49 +2,59 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper function to check if a user is a verified host
-    function isHost(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data.isVerifiedHost == true;
+
+    // Helper function to check if a user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // USER-Collection
-    // Jeder darf Profile lesen.
-    // Nur der authentifizierte Benutzer darf sein eigenes Profil bearbeiten.
-    // Das Erstellen von Benutzerdokumenten wird durch die createUserDocument Funktion in der App gesteuert.
+    // Helper function to check if the request is from the owner of the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users can be read by anyone, but only the user themselves can write to their own document.
     match /users/{userId} {
       allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
-      // Löschen von Benutzern sollte nur über eine Admin-Funktion erfolgen
-      allow delete: if false; 
-    }
+      allow write: if isSignedIn() && isOwner(userId);
 
-    // EVENTS-Collection
-    // Jeder darf Events lesen.
-    // Nur verifizierte Hosts dürfen Events erstellen.
-    // Nur der Host, dem das Event gehört, darf es bearbeiten.
-    match /events/{eventId} {
-      allow read: if true;
-      allow create: if request.auth != null && isHost(request.auth.uid);
-      allow update: if request.auth != null && request.auth.uid == resource.data.hostUid;
-      // Löschen nur durch den Host oder einen Admin
-      allow delete: if request.auth != null && request.auth.uid == resource.data.hostUid;
+      // Reviews for a host can be read by anyone, written only by signed-in users.
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow create: if isSignedIn();
+      }
     }
     
-    // CHATS-Collection
-    // Lesen und Schreiben von Chat-Metadaten nur für Teilnehmer
+    // Stories can be read by anyone, but only created by authenticated users.
+    match /stories/{storyId} {
+        allow read: if true;
+        allow create: if isSignedIn();
+    }
+    
+    // Events can be read by anyone.
+    // Events can be created/updated/deleted only by the user specified in the hostUid field.
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.hostUid == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.hostUid == request.auth.uid;
+    }
+
+    // Chat messages can only be read/written by participants of the chat.
     match /chats/{chatId} {
-      allow read, update: if request.auth != null && request.auth.uid in resource.data.participantUids;
-      allow create: if request.auth != null; // Jeder kann einen Chat initiieren
-      
-      // MESSAGES-Sub-Collection
-      // Lesen und Schreiben von Nachrichten nur für Teilnehmer des Chats
+      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participantUids;
+
       match /messages/{messageId} {
-        allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
-        // Nachrichten können nicht bearbeitet oder gelöscht werden
-        allow update, delete: if false; 
+        allow read, write: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
       }
+    }
+    
+    // Bookings can be read by the user who made it or the host.
+    // A user can create a booking for themselves.
+    // A host can update the status of a booking.
+    match /bookings/{bookingId} {
+        allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.hostId);
+        allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+        allow update: if isSignedIn() && request.auth.uid == resource.data.hostId;
     }
   }
 }
