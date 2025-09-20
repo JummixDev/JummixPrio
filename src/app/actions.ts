@@ -388,7 +388,7 @@ export async function completeOnboardingProfile(userId: string, data: Onboarding
         };
     }
     
-    // Check if username is already taken
+    // Check if username is already taken by ANOTHER user
     const usernameQuery = query(collection(db, "users"), where("username", "==", validation.data.username));
     const usernameSnapshot = await getDocs(usernameQuery);
     if (!usernameSnapshot.empty && usernameSnapshot.docs[0].id !== userId) {
