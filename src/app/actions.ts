@@ -121,9 +121,19 @@ export async function toggleEventInteraction(userId: string, eventId: string, ty
         const currentList = userData[field] || [];
         const isInteracted = currentList.includes(eventId);
 
-        await updateDoc(userRef, {
-            [field]: isInteracted ? arrayRemove(eventId) : arrayUnion(eventId)
-        });
+        const updateData: { [key: string]: any } = {};
+
+        if (isInteracted) {
+            updateData[field] = arrayRemove(eventId);
+        } else {
+            // Ensure the field exists before trying to union
+            if (!userData[field]) {
+                 await updateDoc(userRef, { [field]: [] });
+            }
+            updateData[field] = arrayUnion(eventId);
+        }
+
+        await updateDoc(userRef, updateData);
 
         return { success: true, newState: !isInteracted };
     } catch (error) {
