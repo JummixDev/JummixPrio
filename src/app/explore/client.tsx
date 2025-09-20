@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users, ArrowRight, MessageSquare, UserPlus, Check, UserCheck } from 'lucide-react';
+import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users, ArrowRight, MessageSquare, UserPlus, Check, UserCheck, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import {
@@ -308,6 +308,14 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                         <Button onClick={() => setView('friends')}>
                             <Users className="mr-0 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Friends</span>
                         </Button>
+                        {(userData?.isVerifiedHost || userData?.email === 'service@jummix.com') && (
+                            <Button asChild>
+                                <Link href="/host/create-event">
+                                <PlusCircle className="mr-0 sm:mr-2 h-4 w-4" />
+                                <span className="hidden sm:inline">Create Event</span>
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
                 
