@@ -59,16 +59,11 @@ export function PeopleNearby({ onZoom }: { onZoom: () => void }) {
 export function PeopleNearbyExpanded() {
   return (
     <Card className="h-full flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="font-headline text-2xl flex items-center gap-2"><Users /> All People Nearby</CardTitle>
-            <CardDescription>Discover all people in your vicinity.</CardDescription>
-          </div>
-          <Button asChild>
-            <Link href="/friends">
-              <Compass className="mr-2"/> Discover More
+         <CardHeader>
+            <Link href="/friends" className="block p-2 -m-2 rounded-lg hover:bg-muted/50">
+                <CardTitle className="font-headline text-2xl flex items-center gap-2"><Users /> All People Nearby</CardTitle>
+                <CardDescription>Discover all people in your vicinity and find new friends.</CardDescription>
             </Link>
-          </Button>
         </CardHeader>
         <CardContent className="flex-grow p-0">
             <ScrollArea className="h-full">

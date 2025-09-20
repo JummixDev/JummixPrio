@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventCard } from '@/components/jummix/EventCard';
 import { LiveActivityFeed, LiveActivityFeedExpanded } from '@/components/jummix/LiveActivityFeed';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, Calendar, Loader2 } from 'lucide-react';
+import { ArrowUpRight, Calendar, Compass, Loader2 } from 'lucide-react';
 import { collection, getDocs, query, where, documentId, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PeopleNearby, PeopleNearbyExpanded } from '@/components/jummix/PeopleNearby';
@@ -30,42 +30,50 @@ type DashboardClientProps = {
 };
 
 const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, loadingInteractions }: { initialUpcomingEvents: Event[], savedEvents: Event[], likedEvents: Event[], loadingInteractions: boolean }) => (
-    <div className='col-span-12 h-full'>
-        <Tabs defaultValue="upcoming" className="w-full h-full flex flex-col">
-            <TabsList>
-                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                <TabsTrigger value="liked">Liked</TabsTrigger>
-                <TabsTrigger value="saved">Saved For You</TabsTrigger>
-            </TabsList>
-            <TabsContent value="upcoming" className="mt-6 flex-grow">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {initialUpcomingEvents.length > 0 ? (
-                    initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
-                ) : (
-                    <p className="text-muted-foreground col-span-full">No upcoming events right now. Check back soon!</p>
-                )}
-                </div>
-            </TabsContent>
-            <TabsContent value="liked" className="mt-6 flex-grow">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
-                    likedEvents.map(event => <EventCard key={event.id} event={event} />)
-                ) : (
-                    <p className="text-muted-foreground col-span-full">You haven't liked any events yet. Start exploring!</p>
-                )}
-                </div>
-            </TabsContent>
-            <TabsContent value="saved" className="mt-6 flex-grow">
+    <Card className="h-full flex flex-col">
+         <CardHeader>
+            <Link href="/explore" className="block p-2 -m-2 rounded-lg hover:bg-muted/50">
+                 <CardTitle className="font-headline text-2xl flex items-center gap-2"><Compass /> Discover Events</CardTitle>
+                <CardDescription>Find your next great experience from our curated list of events.</CardDescription>
+            </Link>
+        </CardHeader>
+        <CardContent className='col-span-12 h-full flex-grow'>
+            <Tabs defaultValue="upcoming" className="w-full h-full flex flex-col">
+                <TabsList>
+                    <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                    <TabsTrigger value="liked">Liked</TabsTrigger>
+                    <TabsTrigger value="saved">Saved For You</TabsTrigger>
+                </TabsList>
+                <TabsContent value="upcoming" className="mt-6 flex-grow">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
-                    savedEvents.map(event => <EventCard key={event.id} event={event} />)
-                ) : (
-                    <p className="text-muted-foreground col-span-full">You have no saved events. Bookmark events to see them here.</p>
-                )}
-                </div>
-            </TabsContent>
-        </Tabs>
-    </div>
+                    {initialUpcomingEvents.length > 0 ? (
+                        initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
+                    ) : (
+                        <p className="text-muted-foreground col-span-full">No upcoming events right now. Check back soon!</p>
+                    )}
+                    </div>
+                </TabsContent>
+                <TabsContent value="liked" className="mt-6 flex-grow">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
+                        likedEvents.map(event => <EventCard key={event.id} event={event} />)
+                    ) : (
+                        <p className="text-muted-foreground col-span-full">You haven't liked any events yet. Start exploring!</p>
+                    )}
+                    </div>
+                </TabsContent>
+                <TabsContent value="saved" className="mt-6 flex-grow">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
+                        savedEvents.map(event => <EventCard key={event.id} event={event} />)
+                    ) : (
+                        <p className="text-muted-foreground col-span-full">You have no saved events. Bookmark events to see them here.</p>
+                    )}
+                    </div>
+                </TabsContent>
+            </Tabs>
+        </CardContent>
+    </Card>
 );
 
 

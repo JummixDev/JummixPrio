@@ -53,8 +53,10 @@ export function LeaderboardExpanded() {
   return (
      <Card className="h-full flex flex-col">
         <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-2"><Trophy className="text-primary"/> Community Leaderboard</CardTitle>
-            <CardDescription>See who's making the biggest impact in the Jummix community.</CardDescription>
+            <Link href="/achievements" className="block p-2 -m-2 rounded-lg hover:bg-muted/50">
+                <CardTitle className="font-headline text-2xl flex items-center gap-2"><Trophy className="text-primary"/> Community Leaderboard</CardTitle>
+                <CardDescription>See who's making the biggest impact in the Jummix community.</CardDescription>
+            </Link>
         </CardHeader>
         <CardContent className="flex-grow">
             <ScrollArea className="h-full">
