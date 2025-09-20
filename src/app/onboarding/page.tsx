@@ -154,7 +154,7 @@ export default function OnboardingPage() {
                                 <FormItem className="flex flex-col items-center space-y-4">
                                     <FormLabel>Profile Picture</FormLabel>
                                     <FormControl>
-                                        <>
+                                        <div className="flex flex-col items-center space-y-4">
                                             <Avatar className="w-32 h-32 border-4 border-muted ring-2 ring-ring">
                                                 <AvatarImage src={imagePreview || undefined} />
                                                 <AvatarFallback>
@@ -172,7 +172,7 @@ export default function OnboardingPage() {
                                                 <ImageIcon className="mr-2 h-4 w-4" />
                                                 Upload Profile Photo
                                             </Button>
-                                        </>
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -251,5 +251,7 @@ export default function OnboardingPage() {
         </div>
     );
 }
+
+    
 
     
