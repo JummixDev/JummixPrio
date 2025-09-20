@@ -121,21 +121,19 @@ export async function toggleEventInteraction(userId: string, eventId: string, ty
         const currentList = userData[field] || [];
         const isInteracted = currentList.includes(eventId);
 
-        const updateData: { [key: string]: any } = {};
-
         if (isInteracted) {
-            updateData[field] = arrayRemove(eventId);
+            // If it's already in the array, remove it.
+            await updateDoc(userRef, {
+                [field]: arrayRemove(eventId)
+            });
+            return { success: true, newState: false };
         } else {
-            // Ensure the field exists before trying to union
-            if (!userData[field]) {
-                 await updateDoc(userRef, { [field]: [] });
-            }
-            updateData[field] = arrayUnion(eventId);
+            // If it's not in the array, add it.
+            await updateDoc(userRef, {
+                [field]: arrayUnion(eventId)
+            });
+            return { success: true, newState: true };
         }
-
-        await updateDoc(userRef, updateData);
-
-        return { success: true, newState: !isInteracted };
     } catch (error) {
         console.error(`Error toggling ${type} event:`, error);
         return { success: false, error: `Failed to update your ${type} list.` };
