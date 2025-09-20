@@ -10,7 +10,7 @@ async function getUpcomingEvents(): Promise<Event[]> {
             collection(db, "events"), 
             where("date", ">=", new Date().toISOString().split('T')[0]),
             orderBy("date", "asc"),
-            limit(10)
+            limit(9)
         );
         const querySnapshot = await getDocs(q);
         const events = querySnapshot.docs.map(doc => {

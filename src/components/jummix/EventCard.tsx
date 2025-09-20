@@ -64,15 +64,6 @@ export function EventCard({ event }: EventCardProps) {
         if (type === 'saved') setIsSaved(prev => !prev);
         
         toast({ variant: 'destructive', title: 'Error', description: result.error });
-    } else {
-        const actionVerb = type === 'liked' ? 'Liked' : 'Saved';
-        const pastTenseVerb = type === 'liked' ? 'liked' : 'saved';
-        
-        // No toast on success for a cleaner UX, the visual feedback is enough
-        // toast({
-        //     title: `Event ${result.newState ? actionVerb : 'Un' + pastTenseVerb}!`,
-        //     description: `You've ${result.newState ? '' : 'un'}${pastTenseVerb} ${event.name}.`,
-        // });
     }
   }
   
@@ -94,7 +85,7 @@ export function EventCard({ event }: EventCardProps) {
             width={400}
             height={200}
             data-ai-hint={event.hint}
-            className="w-full h-40 object-cover"
+            className="w-full h-32 object-cover"
             />
             <div className="absolute top-2 right-2 flex gap-2">
                 <Button onClick={(e) => handleInteraction(e, 'liked')} size="icon" variant="ghost" className={cn("text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110", isLiked && 'bg-red-500/80 text-white')}>

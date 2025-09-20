@@ -17,6 +17,7 @@ import { UserPostsFeed } from '@/components/jummix/UserPostsFeed';
 import { NotificationCenter } from '@/components/jummix/NotificationCenter';
 import { Leaderboard } from '@/components/jummix/Leaderboard';
 import { Badges } from '@/components/jummix/Badges';
+import { Card } from '@/components/ui/card';
 
 export type Event = {
   id: string;
@@ -56,6 +57,17 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
       <UserPostsFeed key="posts" />,
       <NotificationCenter key="notifications" />,
   ]), []);
+  
+  const bottomWidget = useMemo(() => {
+    const widgets = [
+      <Leaderboard key="leaderboard" />,
+      <Badges key="badges" />,
+      <LiveActivityFeed key="activity" />,
+      <UserPostsFeed key="posts" />,
+      <NotificationCenter key="notifications" />,
+    ];
+    return widgets[Math.floor(Math.random() * widgets.length)];
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -110,7 +122,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Main Content (Events) */}
-            <div className="lg:col-span-8 space-y-8">
+            <div className="lg:col-span-12 space-y-8">
                 <Tabs defaultValue="upcoming" className="w-full">
                     <TabsList>
                         <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
@@ -118,7 +130,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
                         <TabsTrigger value="saved">Saved For You</TabsTrigger>
                     </TabsList>
                     <TabsContent value="upcoming" className="mt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {initialUpcomingEvents.length > 0 ? (
                             initialUpcomingEvents.map(event => <EventCard key={event.id} event={event} />)
                         ) : (
@@ -127,7 +139,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
                         </div>
                     </TabsContent>
                     <TabsContent value="liked" className="mt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {loadingInteractions ? <Loader2 className="animate-spin" /> : likedEvents.length > 0 ? (
                             likedEvents.map(event => <EventCard key={event.id} event={event} />)
                         ) : (
@@ -136,7 +148,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
                         </div>
                     </TabsContent>
                     <TabsContent value="saved" className="mt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {loadingInteractions ? <Loader2 className="animate-spin" /> : savedEvents.length > 0 ? (
                             savedEvents.map(event => <EventCard key={event.id} event={event} />)
                         ) : (
@@ -146,11 +158,11 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
                     </TabsContent>
                 </Tabs>
             </div>
+        </div>
 
-            {/* Right Sidebar (Widgets) */}
-            <div className="lg:col-span-4 space-y-8">
-                {sidebarWidgets}
-            </div>
+         {/* Bottom Widget Area */}
+        <div className="w-full">
+            {bottomWidget}
         </div>
     </main>
   );
