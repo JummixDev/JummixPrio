@@ -135,17 +135,10 @@ export function DashboardClient({ initialUpcomingEvents }: { initialUpcomingEven
 
   return (
     <div className="bg-background min-h-screen font-body flex flex-col">
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow pt-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start hidden lg:block">
-            <UserProfileCard />
-            <Badges />
-            <Leaderboard />
-          </aside>
-
-          <div className="lg:col-span-6 space-y-8">
-            <div className="md:hidden">
+       <main className="flex-grow pt-16">
+        {/* Full-width container for Reels */}
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+            <div className="md:hidden mb-8">
                 <Card>
                     <CardContent className="p-4">
                         <GlobalSearch />
@@ -153,13 +146,30 @@ export function DashboardClient({ initialUpcomingEvents }: { initialUpcomingEven
                 </Card>
             </div>
             <EventReels />
+        </div>
+
+        {/* Main content grid */}
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start hidden lg:block">
+            <UserProfileCard />
+            <Badges />
+          </aside>
+
+          <div className="lg:col-span-6 space-y-8">
              <div>
                 <Tabs defaultValue="upcoming" className="w-full">
-                  <div className="flex justify-center mb-4">
-                    <TabsList>
-                      <TabsTrigger value="upcoming" className="gap-2"><Calendar/>Upcoming</TabsTrigger>
-                      <TabsTrigger value="liked" className="gap-2"><Heart/>Liked</TabsTrigger>
-                      <TabsTrigger value="saved" className="gap-2"><Bookmark/>Saved</TabsTrigger>
+                  <div className="mb-4 border-b">
+                    <TabsList className="bg-transparent p-0">
+                      <TabsTrigger value="upcoming" className="gap-2 data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none">
+                        <Calendar/>Upcoming
+                      </TabsTrigger>
+                      <TabsTrigger value="liked" className="gap-2 data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none">
+                        <Heart/>Liked
+                      </TabsTrigger>
+                      <TabsTrigger value="saved" className="gap-2 data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none">
+                        <Bookmark/>Saved
+                      </TabsTrigger>
                     </TabsList>
                   </div>
                   <TabsContent value="upcoming">
@@ -190,18 +200,25 @@ export function DashboardClient({ initialUpcomingEvents }: { initialUpcomingEven
                     </Button>
                 </div>
             </div>
+             {/* Leaderboard is moved to the main content for better visibility on medium screens */}
+            <div className="lg:hidden">
+                <Leaderboard />
+            </div>
           </div>
 
           <aside className="lg:col-span-3 space-y-8 lg:sticky lg:top-24 self-start">
             <LiveActivityFeed />
-             <NotificationCenter />
+            <NotificationCenter />
+            {/* The rest of the items that were in the right column */}
             <div className="space-y-8">
                 <PeopleNearby />
                 <UserPostsFeed />
                 <AIRecommender />
+                 <div className="hidden lg:block">
+                    <Leaderboard />
+                </div>
             </div>
           </aside>
-
         </div>
       </main>
 
