@@ -35,6 +35,8 @@ const mockAttendedEvents = [
         location: "Lakeside Park",
         image: "https://picsum.photos/seed/event-1/400/200",
         hint: "concert crowd",
+        price: 75.00,
+        isFree: false,
         friendsAttending: [],
     },
     {
@@ -44,6 +46,8 @@ const mockAttendedEvents = [
         location: "Convention Center",
         image: "https://picsum.photos/seed/event-2/400/200",
         hint: "conference speaker",
+        price: 0,
+        isFree: true,
         friendsAttending: [],
     }
 ]
@@ -272,7 +276,7 @@ export default function UserProfilePage() {
                             <TabsContent value="attended" className="py-6">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {mockAttendedEvents.map(event => (
-                                        <EventCard key={event.id} event={event} />
+                                        <EventCard key={event.id} event={event as any} />
                                     ))}
                                 </div>
                             </TabsContent>
