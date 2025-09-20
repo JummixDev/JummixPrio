@@ -1,8 +1,41 @@
 
+import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { DashboardClient, Event } from './client';
+import { getAuth } from 'firebase/auth'; // We need to get the current user on the server
+import { app } from '@/lib/firebase';
 
-import { redirect } from 'next/navigation';
+// This is a server component, so we can fetch data directly
+async function getUpcomingEvents(): Promise<Event[]> {
+    try {
+        const q = query(
+            collection(db, "events"), 
+            where("date", ">=", new Date().toISOString().split('T')[0]),
+            orderBy("date", "asc"),
+            limit(10)
+        );
+        const querySnapshot = await getDocs(q);
+        const events = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            // Important: Convert Firestore Timestamp to a serializable format (ISO string)
+            return {
+                ...data,
+                id: doc.id,
+                date: data.date.toString(), // Convert to string
+            } as Event;
+        });
+        return events;
+    } catch (error) {
+        console.error("Error fetching upcoming events:", error);
+        return [];
+    }
+}
 
-// The dashboard page is now obsolete and redirects to the new /explore page.
-export default function DashboardPage() {
-  redirect('/explore');
+
+export default async function DashboardPage() {
+  const upcomingEvents = await getUpcomingEvents();
+
+  return (
+    <DashboardClient initialUpcomingEvents={upcomingEvents} />
+  );
 }
