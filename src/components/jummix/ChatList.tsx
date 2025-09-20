@@ -298,11 +298,28 @@ export function ChatList() {
             setLoading(false);
             return;
         }
-        // The problematic onSnapshot listener is removed to prevent permission errors.
-        // The chat list will remain empty until a secure data fetching method is implemented.
-        setLoading(false);
-        setConversations([]);
+
+        const q = query(collection(db, 'chats'), where('participantUids', 'array-contains', user.uid));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const convos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Conversation));
+            
+            // Sort by last message timestamp, newest first
+            convos.sort((a, b) => {
+                const timeA = a.lastMessageTimestamp?.toDate().getTime() || 0;
+                const timeB = b.lastMessageTimestamp?.toDate().getTime() || 0;
+                return timeB - timeA;
+            });
+
+            setConversations(convos);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching conversations:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
     }, [user]);
+
 
     if (authLoading || loading) {
         return (

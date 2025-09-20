@@ -2,30 +2,50 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+  
     // Default deny all
     match /{document=**} {
       allow read, write: if false;
     }
-
-    // Allow public read access to events, but only authenticated users can write them.
+    
+    // Allow public read on events
     match /events/{eventId} {
       allow read: if true;
       allow create, update, delete: if request.auth != null;
     }
 
-    // Users can read and write to their own user document
+    // Users can read/write their own data
     match /users/{userId} {
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
-
-    // Allow users to read their own bookings
+    
+    // Users can read/write their own reviews
+    match /users/{userId}/reviews/{reviewId} {
+       allow read: if true;
+       allow write: if request.auth != null && request.auth.uid == resource.data.reviewerId;
+    }
+    
+    // Users can read/write their own stories
+    match /stories/{storyId} {
+       allow read: if true;
+       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Users can read/write their own bookings
     match /bookings/{bookingId} {
-      allow read, create, update: if request.auth != null && request.auth.uid == resource.data.userId;
+        allow read, write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+        allow update: if request.auth != null && request.auth.uid == resource.data.hostId;
     }
-     match /bookings/{bookingId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.hostId;
+    
+    // Chats: Allow read/write for participants of the chat
+    match /chats/{chatId} {
+      allow read, write: if request.auth != null && request.auth.uid in resource.data.participantUids;
+    }
+    
+    // Chat Messages: Allow read/write for participants of the parent chat
+    match /chats/{chatId}/messages/{messageId} {
+      allow read, write: if request.auth != null && get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids.hasAny([request.auth.uid]);
     }
   }
 }
