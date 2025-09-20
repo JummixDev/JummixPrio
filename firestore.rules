@@ -1,10 +1,9 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // Helper Functions
     function isSignedIn() {
       return request.auth != null;
     }
@@ -13,58 +12,58 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
-    // USER
+    function isVerifiedHost() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerifiedHost == true;
+    }
+    
+    function isEventParticipant(chatId) {
+      return request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
+    }
+
+    // Collections
     match /users/{userId} {
-      allow read: if true;
+      allow read;
       allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId) &&
-      	// User can update these fields
-      	request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['displayName', 'photoURL', 'bannerURL', 'bio', 'interests', 'likedEvents', 'savedEvents', 'fcmTokens', 'onboardingComplete']);
+      allow update: if isSignedIn() && isOwner(userId)
+                    // Fields that can't be changed by the user
+                    && !( 'isVerifiedHost' in request.resource.data && request.resource.data.isVerifiedHost != resource.data.isVerifiedHost )
+                    && !( 'hostApplicationStatus' in request.resource.data && request.resource.data.hostApplicationStatus != resource.data.hostApplicationStatus )
+                    && !( 'email' in request.resource.data && request.resource.data.email != resource.data.email );
       allow delete: if isSignedIn() && isOwner(userId);
     }
 
-    // EVENTS
     match /events/{eventId} {
-      allow read: if true;
-      // User must be signed in and the hostUid in the new event document must match their own uid
-      allow create: if isSignedIn() && request.resource.data.hostUid == request.auth.uid;
-      // Only the original host can update or delete the event
-      allow update, delete: if isSignedIn() && resource.data.hostUid == request.auth.uid;
+      allow read;
+      allow create: if isSignedIn() && isVerifiedHost() && request.resource.data.hostUid == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.hostUid);
+      allow delete: if isSignedIn() && isOwner(resource.data.hostUid);
     }
 
-    // BOOKINGS
     match /bookings/{bookingId} {
-      // User can read their own booking, host can read any booking for their events
-      allow read: if isSignedIn() && (isOwner(resource.data.userId) || isOwner(resource.data.hostId));
-      // User can create their own booking request.
-      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
-      // Host can update status (approve/reject), user cannot.
-      allow update: if isSignedIn() && isOwner(request.resource.data.hostId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
-    }
-
-    // REVIEWS (subcollection of users)
-    match /users/{userId}/reviews/{reviewId} {
-        allow read: if true;
-        // A user can only create a review if they are signed in and are not the host themselves.
-        allow create: if isSignedIn() && request.auth.uid != userId;
-    }
-
-    // CHATS & MESSAGES
-    match /chats/{chatId} {
-      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participantUids;
-
-      match /messages/{messageId} {
-        allow read, create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
-        allow update, delete: if false; // Messages are immutable
-      }
+        allow read: if isSignedIn() && (isOwner(resource.data.userId) || isOwner(resource.data.hostId));
+        allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+        allow update: if isSignedIn() && isOwner(resource.data.hostId); // Only host can approve/reject
+        allow delete: if isSignedIn() && (isOwner(resource.data.userId) || isOwner(resource.data.hostId));
     }
     
-    // STORIES
-    match /stories/{storyId} {
-        allow read: if true;
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-        allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    match /chats/{chatId} {
+      allow read, update: if isSignedIn() && isEventParticipant(chatId);
+      
+      match /messages/{messageId} {
+        allow read, create: if isSignedIn() && isEventParticipant(chatId);
+      }
     }
+
+    match /stories/{storyId} {
+        allow read;
+        allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+        allow delete: if isSignedIn() && isOwner(resource.data.userId);
+    }
+
+    match /users/{userId}/reviews/{reviewId} {
+        allow read;
+        allow create: if isSignedIn() && isOwner(request.resource.data.reviewerId);
+    }
+
   }
 }
