@@ -82,9 +82,9 @@ export function GlobalSearch() {
         const lowercasedTerm = debouncedSearchTerm.toLowerCase();
         
         const matchingEvents = allEvents.filter(event => 
-            event.name.toLowerCase().includes(lowercasedTerm) || 
-            event.description.toLowerCase().includes(lowercasedTerm) || 
-            event.location.toLowerCase().includes(lowercasedTerm)
+            (event.name || '').toLowerCase().includes(lowercasedTerm) || 
+            (event.description || '').toLowerCase().includes(lowercasedTerm) || 
+            (event.location || '').toLowerCase().includes(lowercasedTerm)
         ).slice(0, 5);
         
         setEventResults(matchingEvents.map(event => ({
@@ -92,8 +92,8 @@ export function GlobalSearch() {
         })));
 
         const matchingUsers = allUsers.filter(user =>
-            user.displayName.toLowerCase().includes(lowercasedTerm) ||
-            user.username.toLowerCase().includes(lowercasedTerm)
+            (user.displayName || '').toLowerCase().includes(lowercasedTerm) ||
+            (user.username || '').toLowerCase().includes(lowercasedTerm)
         ).slice(0, 5);
 
         setUserResults(matchingUsers.map(user => ({
@@ -127,29 +127,29 @@ export function GlobalSearch() {
 
   return (
     <div ref={containerRef} className="relative w-full max-w-md">
-        {!open && (
-            <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground" onClick={() => setOpen(true)}>
-                <Search className="mr-2" />
-                Search...
+      {!open && (
+        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setOpen(true)}>
+          <Search />
+        </Button>
+      )}
+      
+      <div className={cn("relative transition-all duration-300 ease-in-out", open ? "opacity-100" : "opacity-0 pointer-events-none")}>
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
+            <Search className="h-5 w-5 text-primary" />
+        </div>
+        <input
+            ref={inputRef}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search events, people..."
+            className="h-10 w-full rounded-full border bg-background pl-12 pr-10 text-sm outline-none placeholder:text-muted-foreground"
+        />
+        {searchTerm && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full absolute right-1 top-1" onClick={() => setSearchTerm('')}>
+                <X className="h-4 w-4"/>
             </Button>
         )}
-        <div className={cn("relative transition-all duration-300 ease-in-out", open ? "opacity-100" : "opacity-0 pointer-events-none")}>
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
-                <Search className="h-5 w-5 text-primary" />
-            </div>
-            <input
-                ref={inputRef}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search events, people..."
-                className="h-10 w-full rounded-full border bg-background pl-12 pr-10 text-sm outline-none placeholder:text-muted-foreground"
-            />
-            {searchTerm && (
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full absolute right-1 top-1" onClick={() => setSearchTerm('')}>
-                    <X className="h-4 w-4"/>
-                </Button>
-            )}
-        </div>
+      </div>
 
       {open && (
         <div className="absolute top-full mt-2 w-full">
