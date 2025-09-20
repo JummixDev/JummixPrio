@@ -30,7 +30,20 @@ async function getUsers(): Promise<UserProfile[]> {
     try {
         const usersRef = collection(db, "users");
         const querySnapshot = await getDocs(usersRef);
-        return querySnapshot.docs.map(doc => ({ uid: doc.id, ...(doc.data() as Omit<UserProfile, 'uid'>) }));
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            // Select only the fields needed by the client to avoid serialization errors
+            return {
+                uid: doc.id,
+                displayName: data.displayName || '',
+                username: data.username || '',
+                photoURL: data.photoURL || '',
+                hint: data.hint || 'person portrait',
+                followers: data.followers || [],
+                following: data.following || [],
+                isVerifiedHost: data.isVerifiedHost || false,
+            };
+        });
     } catch (error) {
         console.error("Error fetching users on server:", error);
         return [];
@@ -43,3 +56,4 @@ export default async function ExplorePage() {
 
     return <ExploreClient initialEvents={events} initialUsers={users} />;
 }
+
