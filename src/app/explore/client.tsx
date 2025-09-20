@@ -213,12 +213,12 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
             
             {view === 'explore' && (
                 <Button onClick={() => setView('friends')} variant="outline" className="ml-auto">
-                    Gehe zu Friends <ArrowRight className="ml-2 h-4 w-4" />
+                    Go to Friends <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             )}
              {view === 'friends' && (
                 <Button onClick={() => setView('chats')} variant="outline" className="ml-auto">
-                    Gehe zu Messages <ArrowRight className="ml-2 h-4 w-4" />
+                    Go to Messages <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             )}
         </div>
