@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -7,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventCard } from '@/components/jummix/EventCard';
 import { LiveActivityFeed, LiveActivityFeedExpanded } from '@/components/jummix/LiveActivityFeed';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, Calendar, Compass, Loader2 } from 'lucide-react';
-import { collection, getDocs, query, where, documentId, limit, orderBy } from 'firebase/firestore';
+import { ArrowUpRight, Compass, Loader2 } from 'lucide-react';
+import { collection, getDocs, query, where, documentId, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PeopleNearby, PeopleNearbyExpanded } from '@/components/jummix/PeopleNearby';
 import { EventReels } from '@/components/jummix/EventReels';
@@ -16,14 +15,8 @@ import { UserPostsFeed, UserPostsFeedExpanded } from '@/components/jummix/UserPo
 import { NotificationCenter, NotificationCenterExpanded } from '@/components/jummix/NotificationCenter';
 import { Leaderboard, LeaderboardExpanded } from '@/components/jummix/Leaderboard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { format } from 'date-fns';
-
-export type Event = {
-  id: string;
-  [key: string]: any; // Allow other event properties
-};
+import type { Event } from './page';
 
 type DashboardClientProps = {
   initialUpcomingEvents: Event[];
@@ -76,56 +69,6 @@ const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, load
     </Card>
 );
 
-
-const EventsCompact = ({ events, onZoom }: { events: Event[], onZoom: () => void }) => (
-    <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle className="font-headline">Upcoming Events</CardTitle>
-                <CardDescription className="text-xs">Your next adventures.</CardDescription>
-            </div>
-            <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" onClick={onZoom}>
-                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-            </Button>
-        </CardHeader>
-        <CardContent>
-            {events.length > 0 ? (
-                 <ul className="space-y-4">
-                    {events.slice(0, 2).map(event => (
-                        <li key={event.id}>
-                             <Link href={`/event/${event.id}`} className="flex items-center gap-4 group">
-                                <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-center">
-                                    <span className="text-xs uppercase font-bold text-primary">{format(new Date(event.date), 'MMM')}</span>
-                                    <span className="text-lg font-bold">{format(new Date(event.date), 'dd')}</span>
-                                </div>
-                                <div className="flex-grow">
-                                    <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">{event.name}</p>
-                                    <p className="text-xs text-muted-foreground">{event.location}</p>
-                                </div>
-                            </Link>
-                        </li>
-                    ))}
-                 </ul>
-            ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">No upcoming events.</p>
-            )}
-        </CardContent>
-    </Card>
-);
-
-// Helper function to shuffle an array
-const shuffleArray = (array: any[]) => {
-    let currentIndex = array.length, randomIndex;
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex], array[currentIndex]];
-    }
-    return array;
-}
-
-
 export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps) {
   const { user, userData, loading } = useAuth();
   const router = useRouter();
@@ -142,7 +85,6 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   // Define all possible widgets for the dynamic sections
   const allWidgets = useMemo(() => [
       { id: 'events', 
-        compact: <EventsCompact events={initialUpcomingEvents} onZoom={() => handleWidgetZoom('events')} />,
         expanded: (
             <EventListWidget 
                 initialUpcomingEvents={initialUpcomingEvents}
@@ -163,16 +105,6 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   // Derive current main widget and sidebar widgets based on mainWidgetId
   const mainWidget = allWidgets.find(w => w.id === mainWidgetId);
   const sidebarWidgets = allWidgets.filter(w => w.id !== mainWidgetId);
-
-  // Shuffle sidebar widgets once on initial render (or when the set of widgets changes)
-  const shuffledWidgets = useMemo(() => {
-    const shuffled = shuffleArray([...sidebarWidgets]);
-    return {
-        topWidget: shuffled[0],
-        sidebarWidgets: shuffled.slice(1),
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mainWidgetId]); 
 
   useEffect(() => {
     if (!loading && !user) {
@@ -221,12 +153,12 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   return (
     <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24 pb-24">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Top Row: Event Reels and a compact widget */}
+        {/* Top Row */}
         <div className="lg:col-span-8">
           <EventReels />
         </div>
-        <div className="hidden lg:col-span-4 lg:block">
-          {shuffledWidgets.topWidget?.compact}
+        <div className="lg:col-span-4">
+          {sidebarWidgets.find(w => w.id === 'leaderboard')?.compact}
         </div>
         
         {/* Main Content Area */}
@@ -236,7 +168,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
         
         {/* Sidebar */}
         <aside className="lg:col-span-4 space-y-6">
-          {shuffledWidgets.sidebarWidgets.map(widget => (
+          {sidebarWidgets.filter(w => w.id !== 'leaderboard').map(widget => (
             <React.Fragment key={widget.id}>
               {widget.compact}
             </React.Fragment>
