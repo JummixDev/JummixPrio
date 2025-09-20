@@ -90,11 +90,15 @@ export default function DashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const isAdmin = user?.email === 'service@jummix.com';
-  const isVerifiedHost = userData?.isVerifiedHost || false;
-  
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loadingUpcoming, setLoadingUpcoming] = useState(true);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
 
   useEffect(() => {
     async function fetchEvents() {
@@ -113,12 +117,6 @@ export default function DashboardPage() {
     fetchEvents();
   }, [toast]);
 
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/');
-    }
-  }, [user, loading, router]);
 
   const handleNearbyClick = () => {
     if (navigator.geolocation) {
@@ -153,7 +151,6 @@ export default function DashboardPage() {
     );
   }
 
-  const userProfileLink = `/profile/me`;
 
   return (
     <div className="bg-background min-h-screen font-body flex flex-col">

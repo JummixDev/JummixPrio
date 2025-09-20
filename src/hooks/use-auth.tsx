@@ -74,22 +74,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       if (user) {
         setUser(user);
-        // First, get the document once to ensure we have initial data
         const userDocRef = doc(db, "users", user.uid);
         try {
           const userDocSnap = await getDoc(userDocRef);
-          if (userDocSnap.exists()) {
-            const initialUserData = userDocSnap.data() as UserProfileData;
-            setUserData(initialUserData);
-          } else {
-            // If the document doesn't exist, create it.
-            const newUserData = await createUserDocument(user);
-            setUserData(newUserData);
+          if (!userDocSnap.exists()) {
+            await createUserDocument(user);
           }
         } catch (error) {
-            console.error("Error fetching user document:", error);
+            console.error("Error checking or creating user document:", error);
         }
-
       } else {
         setUser(null);
         setUserData(null);
@@ -101,12 +94,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Set up the real-time listener only if a user is logged in.
     if (user) {
         const userDocRef = doc(db, "users", user.uid);
         const unsubscribeSnapshot = onSnapshot(userDocRef, (doc) => {
             if (doc.exists()) {
                 setUserData(doc.data() as UserProfileData);
+            } else {
+                setUserData(null);
             }
         }, (error) => {
             console.error("Error with onSnapshot listener:", error);
@@ -154,8 +148,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return userCredential;
   }
 
-  const signIn = (email: string, pass: string) => {
-    return signInWithEmailAndPassword(auth, email, pass);
+  const signIn = async (email: string, pass: string) => {
+      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+      await createUserDocument(userCredential.user);
+      return userCredential;
   }
 
   const signInWithGoogle = () => {
@@ -180,6 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
+    router.push('/');
   };
 
   const updateUserProfileInAuthAndDb = async (data: Partial<UserProfileData>) => {

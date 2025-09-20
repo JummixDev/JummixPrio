@@ -42,7 +42,7 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 function SignInForm({ form }: { form: UseFormReturn<any> }) {
-  const { signIn, signInWithGoogle, signInWithApple } = useAuth();
+  const { signIn, signInWithGoogle, signInWithApple, userData } = useAuth();
   const { register, handleSubmit, formState: { isSubmitting } } = form;
   const { toast } = useToast();
   const router = useRouter();
@@ -50,7 +50,8 @@ function SignInForm({ form }: { form: UseFormReturn<any> }) {
   const onSubmit = async (data: any) => {
     try {
       await signIn(data.email, data.password);
-      router.push('/dashboard');
+      // Let the useEffect on the parent page handle the redirect
+      // based on the updated auth state.
     } catch (error) {
         if (error instanceof FirebaseError) {
             switch (error.code) {
@@ -133,6 +134,8 @@ function SignUpForm({ onEmailInUse }: SignUpFormProps) {
   const onSubmit = async (data: any) => {
     try {
       await signUp(data.email, data.password);
+      // After sign-up, the useAuth hook will detect the new user
+      // and our useEffect on the main page will redirect to onboarding.
       router.push('/onboarding');
     } catch (error) {
         if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
@@ -202,6 +205,26 @@ function LandingPageContent() {
   const signupCardRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('signin');
   const signInForm = useForm();
+  const { user, userData, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Wait until loading is false to get a definitive state
+    if (!loading) {
+      if (user) {
+        if (userData?.onboardingComplete) {
+          router.push('/dashboard');
+        } else {
+          // If logged in but not onboarded, stay on this page
+          // so they can see the landing page, but the forms will be hidden.
+          // The next step is to click 'Get Started' which scrolls down.
+          // We can also just redirect them to onboarding from here.
+          router.push('/onboarding');
+        }
+      }
+    }
+  }, [user, userData, loading, router]);
+
 
   const scrollToSignup = () => {
     signupCardRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -211,6 +234,28 @@ function LandingPageContent() {
     setActiveTab('signin');
     signInForm.setValue('email', email);
   }
+  
+    // Show a loading indicator while auth state is being determined
+  if (loading) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+            <h1 className="text-2xl font-bold font-headline text-primary">Loading your Jummix experience</h1>
+        </div>
+    );
+  }
+
+  // If not loading and user is logged in, show a redirecting message
+  // This prevents the landing page from flashing for an already logged-in user.
+  if (user) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+            <h1 className="text-2xl font-bold font-headline text-primary">Redirecting...</h1>
+        </div>
+    );
+  }
+
 
   return (
     <div className="bg-background text-foreground font-body">
@@ -314,44 +359,5 @@ function LandingPageContent() {
 
 
 export default function LandingPage() {
-    const { user, userData, loading } = useAuth();
-    const router = useRouter();
-
-    useEffect(() => {
-        // Wait until loading is false to get a definitive state
-        if (!loading) {
-            if (user) {
-                if (userData?.onboardingComplete) {
-                    router.push('/dashboard');
-                } else {
-                    router.push('/onboarding');
-                }
-            }
-        }
-    }, [user, userData, loading, router]);
-
-
-    // Show a loading indicator while auth state is being determined
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
-                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                <h1 className="text-2xl font-bold font-headline text-primary">Loading your Jummix experience</h1>
-            </div>
-        );
-    }
-    
-    // If not loading and no user, show the landing page.
-    if (!user) {
-        return <LandingPageContent />;
-    }
-    
-    // If user is logged in, but we're still here (e.g., waiting for userData), show loading.
-    // This prevents a flash of the landing page for logged-in users.
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
-            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-            <h1 className="text-2xl font-bold font-headline text-primary">Redirecting...</h1>
-        </div>
-    );
+    return <LandingPageContent />;
 }
