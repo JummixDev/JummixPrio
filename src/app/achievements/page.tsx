@@ -90,7 +90,7 @@ export default function AchievementsPage() {
                                             <p className="font-semibold text-foreground truncate">{user.name}</p>
                                             <p className="text-sm text-muted-foreground">@{user.username}</p>
                                         </div>
-                                        <span className="font-bold text-lg text-primary">{user.points.toLocaleString()} pts</span>
+                                        <span className="font-bold text-lg text-primary">{user.points.toLocaleString('en-US')} pts</span>
                                     </Link>
                                     </li>
                                 ))}
