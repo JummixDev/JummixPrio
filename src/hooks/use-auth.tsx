@@ -22,7 +22,6 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, serverTimestamp, updateDoc } from "firebase/firestore"; 
-import { useRouter, usePathname } from 'next/navigation';
 import { uploadFile } from '@/services/storage';
 
 interface UserProfileData {
@@ -67,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -127,20 +125,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
       return () => unsubscribe();
+    } else {
+      // If user is null, we are not loading anymore.
+      setLoading(false);
     }
-    // No 'else' here, loading is handled when user becomes null in the first useEffect
   }, [user]);
 
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await createUserDocument(userCredential.user);
-    // Let the onSnapshot handle setting the user data and the page components handle redirection
     return userCredential;
   }
 
   const signIn = (email: string, pass: string) => {
     return signInWithEmailAndPassword(auth, email, pass);
-    // Let the onSnapshot handle setting the user data and the page components handle redirection
   }
 
   const signInWithGoogle = () => {
@@ -165,13 +163,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
-    router.push('/');
   };
 
   const updateUserProfileInAuthAndDb = async (data: Partial<UserProfileData>) => {
     if (!user) throw new Error("Not authenticated");
     
-    // Update Firebase Auth profile if displayName or photoURL are present
     if (data.displayName || data.photoURL) {
       await updateProfile(user, {
         displayName: data.displayName,
@@ -179,7 +175,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }
 
-    // Update Firestore document
     const userDocRef = doc(db, "users", user.uid);
     await updateDoc(userDocRef, data);
   };

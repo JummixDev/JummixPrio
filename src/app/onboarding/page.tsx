@@ -114,7 +114,7 @@ export default function OnboardingPage() {
 
             toast({
                 title: 'Profile created!',
-                description: 'Welcome to Jummix!',
+                description: 'Welcome to Jummix! Redirecting you now...',
             });
             
             router.push('/dashboard');

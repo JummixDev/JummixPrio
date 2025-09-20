@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { UserProfileCard } from "@/components/jummix/UserProfileCard";
@@ -245,4 +244,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-    
