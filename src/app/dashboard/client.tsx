@@ -51,6 +51,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
 
   // Memoize the shuffled sidebar components to prevent re-shuffling on re-renders
   const sidebarWidgets = useMemo(() => shuffleArray([
+      <Card key="people-nearby"><CardContent className="p-4"><PeopleNearby /></CardContent></Card>,
       <Leaderboard key="leaderboard" />,
       <Badges key="badges" />,
       <LiveActivityFeed key="activity" />,

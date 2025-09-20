@@ -8,7 +8,6 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "../ui/separator";
-import { PeopleNearby } from "./PeopleNearby";
 
 const mockReels = [
   { user: { name: "Carlos Ray", avatar: "https://placehold.co/100x100.png", hint: "man portrait" }, event: "Summer Music Fest" },
@@ -33,9 +32,7 @@ export function EventReels() {
 
   return (
     <Card>
-      <div className="grid grid-cols-1 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-           <CardHeader>
+          <CardHeader>
               <CardTitle className="font-headline">Event Stories</CardTitle>
               <CardDescription>Exclusive highlights from verified hosts. Promote your event here!</CardDescription>
           </CardHeader>
@@ -63,16 +60,6 @@ export function EventReels() {
                   ))}
               </div>
           </CardContent>
-        </div>
-        <div className="hidden lg:block">
-           <div className="flex h-full items-center">
-              <Separator orientation="vertical" className="h-3/4 mx-auto" />
-              <div className="flex-grow p-6">
-                <PeopleNearby />
-              </div>
-           </div>
-        </div>
-      </div>
     </Card>
   );
 }
