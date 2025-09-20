@@ -70,15 +70,14 @@ const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, load
 );
 
 
-const EventsCompact = ({ events }: { events: Event[] }) => (
+const EventsCompact = ({ events, onZoom }: { events: Event[], onZoom: () => void }) => (
     <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <div>
                 <CardTitle className="font-headline">Upcoming Events</CardTitle>
                 <CardDescription className="text-xs">Your next adventures.</CardDescription>
             </div>
-            {/* This button should ideally trigger the main widget to switch to 'events' */}
-            <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0">
+            <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" onClick={onZoom}>
                 <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
             </Button>
         </CardHeader>
@@ -127,11 +126,16 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   const [likedEvents, setLikedEvents] = useState<Event[]>([]);
   const [savedEvents, setSavedEvents] = useState<Event[]>([]);
   const [loadingInteractions, setLoadingInteractions] = useState(true);
+  const [mainWidgetId, setMainWidgetId] = useState('events');
+
+  const handleWidgetZoom = (widgetId: string) => {
+      setMainWidgetId(widgetId);
+  }
 
   // Define all possible widgets for the dynamic sections
   const allWidgets = useMemo(() => [
       { id: 'events', 
-        compact: <EventsCompact events={initialUpcomingEvents} />,
+        compact: <EventsCompact events={initialUpcomingEvents} onZoom={() => handleWidgetZoom('events')} />,
         expanded: (
             <EventListWidget 
                 initialUpcomingEvents={initialUpcomingEvents}
@@ -141,24 +145,24 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
             />
         ) 
       },
-      { id: 'leaderboard', compact: <Leaderboard />, expanded: <LeaderboardExpanded /> },
-      { id: 'badges', compact: <Badges />, expanded: <BadgesExpanded /> },
-      { id: 'people-nearby', compact: <PeopleNearby />, expanded: <PeopleNearbyExpanded /> },
-      { id: 'activity', compact: <LiveActivityFeed />, expanded: <LiveActivityFeedExpanded /> },
-      { id: 'posts', compact: <UserPostsFeed />, expanded: <UserPostsFeedExpanded /> },
-      { id: 'notifications', compact: <NotificationCenter />, expanded: <NotificationCenterExpanded /> },
+      { id: 'leaderboard', compact: <Leaderboard onZoom={() => handleWidgetZoom('leaderboard')} />, expanded: <LeaderboardExpanded /> },
+      { id: 'badges', compact: <Badges onZoom={() => handleWidgetZoom('badges')} />, expanded: <BadgesExpanded /> },
+      { id: 'people-nearby', compact: <PeopleNearby onZoom={() => handleWidgetZoom('people-nearby')} />, expanded: <PeopleNearbyExpanded /> },
+      { id: 'activity', compact: <LiveActivityFeed onZoom={() => handleWidgetZoom('activity')} />, expanded: <LiveActivityFeedExpanded /> },
+      { id: 'posts', compact: <UserPostsFeed onZoom={() => handleWidgetZoom('posts')} />, expanded: <UserPostsFeedExpanded /> },
+      { id: 'notifications', compact: <NotificationCenter onZoom={() => handleWidgetZoom('notifications')} />, expanded: <NotificationCenterExpanded /> },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [initialUpcomingEvents, likedEvents, savedEvents, loadingInteractions]);
 
-  // Shuffle widgets once on component mount
-  const shuffledWidgets = useMemo(() => {
-    const shuffled = shuffleArray([...allWidgets]);
-    return {
-        mainWidget: shuffled.pop(),
-        topWidget: shuffled.pop(),
-        sidebarWidgets: shuffled,
-    }
+  // Derive current main widget and sidebar widgets based on mainWidgetId
+  const mainWidget = allWidgets.find(w => w.id === mainWidgetId);
+  const sidebarWidgets = allWidgets.filter(w => w.id !== mainWidgetId);
+
+  // Shuffle sidebar widgets once on initial render (or when the set of widgets changes)
+  const shuffledSidebarWidgets = useMemo(() => {
+    return shuffleArray(sidebarWidgets);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [mainWidgetId]); // Re-shuffle when the main widget changes
 
   useEffect(() => {
     if (!loading && !user) {
@@ -206,25 +210,22 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
 
   return (
     <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24 space-y-8">
-        {/* Top section with Event Stories and a random widget */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
                 <EventReels />
             </div>
             <div className="hidden lg:block">
-                 {shuffledWidgets.topWidget?.compact}
+                 {shuffledSidebarWidgets[0]?.compact}
             </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Main Content Area - Shows one expanded widget */}
             <div className="lg:col-span-8 space-y-8">
-                {shuffledWidgets.mainWidget?.expanded}
+                {mainWidget?.expanded}
             </div>
 
-             {/* Right Sidebar - Shows the rest of the widgets, compact */}
              <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-                {shuffledWidgets.sidebarWidgets.map(widget => (
+                {shuffledSidebarWidgets.slice(1).map(widget => (
                     <React.Fragment key={widget.id}>
                         {widget.compact}
                     </React.Fragment>

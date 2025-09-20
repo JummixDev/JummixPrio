@@ -25,12 +25,14 @@ const allMockUsers = [
     { name: "Ben Carter", username: "bencarter", avatar: "https://placehold.co/100x100.png", hint: "man with beard" },
 ];
 
-export function PeopleNearby() {
+export function PeopleNearby({ onZoom }: { onZoom: () => void }) {
   return (
     <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline flex items-center gap-2"><Users /> People Nearby</CardTitle>
-            <CardDescription className="text-xs">Discover new people in your area.</CardDescription>
+            <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" onClick={onZoom}>
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Button>
         </CardHeader>
         <CardContent>
             <div className="grid grid-cols-4 gap-4">

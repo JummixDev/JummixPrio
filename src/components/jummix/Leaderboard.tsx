@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 const topUsers = fullLeaderboard.slice(0, 4);
 
-export function Leaderboard() {
+export function Leaderboard({ onZoom }: { onZoom: () => void }) {
   return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -22,10 +22,8 @@ export function Leaderboard() {
                     </CardTitle>
                     <CardDescription className="text-xs">Top community members.</CardDescription>
                 </div>
-                <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" asChild>
-                    <Link href="/achievements">
-                        <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-                    </Link>
+                <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" onClick={onZoom}>
+                    <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
             </CardHeader>
             <CardContent>

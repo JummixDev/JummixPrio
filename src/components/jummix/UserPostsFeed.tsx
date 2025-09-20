@@ -1,5 +1,4 @@
 
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
@@ -92,7 +91,7 @@ const PostCard = ({ post }: { post: typeof mockPost }) => (
     </Card>
 );
 
-export function UserPostsFeed() {
+export function UserPostsFeed({ onZoom }: { onZoom: () => void }) {
   return (
     <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -100,7 +99,9 @@ export function UserPostsFeed() {
                 <CardTitle className="font-headline">Community Feed</CardTitle>
                 <CardDescription className="text-xs">Posts from the community.</CardDescription>
             </div>
-            {/* The DialogTrigger is now handled by the parent component logic */}
+             <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" onClick={onZoom}>
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Button>
         </CardHeader>
         <CardContent>
             <PostCard post={mockPost} />

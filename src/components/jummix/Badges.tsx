@@ -14,7 +14,7 @@ import { allBadges } from "@/app/achievements/page";
 const earnedBadges = allBadges.filter(b => b.earned);
 const unearnedBadges = allBadges.filter(b => !b.earned);
 
-export function Badges() {
+export function Badges({ onZoom }: { onZoom: () => void }) {
   const displayedBadges = earnedBadges.slice(0, 6);
   return (
         <Card>
@@ -23,10 +23,8 @@ export function Badges() {
                     <CardTitle className="font-headline">My Badges</CardTitle>
                     <CardDescription className="text-xs">Your collected achievements.</CardDescription>
                 </div>
-                <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" asChild>
-                    <Link href="/achievements">
-                        <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-                    </Link>
+                <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" onClick={onZoom}>
+                    <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
             </CardHeader>
             <CardContent>

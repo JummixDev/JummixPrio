@@ -1,5 +1,4 @@
 
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -92,7 +91,7 @@ const allActivities = [
     },
 ]
 
-export function LiveActivityFeed() {
+export function LiveActivityFeed({ onZoom }: { onZoom: () => void }) {
   return (
     <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -100,7 +99,9 @@ export function LiveActivityFeed() {
                 <CardTitle className="font-headline">My Activities</CardTitle>
                 <CardDescription className="text-xs">Recent activities from your friends.</CardDescription>
             </div>
-            {/* The DialogTrigger is now handled by the parent component logic */}
+            <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0" onClick={onZoom}>
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Button>
         </CardHeader>
         <CardContent>
             <ul className="space-y-4">
