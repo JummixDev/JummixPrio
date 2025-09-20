@@ -95,22 +95,22 @@ const PostCard = ({ post }: { post: typeof mockPost }) => (
 export function UserPostsFeed() {
   return (
     <Dialog>
-    <Card className="transition-transform hover:scale-105">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-            <CardTitle className="font-headline">Community Feed</CardTitle>
-            <CardDescription>See what's happening in your community.</CardDescription>
-        </div>
-        <DialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="w-8 h-8">
-                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-            </Button>
-        </DialogTrigger>
-      </CardHeader>
-      <CardContent>
-        <PostCard post={mockPost} />
-      </CardContent>
-    </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="font-headline">Community Feed</CardTitle>
+                    <CardDescription className="text-xs">Posts from the community.</CardDescription>
+                </div>
+                <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0">
+                        <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                </DialogTrigger>
+            </CardHeader>
+            <CardContent>
+                <PostCard post={mockPost} />
+            </CardContent>
+        </Card>
     <DialogContent className="max-w-2xl">
         <DialogHeader>
             <DialogTitle className="font-headline">Full Community Feed</DialogTitle>

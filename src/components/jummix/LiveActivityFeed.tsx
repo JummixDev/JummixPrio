@@ -31,32 +31,32 @@ const activities = [
     time: "10m ago",
     icon: <UserPlus className="w-4 h-4 text-primary" />,
   },
-  {
-    user: "Aisha Khan",
-    userProfile: "/profile/aishakhan",
-    avatar: "https://placehold.co/40x40.png",
-    hint: "woman face",
-    action: "shared a memory from",
-    target: "The Color Run",
-    targetLink: "#",
-    time: "30m ago",
-    icon: <Share2 className="w-4 h-4 text-purple-500" />,
-  },
-  {
-    user: "Alex Doe",
-    userProfile: "/profile/alexdoe",
-    avatar: "https://placehold.co/40x40.png",
-    hint: "person portrait",
-    action: "RSVP'd to",
-    target: "Tech Innovators Summit",
-    targetLink: "/event/tech-innovators-summit",
-    time: "1h ago",
-    icon: <CalendarCheck className="w-4 h-4 text-accent" />,
-  },
 ];
 
 const allActivities = [
     ...activities,
+    {
+        user: "Aisha Khan",
+        userProfile: "/profile/aishakhan",
+        avatar: "https://placehold.co/40x40.png",
+        hint: "woman face",
+        action: "shared a memory from",
+        target: "The Color Run",
+        targetLink: "#",
+        time: "30m ago",
+        icon: <Share2 className="w-4 h-4 text-purple-500" />,
+      },
+    {
+        user: "Alex Doe",
+        userProfile: "/profile/alexdoe",
+        avatar: "https://placehold.co/40x40.png",
+        hint: "person portrait",
+        action: "RSVP'd to",
+        target: "Tech Innovators Summit",
+        targetLink: "/event/tech-innovators-summit",
+        time: "1h ago",
+        icon: <CalendarCheck className="w-4 h-4 text-accent" />,
+    },
     {
         user: "David Lee",
         userProfile: "/profile/davidlee",
@@ -95,43 +95,43 @@ const allActivities = [
 export function LiveActivityFeed() {
   return (
     <Dialog>
-        <Card className="transition-transform hover:scale-105">
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle className="font-headline">My Activities</CardTitle>
-                <CardDescription>Recent activities from you and your friends.</CardDescription>
-            </div>
-            <DialogTrigger asChild>
-                 <Button variant="ghost" size="icon" className="w-8 h-8">
-                    <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
-            </DialogTrigger>
-        </CardHeader>
-        <CardContent>
-            <ul className="space-y-6">
-            {activities.map((activity, index) => (
-                <li key={index} className="flex items-start space-x-4">
-                 <Link href={activity.userProfile} passHref>
-                    <Avatar className="w-10 h-10 border-2 border-secondary flex-shrink-0 cursor-pointer">
-                        <AvatarImage src={activity.avatar} alt={activity.user} data-ai-hint={activity.hint} />
-                        <AvatarFallback>{activity.user.substring(0, 2)}</AvatarFallback>
-                    </Avatar>
-                </Link>
-                <div className="flex-grow">
-                    <p className="text-sm">
-                        <Link href={activity.userProfile} passHref><span className="font-bold text-foreground hover:underline">{activity.user}</span></Link>{" "}
-                        {activity.action}{" "}
-                        <Link href={activity.targetLink} passHref><span className="font-semibold text-primary hover:underline">{activity.target}</span></Link>
-                    </p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
-                    {activity.icon}
-                    {activity.time}
-                    </p>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="font-headline">My Activities</CardTitle>
+                    <CardDescription className="text-xs">Recent activities from your friends.</CardDescription>
                 </div>
-                </li>
-            ))}
-            </ul>
-        </CardContent>
+                <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0">
+                        <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                </DialogTrigger>
+            </CardHeader>
+            <CardContent>
+                <ul className="space-y-4">
+                {activities.map((activity, index) => (
+                    <li key={index} className="flex items-start space-x-4">
+                    <Link href={activity.userProfile} passHref>
+                        <Avatar className="w-10 h-10 border-2 border-secondary flex-shrink-0 cursor-pointer">
+                            <AvatarImage src={activity.avatar} alt={activity.user} data-ai-hint={activity.hint} />
+                            <AvatarFallback>{activity.user.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                    </Link>
+                    <div className="flex-grow">
+                        <p className="text-sm">
+                            <Link href={activity.userProfile} passHref><span className="font-bold text-foreground hover:underline">{activity.user}</span></Link>{" "}
+                            {activity.action}{" "}
+                            <Link href={activity.targetLink} passHref><span className="font-semibold text-primary hover:underline">{activity.target}</span></Link>
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                        {activity.icon}
+                        {activity.time}
+                        </p>
+                    </div>
+                    </li>
+                ))}
+                </ul>
+            </CardContent>
         </Card>
         <DialogContent>
             <DialogHeader>

@@ -15,6 +15,8 @@ import { PeopleNearby } from '@/components/jummix/PeopleNearby';
 import { EventReels } from '@/components/jummix/EventReels';
 import { UserPostsFeed } from '@/components/jummix/UserPostsFeed';
 import { NotificationCenter } from '@/components/jummix/NotificationCenter';
+import { Leaderboard } from '@/components/jummix/Leaderboard';
+import { Badges } from '@/components/jummix/Badges';
 
 export type Event = {
   id: string;
@@ -25,6 +27,19 @@ type DashboardClientProps = {
   initialUpcomingEvents: Event[];
 };
 
+// Helper function to shuffle an array
+const shuffleArray = (array: any[]) => {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+
 export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps) {
   const { user, userData, loading } = useAuth();
   const router = useRouter();
@@ -32,6 +47,15 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   const [likedEvents, setLikedEvents] = useState<Event[]>([]);
   const [savedEvents, setSavedEvents] = useState<Event[]>([]);
   const [loadingInteractions, setLoadingInteractions] = useState(true);
+
+  // Memoize the shuffled sidebar components to prevent re-shuffling on re-renders
+  const sidebarWidgets = useMemo(() => shuffleArray([
+      <Leaderboard key="leaderboard" />,
+      <Badges key="badges" />,
+      <LiveActivityFeed key="activity" />,
+      <UserPostsFeed key="posts" />,
+      <NotificationCenter key="notifications" />,
+  ]), []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -123,11 +147,9 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
                 </Tabs>
             </div>
 
-            {/* Right Sidebar (Feeds) */}
+            {/* Right Sidebar (Widgets) */}
             <div className="lg:col-span-4 space-y-8">
-                <UserPostsFeed />
-                <LiveActivityFeed />
-                <NotificationCenter />
+                {sidebarWidgets}
             </div>
         </div>
     </main>
