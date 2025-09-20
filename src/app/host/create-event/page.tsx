@@ -174,7 +174,7 @@ export default function CreateEventPage() {
                                         control={form.control}
                                         name="date"
                                         render={({ field }) => (
-                                            <FormItem className="flex flex-col">
+                                            <FormItem>
                                                 <FormLabel>Event Date</FormLabel>
                                                 <Popover>
                                                     <PopoverTrigger asChild>
