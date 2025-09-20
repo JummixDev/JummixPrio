@@ -49,7 +49,6 @@ export default function PrivacyPage() {
         <h2 id="rights">5. Your Rights as a Data Subject</h2>
         <p>You have the right to information, correction, deletion, restriction of processing, data portability, and the right to object to the processing of your personal data. You can make many of these settings directly in your profile or contact us at the email address mentioned above. You also have the right to lodge a complaint with a data protection supervisory authority.</p>
       </main>
-      <Footer />
     </div>
   );
 }

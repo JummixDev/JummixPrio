@@ -59,7 +59,6 @@ export default function ImprintPage() {
           <li><strong>Technical Availability & Moderation:</strong> Jummix does not guarantee constant, uninterrupted technical availability of the platform. We provide reporting and blocking functions but do not perform permanent pre-screening of all user content.</li>
         </ol>
       </main>
-      <Footer />
     </div>
   );
 }

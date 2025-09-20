@@ -35,7 +35,6 @@ export default function TermsPage() {
         <h2 id="changes">7. Changes to the GTC</h2>
         <p>We reserve the right to adapt these GTC at any time to adapt them to changed legal or technical framework conditions. We will inform you in good time of any significant changes by email or by a notice on the platform. Your continued use of the platform after the changes come into effect will be deemed your consent.</p>
       </main>
-      <Footer />
     </div>
   );
 }

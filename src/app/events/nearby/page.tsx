@@ -143,7 +143,6 @@ export default function NearbyEventsPage() {
             </>
         )}
       </main>
-      <Footer />
     </div>
   );
 }

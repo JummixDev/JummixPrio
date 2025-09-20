@@ -301,7 +301,6 @@ export default function UserProfilePage() {
             </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
