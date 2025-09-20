@@ -286,19 +286,16 @@ export async function createStory(storyData: StoryInput) {
     try {
         const { userId, imageDataUri, caption } = validation.data;
 
-        // Correctly handle the data URI on the server
-        const base64Data = imageDataUri.split(';base64,').pop();
-        if (!base64Data) {
-            return { success: false, errors: ["Invalid image data format."] };
-        }
+        // Use fetch to handle the data URI
+        const response = await fetch(imageDataUri);
+        const blob = await response.blob();
+        const buffer = Buffer.from(await blob.arrayBuffer());
 
-        const imageBuffer = Buffer.from(base64Data, 'base64');
-        const fileType = imageDataUri.substring("data:".length, imageDataUri.indexOf(";"));
-        const fileExtension = fileType.split('/')[1] || 'jpg'; // Fallback to jpg
+        const fileExtension = blob.type.split('/')[1] || 'jpg';
 
         // Upload buffer to storage
         const filePath = `stories/${userId}/story_${Date.now()}.${fileExtension}`;
-        const imageUrl = await uploadFile(imageBuffer, filePath);
+        const imageUrl = await uploadFile(buffer, filePath);
 
         // Save to Firestore
         await addDoc(collection(db, "stories"), {
@@ -456,3 +453,4 @@ export async function updateHostVerification(userId: string, action: 'approve' |
     
 
     
+
