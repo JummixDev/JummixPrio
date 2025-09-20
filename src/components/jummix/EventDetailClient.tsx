@@ -421,3 +421,5 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
+
+    
