@@ -60,8 +60,7 @@ export default function OnboardingPage() {
                 }
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user, userData, loading, router]);
+    }, [user, userData, loading, router, form.setValue]);
 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
