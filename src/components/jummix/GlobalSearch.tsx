@@ -4,22 +4,20 @@
 
 import * as React from 'react';
 import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command';
-import { Search, Calendar, User, Building, Wand2, Loader2 } from 'lucide-react';
-import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
+import { Search, Calendar, User, Building, Loader2 } from 'lucide-react';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
+import { DialogTitle } from '../ui/dialog';
 
 type Result = {
     id: string;
@@ -137,19 +135,16 @@ export function GlobalSearch() {
 
   return (
     <>
-      <Button
-        variant="outline"
-        className="relative h-9 w-full justify-start rounded-md text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
+       <Button
+        variant="ghost"
+        size="icon"
         onClick={() => setOpen(true)}
       >
-        <Search className="h-4 w-4 mr-2" />
-        <span className="hidden lg:inline-block">Search...</span>
-        <span className="inline-block lg:hidden">Search...</span>
-        <kbd className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-          <span className="text-xs">⌘</span>K
-        </kbd>
+        <Search />
+        <span className="sr-only">Search</span>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
+         <DialogTitle className="sr-only">Global Search</DialogTitle>
          <CommandInput 
             value={searchTerm}
             onValueChange={setSearchTerm}
