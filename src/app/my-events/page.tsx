@@ -60,8 +60,9 @@ const EventList = ({ eventIds, emptyText, filter }: { eventIds: string[], emptyT
     if (loading) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Skeleton className="h-96 w-full" />
-                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-[330px] w-full" />
+                <Skeleton className="h-[330px] w-full" />
+                <Skeleton className="h-[330px] w-full" />
             </div>
         );
     }
@@ -81,50 +82,63 @@ const EventList = ({ eventIds, emptyText, filter }: { eventIds: string[], emptyT
 
 
 export default function MyEventsPage() {
-    const { user, userData } = useAuth();
+    const { user, userData, loading } = useAuth();
     
-    // This is a mock. Real implementation would fetch events user has RSVP'd to.
-    const attendedEventIds = ['summer-music-fest', 'culinary-workshop'];
+    // We get the user's booking IDs from their user data.
+    const attendedEventIds = userData?.bookings || [];
 
   return (
     <div className="bg-secondary/20 min-h-screen flex flex-col">
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow pt-24">
-        <h1 className="text-3xl font-bold font-headline mb-8">My Event Library</h1>
-        <Tabs defaultValue="upcoming">
-            <TabsList className="mb-6 grid w-full grid-cols-2 sm:w-auto sm:grid-cols-4">
-                <TabsTrigger value="upcoming" className="gap-2"><Calendar/>Upcoming</TabsTrigger>
-                <TabsTrigger value="past" className="gap-2"><Calendar/>Past</TabsTrigger>
-                <TabsTrigger value="liked" className="gap-2"><Heart/>Liked</TabsTrigger>
-                <TabsTrigger value="saved" className="gap-2"><Bookmark/>Saved</TabsTrigger>
-            </TabsList>
+       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-30">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16">
+              <Button variant="ghost" size="icon" asChild>
+                  <Link href="/dashboard">
+                      <ArrowLeft />
+                  </Link>
+              </Button>
+              <h1 className="text-xl font-bold ml-4">My Event Library</h1>
+          </div>
+      </header>
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16 flex-grow">
+        {loading ? (
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+        ) : (
+            <Tabs defaultValue="upcoming">
+                <TabsList className="mb-6 grid w-full grid-cols-2 sm:w-auto sm:grid-cols-4">
+                    <TabsTrigger value="upcoming" className="gap-2"><Calendar/>Upcoming</TabsTrigger>
+                    <TabsTrigger value="past" className="gap-2"><Calendar/>Past</TabsTrigger>
+                    <TabsTrigger value="liked" className="gap-2"><Heart/>Liked</TabsTrigger>
+                    <TabsTrigger value="saved" className="gap-2"><Bookmark/>Saved</TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="upcoming">
-                <EventList 
-                    eventIds={attendedEventIds} 
-                    filter="upcoming"
-                    emptyText="You have no upcoming events." 
-                />
-            </TabsContent>
-            <TabsContent value="past">
-                <EventList 
-                    eventIds={attendedEventIds} 
-                    filter="past"
-                    emptyText="You have no past events." 
-                />
-            </TabsContent>
-            <TabsContent value="liked">
-                <EventList 
-                    eventIds={userData?.likedEvents || []} 
-                    emptyText="You haven't liked any events yet." 
-                />
-            </TabsContent>
-            <TabsContent value="saved">
-                 <EventList 
-                    eventIds={userData?.savedEvents || []} 
-                    emptyText="You haven't saved any events yet." 
-                />
-            </TabsContent>
-        </Tabs>
+                <TabsContent value="upcoming">
+                    <EventList 
+                        eventIds={attendedEventIds} 
+                        filter="upcoming"
+                        emptyText="You have no upcoming events." 
+                    />
+                </TabsContent>
+                <TabsContent value="past">
+                    <EventList 
+                        eventIds={attendedEventIds} 
+                        filter="past"
+                        emptyText="You have no past events." 
+                    />
+                </TabsContent>
+                <TabsContent value="liked">
+                    <EventList 
+                        eventIds={userData?.likedEvents || []} 
+                        emptyText="You haven't liked any events yet." 
+                    />
+                </TabsContent>
+                <TabsContent value="saved">
+                    <EventList 
+                        eventIds={userData?.savedEvents || []} 
+                        emptyText="You haven't saved any events yet." 
+                    />
+                </TabsContent>
+            </Tabs>
+        )}
       </main>
       <Footer />
     </div>

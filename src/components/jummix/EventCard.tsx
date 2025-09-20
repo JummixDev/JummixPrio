@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { toggleEventInteraction } from "@/app/actions";
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 
 type EventCardProps = {
@@ -36,8 +37,8 @@ export function EventCard({ event }: EventCardProps) {
   
   useEffect(() => {
     if (userData) {
-      setIsLiked(userData.likedEvents?.includes(event.id));
-      setIsSaved(userData.savedEvents?.includes(event.id));
+      setIsLiked(userData.likedEvents?.includes(event.id) ?? false);
+      setIsSaved(userData.savedEvents?.includes(event.id) ?? false);
     }
   }, [userData, event.id]);
 
@@ -67,10 +68,11 @@ export function EventCard({ event }: EventCardProps) {
         const actionVerb = type === 'liked' ? 'Liked' : 'Saved';
         const pastTenseVerb = type === 'liked' ? 'liked' : 'saved';
         
-        toast({
-            title: `Event ${result.newState ? actionVerb : 'Un' + pastTenseVerb}!`,
-            description: `You've ${result.newState ? '' : 'un'}${pastTenseVerb} ${event.name}.`,
-        });
+        // No toast on success for a cleaner UX, the visual feedback is enough
+        // toast({
+        //     title: `Event ${result.newState ? actionVerb : 'Un' + pastTenseVerb}!`,
+        //     description: `You've ${result.newState ? '' : 'un'}${pastTenseVerb} ${event.name}.`,
+        // });
     }
   }
   
@@ -95,11 +97,11 @@ export function EventCard({ event }: EventCardProps) {
             className="w-full h-40 object-cover"
             />
             <div className="absolute top-2 right-2 flex gap-2">
-                <Button onClick={(e) => handleInteraction(e, 'liked')} size="icon" variant="ghost" className={`text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110 ${isLiked ? 'bg-red-500/80' : ''}`}>
-                    <Heart className="w-4 h-4" />
+                <Button onClick={(e) => handleInteraction(e, 'liked')} size="icon" variant="ghost" className={cn("text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110", isLiked && 'bg-red-500/80 text-white')}>
+                    <Heart className={cn("w-4 h-4", isLiked && "fill-current")} />
                 </Button>
-                <Button onClick={(e) => handleInteraction(e, 'saved')} size="icon" variant="ghost" className={`text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110 ${isSaved ? 'bg-blue-500/80' : ''}`}>
-                    <Bookmark className="w-4 h-4" />
+                <Button onClick={(e) => handleInteraction(e, 'saved')} size="icon" variant="ghost" className={cn("text-white hover:bg-white/20 hover:text-white rounded-full h-8 w-8 transition-transform active:scale-90 hover:scale-110", isSaved && 'bg-blue-500/80 text-white')}>
+                    <Bookmark className={cn("w-4 h-4", isSaved && "fill-current")} />
                 </Button>
             </div>
             <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
