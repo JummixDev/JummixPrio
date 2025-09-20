@@ -33,7 +33,7 @@ const mockAttendedEvents = [
         name: "Summer Music Fest",
         date: "2024-08-15",
         location: "Lakeside Park",
-        image: "https://placehold.co/400x200.png",
+        image: "https://picsum.photos/seed/event-1/400/200",
         hint: "concert crowd",
         friendsAttending: [],
     },
@@ -42,17 +42,17 @@ const mockAttendedEvents = [
         name: "Tech Innovators Summit",
         date: "2024-09-05",
         location: "Convention Center",
-        image: "https://placehold.co/400x200.png",
+        image: "https://picsum.photos/seed/event-2/400/200",
         hint: "conference speaker",
         friendsAttending: [],
     }
 ]
 
 const mockGallery = [
-    { src: "https://placehold.co/600x400.png", hint: "user photo" },
-    { src: "https://placehold.co/600x400.png", hint: "user selfie" },
-    { src: "https://placehold.co/600x400.png", hint: "travel picture" },
-    { src: "https://placehold.co/600x400.png", hint: "event photo" },
+    { src: "https://picsum.photos/seed/gallery-1/600/400", hint: "user photo" },
+    { src: "https://picsum.photos/seed/gallery-2/600/400", hint: "user selfie" },
+    { src: "https://picsum.photos/seed/gallery-3/600/400", hint: "travel picture" },
+    { src: "https://picsum.photos/seed/gallery-4/600/400", hint: "event photo" },
 ]
 
 function QuickChatDialog({ userName, onSend }: { userName: string, onSend: () => void }) {
@@ -141,7 +141,7 @@ export default function UserProfilePage() {
                     ...userData,
                     id: userDoc.id,
                     username: userData.username || userData.email.split('@')[0],
-                    bannerURL: userData.bannerURL || 'https://placehold.co/1000x300.png',
+                    bannerURL: userData.bannerURL || 'https://picsum.photos/seed/banner-default/1000/300',
                     bannerHint: 'abstract tech pattern',
                     followers: userData.followers || 0,
                     friendsCount: userData.friendsCount || 0,
@@ -166,7 +166,7 @@ export default function UserProfilePage() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
             <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-            <h1 className="text-2xl font-bold font-headline text-primary">Lade Ihr Erlebnis mit Jummix</h1>
+            <h1 className="text-2xl font-bold font-headline text-primary">Loading Profile...</h1>
         </div>
     );
   }
@@ -216,15 +216,15 @@ export default function UserProfilePage() {
              <div className="relative px-4 sm:px-8 z-20">
                  <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-24 sm:-mt-20">
                      <Avatar className="w-32 h-32 md:w-40 md:h-40 border-4 border-background ring-4 ring-primary flex-shrink-0 -mt-12 sm:-mt-0">
-                        <AvatarImage src={profileUser.photoURL || 'https://placehold.co/128x128.png'} alt={profileUser.displayName} data-ai-hint="person portrait" />
+                        <AvatarImage src={profileUser.photoURL || 'https://picsum.photos/seed/avatar-default/128/128'} alt={profileUser.displayName} data-ai-hint="person portrait" />
                         <AvatarFallback>{profileUser.displayName.substring(0,2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex-grow w-full text-center sm:text-left pt-4 sm:pt-0">
                         <h2 className="text-3xl font-bold font-headline">{profileUser.displayName}</h2>
                         <p className="text-muted-foreground">@{profileUser.username}</p>
                         <div className="flex justify-center sm:justify-start gap-4 mt-2 text-sm">
-                            <Link href={`/friends`} className="hover:underline"><span className="font-semibold">{profileUser.friendsCount}</span> Friends</Link>
-                            <Link href={`/friends`} className="hover:underline"><span className="font-semibold">{profileUser.followers}</span> Followers</Link>
+                            <Link href={`/friends`} className="hover:underline"><span className="font-semibold">{profileUser.friendsCount || 0}</span> Friends</Link>
+                            <Link href={`/friends`} className="hover:underline"><span className="font-semibold">{profileUser.followers || 0}</span> Followers</Link>
                         </div>
                     </div>
                      <div className="flex gap-2 flex-shrink-0">

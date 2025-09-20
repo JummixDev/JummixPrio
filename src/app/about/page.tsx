@@ -21,7 +21,7 @@ export default function AboutPage() {
       <main className="flex-grow pt-16">
         <section className="relative py-20 sm:py-32 flex items-center justify-center text-center">
             <div className="absolute inset-0 z-0">
-                <Image src="https://placehold.co/1920x1080.png" alt="People at an event" layout="fill" objectFit="cover" className="opacity-20" data-ai-hint="people community event" />
+                <Image src="https://picsum.photos/seed/jummix-about/1920/1080" alt="People at an event" layout="fill" objectFit="cover" className="opacity-20" data-ai-hint="people community event" />
                 <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background"></div>
             </div>
             <div className="relative z-10 space-y-6 container mx-auto px-4">

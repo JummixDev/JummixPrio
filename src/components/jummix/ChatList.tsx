@@ -320,7 +320,7 @@ export function ChatList() {
         });
 
         return () => unsubscribe();
-    }, [user]);
+    }, [user, activeConversationId]);
 
     if (authLoading || loading) {
         return (
