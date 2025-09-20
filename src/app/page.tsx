@@ -5,16 +5,12 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
-import { PartyPopper, CalendarDays, Users, Wand2, ArrowRight, Loader2 } from 'lucide-react';
+import { PartyPopper, CalendarDays, Users, Wand2, ArrowRight, Loader2, Search, MapPin, Music, Palette } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, UseFormReturn } from 'react-hook-form';
@@ -114,26 +110,15 @@ function AuthForm() {
 
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-2xl">
-      <CardHeader className="text-center">
-        <Link href="/">
-          <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
-        </Link>
-        <CardTitle className="text-2xl font-headline mt-4">
-          Join the Fun!
-        </CardTitle>
-        <CardDescription>
-          Sign in or create an account to start your Jummix journey.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Card className="w-full max-w-md mx-auto shadow-2xl backdrop-blur-lg bg-card/80 border-border/20">
+      <CardContent className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           <TabsContent value="signin">
-            <form onSubmit={handleSignIn(onSignInSubmit)} className="p-4 space-y-4">
+            <form onSubmit={handleSignIn(onSignInSubmit)} className="pt-6 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="alex@example.com" required {...registerSignIn('email')} />
@@ -162,7 +147,7 @@ function AuthForm() {
             </form>
           </TabsContent>
           <TabsContent value="signup">
-            <form onSubmit={handleSignUp(onSignUpSubmit)} className="p-4 space-y-4">
+            <form onSubmit={handleSignUp(onSignUpSubmit)} className="pt-6 space-y-4">
                <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
                 <Input id="signup-email" type="email" placeholder="alex@example.com" required {...registerSignUp('email')} />
@@ -193,25 +178,17 @@ function AuthForm() {
 
 
 function LandingPageContent() {
-  const signupCardRef = useRef<HTMLDivElement>(null);
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  // This effect will run ONCE after the initial render,
-  // and redirect a logged-in user to their dashboard.
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard');
+      router.push('/explore');
     }
   }, [user, loading, router]);
 
 
-  const scrollToSignup = () => {
-    signupCardRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-  
-    // Show a loading indicator while auth state is being determined
-  if (loading) {
+  if (loading || user) {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
             <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
@@ -220,79 +197,68 @@ function LandingPageContent() {
     );
   }
 
-  // If the user is already logged in, show a redirecting message or nothing
-  // to avoid flashing the landing page.
-  if (user) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
-            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-            <h1 className="text-2xl font-bold font-headline text-primary">Redirecting to your dashboard...</h1>
-        </div>
-    );
-  }
-
-
   return (
     <div className="bg-background text-foreground font-body">
-      <header className="absolute top-0 left-0 right-0 z-10 p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link href="/">
-            <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
-          </Link>
-          <Button onClick={scrollToSignup}>Sign In</Button>
-        </div>
-      </header>
-
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center text-center p-4 overflow-hidden">
+        <section className="relative min-h-[90vh] flex items-center justify-center text-center p-4 overflow-hidden">
             <div className="absolute inset-0 z-0">
-                <Image src="https://placehold.co/1920x1080.png" alt="Social event collage" layout="fill" objectFit="cover" className="opacity-20" data-ai-hint="concert crowd party" />
+                <Image src="https://picsum.photos/seed/jummix-hero/1920/1080" alt="Social event collage" layout="fill" objectFit="cover" className="opacity-20" data-ai-hint="concert crowd party" />
                 <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background"></div>
             </div>
 
-            <div className="relative z-10 space-y-6">
+            <div className="relative z-10 space-y-8 w-full max-w-4xl">
                 <h1 className="text-5xl md:text-7xl font-bold font-headline leading-tight">
-                Discover & Share <br/> Unforgettable Experiences
+                    Find your crowd. <br/> Discover your moment.
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                Jummix is your ultimate social event hub. Find exciting events, connect with friends, and get personalized recommendations powered by AI. Your next great memory is just a click away.
+                    Jummix is where unforgettable experiences happen. Join a global community to discover, attend, and host events that match your vibe.
                 </p>
-                <Button size="lg" onClick={scrollToSignup}>
-                Get Started for Free <ArrowRight className="ml-2"/>
-                </Button>
+                <div className="w-full max-w-lg mx-auto">
+                  <AuthForm />
+                </div>
             </div>
         </section>
 
-        {/* Features Section */}
+        {/* Categories Section */}
         <section className="container mx-auto py-20 px-4 text-center">
-            <h2 className="text-4xl font-bold font-headline mb-4">Why You'll Love Jummix</h2>
+            <h2 className="text-4xl font-bold font-headline mb-4">Explore what's possible</h2>
             <p className="text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
-                We're more than just an event calendar. We're a community builder, a memory maker, and your personal guide to what's happening.
+                From pulsing concerts to mindful workshops, there's always something new to discover.
             </p>
-            <div className="grid md:grid-cols-3 gap-8">
-                <div className="bg-card p-8 rounded-lg shadow-sm border">
-                    <CalendarDays className="h-12 w-12 text-primary mx-auto mb-4" />
-                    <h3 className="text-xl font-bold font-headline mb-2">Find Your Vibe</h3>
-                    <p className="text-muted-foreground">Explore a curated list of events, from concerts and festivals to local meetups and workshops.</p>
-                </div>
-                <div className="bg-card p-8 rounded-lg shadow-sm border">
-                    <Users className="h-12 w-12 text-primary mx-auto mb-4" />
-                    <h3 className="text-xl font-bold font-headline mb-2">Connect with Your Crew</h3>
-                    <p className="text-muted-foreground">See who's going where, make plans with friends, and share your favorite moments in your activity feed.</p>
-                </div>
-                <div className="bg-card p-8 rounded-lg shadow-sm border">
-                    <Wand2 className="h-12 w-12 text-primary mx-auto mb-4" />
-                    <h3 className="text-xl font-bold font-headline mb-2">AI-Powered Discovery</h3>
-                    <p className="text-muted-foreground">Our smart recommender learns what you like and suggests new events tailored just for you.</p>
-                </div>
-            </div>
-        </section>
-
-        {/* Sign-up Section */}
-        <section className="bg-secondary/40 py-20">
-            <div ref={signupCardRef}>
-                <AuthForm />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Link href="/explore" className="block group">
+                    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                        <Image src="https://picsum.photos/seed/music/600/400" alt="Concert" width={600} height={400} className="w-full h-48 object-cover"/>
+                        <CardContent className="p-4">
+                            <h3 className="font-bold text-lg">Live Music</h3>
+                        </CardContent>
+                    </Card>
+                </Link>
+                <Link href="/explore" className="block group">
+                     <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                        <Image src="https://picsum.photos/seed/art/600/400" alt="Art" width={600} height={400} className="w-full h-48 object-cover"/>
+                        <CardContent className="p-4">
+                            <h3 className="font-bold text-lg">Art & Culture</h3>
+                        </CardContent>
+                    </Card>
+                </Link>
+                <Link href="/explore" className="block group">
+                    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                        <Image src="https://picsum.photos/seed/food/600/400" alt="Food" width={600} height={400} className="w-full h-48 object-cover"/>
+                        <CardContent className="p-4">
+                            <h3 className="font-bold text-lg">Food & Drink</h3>
+                        </CardContent>
+                    </Card>
+                </Link>
+                <Link href="/explore" className="block group">
+                     <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                        <Image src="https://picsum.photos/seed/sports/600/400" alt="Sports" width={600} height={400} className="w-full h-48 object-cover"/>
+                        <CardContent className="p-4">
+                            <h3 className="font-bold text-lg">Sports & Fitness</h3>
+                        </CardContent>
+                    </Card>
+                </Link>
             </div>
         </section>
       </main>

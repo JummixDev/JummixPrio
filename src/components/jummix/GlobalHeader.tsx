@@ -1,17 +1,16 @@
 
-
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Ticket, Clock, Library } from 'lucide-react';
+import { Menu, MessageSquare, User, Settings, LayoutDashboard, Shield, HelpCircle, Info, Mail, LogOut, Loader2, Ticket, Clock, Library, Compass } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { GlobalSearch } from './GlobalSearch';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 // Pages where the global header should NOT be shown
 const noHeaderPages = ['/', '/reset-password', '/onboarding'];
@@ -50,7 +49,7 @@ export function GlobalHeader() {
     return null; // Or a slim loading bar
   }
 
-  // Hide header on specific pages or if the user is not logged in (except for the landing page)
+  // Hide header on specific pages or if the user is not logged in
   if (!user || noHeaderPages.includes(pathname)) {
     return null;
   }
@@ -92,30 +91,39 @@ export function GlobalHeader() {
         )}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/dashboard">
+            <Link href="/explore">
               <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
             </Link>
-            <div className="flex-1 max-w-sm mx-4 hidden md:block">
-              <GlobalSearch />
-            </div>
-            <div className="flex items-center gap-1">
-              <Button asChild variant="ghost" size="icon">
-                <Link href="/chats">
-                  <MessageSquare />
-                  <span className="sr-only">Chats</span>
+            
+            <div className="flex items-center gap-2">
+               <Button asChild variant="ghost" className="hidden sm:inline-flex">
+                <Link href="/explore">
+                  <Compass/>
+                  Explore
                 </Link>
               </Button>
+               <Button asChild variant="ghost" className="hidden sm:inline-flex">
+                <Link href="/chats">
+                  <MessageSquare />
+                  Chats
+                </Link>
+              </Button>
+
                <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu />
-                    <span className="sr-only">Open menu</span>
+                  <Button variant="ghost" className="relative">
+                    <Avatar className="w-8 h-8">
+                        <AvatarImage src={userData?.photoURL || undefined} alt={userData?.displayName}/>
+                        <AvatarFallback>
+                            {userData?.displayName?.substring(0, 2) || <User/>}
+                        </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0 flex flex-col">
                     <SheetHeader className="p-6 pb-4 border-b">
                         <SheetTitle>
-                           Jummix Menu
+                           Menu
                         </SheetTitle>
                     </SheetHeader>
                   <div className="flex-grow overflow-y-auto">

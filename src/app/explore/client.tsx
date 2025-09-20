@@ -5,7 +5,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Search, SlidersHorizontal, Loader2, Users, ArrowRight, MessageSquare, UserPlus, Check, UserCheck } from 'lucide-react';
 import Link from 'next/link';
-import { Footer } from '@/components/jummix/Footer';
 import { Input } from '@/components/ui/input';
 import {
   Sheet,
@@ -22,7 +21,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -46,7 +44,7 @@ const EventTile = ({ event, index }: { event: Event, index: number }) => (
             )}
         >
             <Image 
-                src={event.image || 'https://placehold.co/600x400.png'} 
+                src={event.image || 'https://picsum.photos/seed/default-event/600/400'} 
                 alt={event.name || 'Event image'}
                 width={400}
                 height={400}
@@ -87,13 +85,21 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [view, setView] = useState<'explore' | 'friends' | 'chats'>('explore');
 
-  const { user, userData } = useAuth();
+  const { user, userData, loading } = useAuth();
   const [allUsers, setAllUsers] = useState<UserProfile[]>(initialUsers);
   const [friendSearchTerm, setFriendSearchTerm] = useState('');
   const debouncedFriendSearchTerm = useDebounce(friendSearchTerm, 300);
   const [friendFilters, setFriendFilters] = useState({ verifiedOnly: false });
   const [friendSortBy, setFriendSortBy] = useState('relevance');
   const { toast } = useToast();
+  const router = useRouter();
+  
+    useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
 
   const filteredAndSortedEvents = useMemo(() => {
     let filtered = [...initialEvents];
@@ -193,122 +199,125 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
 }
 
 
+  if (loading || !user) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+            <h1 className="text-2xl font-bold font-headline text-primary">Loading your Jummix experience</h1>
+        </div>
+    );
+  }
+
   return (
-    <div className="bg-background min-h-screen flex flex-col">
-       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-16 z-30">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-16 gap-4">
-              <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  asChild={view === 'explore'} 
-                  onClick={view !== 'explore' ? handleBackClick : undefined}
-                  className="hidden sm:inline-flex"
-               >
-                   {view === 'explore' ? (
-                       <Link href="/dashboard"><ArrowLeft /></Link>
-                   ) : (
-                       <ArrowLeft />
-                   )}
-              </Button>
-              <Sheet>
-                <SheetTrigger asChild>
-                    <Button variant="outline">
-                        <SlidersHorizontal className="mr-2 h-4 w-4" />
-                        Filters
-                    </Button>
-                </SheetTrigger>
-                <SheetContent className="flex flex-col">
-                    <SheetHeader>
-                        <SheetTitle>Filter & Sort Events</SheetTitle>
-                        <SheetDescription>
-                            Refine your search to find the perfect event.
-                        </SheetDescription>
-                    </SheetHeader>
-                    <div className="py-4 space-y-6 overflow-y-auto flex-grow pr-6">
-                        {/* Sort by */}
-                        <div className="space-y-4">
-                            <Label className="font-semibold">Sort by</Label>
-                             <RadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="s1" /><Label htmlFor="s1">Relevance</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="newest" id="s2" /><Label htmlFor="s2">Newest First</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="popularity" id="s3" /><Label htmlFor="s3">Popularity</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="rating" id="s4" /><Label htmlFor="s4">Best Rating</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="distance" id="s5" /><Label htmlFor="s5">Distance</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="date_asc" id="s6" /><Label htmlFor="s6">Date (Ascending)</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="date_desc" id="s7" /><Label htmlFor="s7">Date (Descending)</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="price_asc" id="s8" /><Label htmlFor="s8">Price (Ascending)</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="price_desc" id="s9" /><Label htmlFor="s9">Price (Descending)</Label></div>
-                             </RadioGroup>
-                        </div>
-                        <Separator />
-                        {/* Date */}
-                         <div className="space-y-4">
-                            <Label className="font-semibold">Date</Label>
-                             <RadioGroup value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="d1" /><Label htmlFor="d1">Anytime</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="today" id="d2" /><Label htmlFor="d2">Today</Label></div>
-                                <div className="flex items-center space-x-2"><RadioGroupItem value="weekend" id="d3" /><Label htmlFor="d3">This Weekend</Label></div>
-                                 <div className="flex items-center space-x-2"><RadioGroupItem value="month" id="d4" /><Label htmlFor="d4">This Month</Label></div>
-                             </RadioGroup>
-                        </div>
-                        <Separator />
-                        {/* Price */}
-                        <div className="space-y-4">
-                            <Label className="font-semibold">Price</Label>
-                            <div className="flex items-center space-x-2"><Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/><Label htmlFor="price-free">Free</Label></div>
-                            <div className="flex items-center space-x-2"><Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} /><Label htmlFor="price-paid">Paid</Label></div>
-                        </div>
-                        <Separator />
-                         {/* Other Filters */}
-                        <div className="space-y-4">
-                            <Label className="font-semibold">Other Filters</Label>
-                             <div className="flex items-center space-x-2"><Checkbox id="woman-only"/><Label htmlFor="woman-only">Woman Only</Label></div>
-                        </div>
-                        <Separator />
-                         {/* Interests */}
-                        <div className="space-y-4">
-                            <Label className="font-semibold">Interests & Topics</Label>
-                            <div className="flex flex-wrap gap-2">
-                                {["Reading", "Gaming", "Yoga", "Coding", "Dancing", "Politics"].map(interest => (
-                                     <div key={interest} className="flex items-center space-x-2">
-                                        <Checkbox id={`interest-${interest}`} />
-                                        <Label htmlFor={`interest-${interest}`}>{interest}</Label>
-                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="p-4 border-t">
-                        <SheetClose asChild>
-                            <Button className="w-full">Apply Filters</Button>
-                        </SheetClose>
-                    </div>
-                </SheetContent>
-              </Sheet>
-          </div>
-      </header>
-       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16 h-full flex flex-col">
+    <div className="bg-secondary/20 min-h-screen flex flex-col">
+       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-24 h-full flex flex-col">
             <div className={cn("transition-transform duration-500 ease-in-out h-full", {
                 'translate-x-0': view === 'explore',
                 '-translate-x-[110%]': view === 'friends' || view === 'chats',
             })}>
-                <div className="flex justify-between items-center mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold font-headline mb-2">Discover Events</h1>
-                        <p className="text-muted-foreground">Find your next great experience from our curated list of events.</p>
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                    <div className="w-full sm:w-auto">
+                        <h1 className="text-3xl font-bold font-headline mb-2 text-center sm:text-left">Discover Events</h1>
+                        <p className="text-muted-foreground text-center sm:text-left">Find your next great experience from our curated list of events.</p>
                     </div>
-                    <Button onClick={() => setView('friends')}>
-                        Discover Friends <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                     <div className="flex gap-2 w-full sm:w-auto">
+                        <div className="relative w-full">
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                             <Input 
+                                placeholder="Search events..." 
+                                className="pl-10" 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline">
+                                <SlidersHorizontal className="mr-0 sm:mr-2 h-4 w-4" />
+                                <span className="hidden sm:inline">Filters</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent className="flex flex-col">
+                            <SheetHeader>
+                                <SheetTitle>Filter & Sort Events</SheetTitle>
+                                <SheetDescription>
+                                    Refine your search to find the perfect event.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <div className="py-4 space-y-6 overflow-y-auto flex-grow pr-6">
+                                {/* Sort by */}
+                                <div className="space-y-4">
+                                    <Label className="font-semibold">Sort by</Label>
+                                    <RadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="s1" /><Label htmlFor="s1">Relevance</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="newest" id="s2" /><Label htmlFor="s2">Newest First</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="popularity" id="s3" /><Label htmlFor="s3">Popularity</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="rating" id="s4" /><Label htmlFor="s4">Best Rating</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="distance" id="s5" /><Label htmlFor="s5">Distance</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="date_asc" id="s6" /><Label htmlFor="s6">Date (Ascending)</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="date_desc" id="s7" /><Label htmlFor="s7">Date (Descending)</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="price_asc" id="s8" /><Label htmlFor="s8">Price (Ascending)</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="price_desc" id="s9" /><Label htmlFor="s9">Price (Descending)</Label></div>
+                                    </RadioGroup>
+                                </div>
+                                <Separator />
+                                {/* Date */}
+                                <div className="space-y-4">
+                                    <Label className="font-semibold">Date</Label>
+                                    <RadioGroup value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="d1" /><Label htmlFor="d1">Anytime</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="today" id="d2" /><Label htmlFor="d2">Today</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="weekend" id="d3" /><Label htmlFor="d3">This Weekend</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="month" id="d4" /><Label htmlFor="d4">This Month</Label></div>
+                                    </RadioGroup>
+                                </div>
+                                <Separator />
+                                {/* Price */}
+                                <div className="space-y-4">
+                                    <Label className="font-semibold">Price</Label>
+                                    <div className="flex items-center space-x-2"><Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/><Label htmlFor="price-free">Free</Label></div>
+                                    <div className="flex items-center space-x-2"><Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} /><Label htmlFor="price-paid">Paid</Label></div>
+                                </div>
+                                <Separator />
+                                {/* Other Filters */}
+                                <div className="space-y-4">
+                                    <Label className="font-semibold">Other Filters</Label>
+                                    <div className="flex items-center space-x-2"><Checkbox id="woman-only"/><Label htmlFor="woman-only">Woman Only</Label></div>
+                                </div>
+                                <Separator />
+                                {/* Interests */}
+                                <div className="space-y-4">
+                                    <Label className="font-semibold">Interests & Topics</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {["Reading", "Gaming", "Yoga", "Coding", "Dancing", "Politics"].map(interest => (
+                                            <div key={interest} className="flex items-center space-x-2">
+                                                <Checkbox id={`interest-${interest}`} />
+                                                <Label htmlFor={`interest-${interest}`}>{interest}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-4 border-t">
+                                <SheetClose asChild>
+                                    <Button className="w-full">Apply Filters</Button>
+                                </SheetClose>
+                            </div>
+                        </SheetContent>
+                        </Sheet>
+                        <Button onClick={() => setView('friends')}>
+                            <Users className="mr-0 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Friends</span>
+                        </Button>
+                    </div>
                 </div>
                 
-                <div className="columns-2 md:columns-4 lg:columns-5 gap-4">
+                <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4">
                     {filteredAndSortedEvents.map((event, index) => (
                         <EventTile key={event.id} event={event} index={index} />
                     ))}
                 </div>
             </div>
-             <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[100%] pt-16", {
+             <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[calc(100vh-6rem)]", {
                 'translate-x-[110%]': view === 'explore',
                 'translate-x-0': view === 'friends',
                 '-translate-x-[110%]': view === 'chats',
@@ -335,7 +344,7 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                     </div>
                  </ScrollArea>
             </div>
-            <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[100%]", {
+            <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[calc(100vh-6rem)]", {
                 'translate-x-[220%]': view === 'explore' || view === 'friends',
                 'translate-x-0': view === 'chats',
             })}>
@@ -350,7 +359,6 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                 </div>
             </div>
       </main>
-      <Footer />
     </div>
   );
 }
