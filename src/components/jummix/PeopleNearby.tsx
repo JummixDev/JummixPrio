@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
-import { ArrowUpRight, Users } from "lucide-react";
+import { ArrowUpRight, Compass, Users } from "lucide-react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
@@ -59,11 +59,18 @@ export function PeopleNearby({ onZoom }: { onZoom: () => void }) {
 export function PeopleNearbyExpanded() {
   return (
     <Card className="h-full flex flex-col">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
             <CardTitle className="font-headline text-2xl flex items-center gap-2"><Users /> All People Nearby</CardTitle>
             <CardDescription>Discover all people in your vicinity.</CardDescription>
+          </div>
+          <Button asChild>
+            <Link href="/friends">
+              <Compass className="mr-2"/> Discover More
+            </Link>
+          </Button>
         </CardHeader>
-        <CardContent className="flex-grow">
+        <CardContent className="flex-grow p-0">
             <ScrollArea className="h-full">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 p-4">
                     {allMockUsers.map((user) => (
