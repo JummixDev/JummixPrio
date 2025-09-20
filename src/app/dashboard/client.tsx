@@ -16,7 +16,7 @@ import { UserPostsFeed, UserPostsFeedExpanded } from '@/components/jummix/UserPo
 import { NotificationCenter, NotificationCenterExpanded } from '@/components/jummix/NotificationCenter';
 import { Leaderboard, LeaderboardExpanded } from '@/components/jummix/Leaderboard';
 import { Badges, BadgesExpanded } from '@/components/jummix/Badges';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -213,8 +213,8 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   }
 
   return (
-    <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24 space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
                 <EventReels />
             </div>
@@ -223,8 +223,8 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
             </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-8 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="lg:col-span-8 space-y-6">
                 {mainWidget?.expanded}
             </div>
 
