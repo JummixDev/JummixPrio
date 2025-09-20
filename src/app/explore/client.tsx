@@ -230,147 +230,145 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
         </div>
       </header>
        <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-16 pb-24 h-full flex flex-col">
-            <div className={cn("transition-transform duration-500 ease-in-out h-full", {
-                'translate-x-0': view === 'explore',
-                '-translate-x-[110%]': view === 'friends' || view === 'chats',
-            })}>
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-                    <div className="w-full sm:w-auto">
-                        <h1 className="text-3xl font-bold font-headline mb-2 text-center sm:text-left">Discover Events</h1>
-                        <p className="text-muted-foreground text-center sm:text-left">Find your next great experience from our curated list of events.</p>
-                    </div>
-                     <div className="flex flex-col gap-2 items-center sm:items-end">
-                         {(userData?.isVerifiedHost || userData?.email === 'service@jummix.com') && (
-                            <Button asChild>
-                                <Link href="/host/create-event">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Create Event
-                                </Link>
-                            </Button>
-                        )}
-                        <div className="flex gap-2">
-                            <Sheet>
-                            <SheetTrigger asChild>
-                                <Button variant="outline">
-                                    <SlidersHorizontal className="mr-0 sm:mr-2 h-4 w-4" />
-                                    <span className="hidden sm:inline">Filters</span>
+            {view === 'explore' && (
+                <div className="h-full flex flex-col">
+                    <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 flex-shrink-0">
+                        <div className="w-full sm:w-auto">
+                            <h1 className="text-3xl font-bold font-headline mb-2 text-center sm:text-left">Discover Events</h1>
+                            <p className="text-muted-foreground text-center sm:text-left">Find your next great experience from our curated list of events.</p>
+                        </div>
+                        <div className="flex flex-col gap-2 items-center sm:items-end">
+                            {(userData?.isVerifiedHost || userData?.email === 'service@jummix.com') && (
+                                <Button asChild>
+                                    <Link href="/host/create-event">
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Create Event
+                                    </Link>
                                 </Button>
-                            </SheetTrigger>
-                            <SheetContent className="flex flex-col">
-                                <SheetHeader>
-                                    <SheetTitle>Filter & Sort Events</SheetTitle>
-                                    <SheetDescription>
-                                        Refine your search to find the perfect event.
-                                    </SheetDescription>
-                                </SheetHeader>
-                                <div className="py-4 space-y-6 overflow-y-auto flex-grow pr-6">
-                                    {/* Sort by */}
-                                    <div className="space-y-4">
-                                        <Label className="font-semibold">Sort by</Label>
-                                        <RadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="s1" /><Label htmlFor="s1">Relevance</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="newest" id="s2" /><Label htmlFor="s2">Newest First</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="popularity" id="s3" /><Label htmlFor="s3">Popularity</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="rating" id="s4" /><Label htmlFor="s4">Best Rating</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="distance" id="s5" /><Label htmlFor="s5">Distance</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="date_asc" id="s6" /><Label htmlFor="s6">Date (Ascending)</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="date_desc" id="s7" /><Label htmlFor="s7">Date (Descending)</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="price_asc" id="s8" /><Label htmlFor="s8">Price (Ascending)</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="price_desc" id="s9" /><Label htmlFor="s9">Price (Descending)</Label></div>
-                                        </RadioGroup>
-                                    </div>
-                                    <Separator />
-                                    {/* Date */}
-                                    <div className="space-y-4">
-                                        <Label className="font-semibold">Date</Label>
-                                        <RadioGroup value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="d1" /><Label htmlFor="d1">Anytime</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="today" id="d2" /><Label htmlFor="d2">Today</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="weekend" id="d3" /><Label htmlFor="d3">This Weekend</Label></div>
-                                            <div className="flex items-center space-x-2"><RadioGroupItem value="month" id="d4" /><Label htmlFor="d4">This Month</Label></div>
-                                        </RadioGroup>
-                                    </div>
-                                    <Separator />
-                                    {/* Price */}
-                                    <div className="space-y-4">
-                                        <Label className="font-semibold">Price</Label>
-                                        <div className="flex items-center space-x-2"><Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/><Label htmlFor="price-free">Free</Label></div>
-                                        <div className="flex items-center space-x-2"><Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} /><Label htmlFor="price-paid">Paid</Label></div>
-                                    </div>
-                                    <Separator />
-                                    {/* Other Filters */}
-                                    <div className="space-y-4">
-                                        <Label className="font-semibold">Other Filters</Label>
-                                        <div className="flex items-center space-x-2"><Checkbox id="woman-only"/><Label htmlFor="woman-only">Woman Only</Label></div>
-                                    </div>
-                                    <Separator />
-                                    {/* Interests */}
-                                    <div className="space-y-4">
-                                        <Label className="font-semibold">Interests & Topics</Label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {["Reading", "Gaming", "Yoga", "Coding", "Dancing", "Politics"].map(interest => (
-                                                <div key={interest} className="flex items-center space-x-2">
-                                                    <Checkbox id={`interest-${interest}`} />
-                                                    <Label htmlFor={`interest-${interest}`}>{interest}</Label>
-                                                </div>
-                                            ))}
+                            )}
+                            <div className="flex gap-2">
+                                <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline">
+                                        <SlidersHorizontal className="mr-0 sm:mr-2 h-4 w-4" />
+                                        <span className="hidden sm:inline">Filters</span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent className="flex flex-col">
+                                    <SheetHeader>
+                                        <SheetTitle>Filter & Sort Events</SheetTitle>
+                                        <SheetDescription>
+                                            Refine your search to find the perfect event.
+                                        </SheetDescription>
+                                    </SheetHeader>
+                                    <div className="py-4 space-y-6 overflow-y-auto flex-grow pr-6">
+                                        {/* Sort by */}
+                                        <div className="space-y-4">
+                                            <Label className="font-semibold">Sort by</Label>
+                                            <RadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="relevance" id="s1" /><Label htmlFor="s1">Relevance</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="newest" id="s2" /><Label htmlFor="s2">Newest First</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="popularity" id="s3" /><Label htmlFor="s3">Popularity</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="rating" id="s4" /><Label htmlFor="s4">Best Rating</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="distance" id="s5" /><Label htmlFor="s5">Distance</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="date_asc" id="s6" /><Label htmlFor="s6">Date (Ascending)</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="date_desc" id="s7" /><Label htmlFor="s7">Date (Descending)</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="price_asc" id="s8" /><Label htmlFor="s8">Price (Ascending)</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="price_desc" id="s9" /><Label htmlFor="s9">Price (Descending)</Label></div>
+                                            </RadioGroup>
+                                        </div>
+                                        <Separator />
+                                        {/* Date */}
+                                        <div className="space-y-4">
+                                            <Label className="font-semibold">Date</Label>
+                                            <RadioGroup value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="d1" /><Label htmlFor="d1">Anytime</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="today" id="d2" /><Label htmlFor="d2">Today</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="weekend" id="d3" /><Label htmlFor="d3">This Weekend</Label></div>
+                                                <div className="flex items-center space-x-2"><RadioGroupItem value="month" id="d4" /><Label htmlFor="d4">This Month</Label></div>
+                                            </RadioGroup>
+                                        </div>
+                                        <Separator />
+                                        {/* Price */}
+                                        <div className="space-y-4">
+                                            <Label className="font-semibold">Price</Label>
+                                            <div className="flex items-center space-x-2"><Checkbox id="price-free" checked={priceFilter.free} onCheckedChange={() => handlePriceChange('free')}/><Label htmlFor="price-free">Free</Label></div>
+                                            <div className="flex items-center space-x-2"><Checkbox id="price-paid" checked={priceFilter.paid} onCheckedChange={() => handlePriceChange('paid')} /><Label htmlFor="price-paid">Paid</Label></div>
+                                        </div>
+                                        <Separator />
+                                        {/* Other Filters */}
+                                        <div className="space-y-4">
+                                            <Label className="font-semibold">Other Filters</Label>
+                                            <div className="flex items-center space-x-2"><Checkbox id="woman-only"/><Label htmlFor="woman-only">Woman Only</Label></div>
+                                        </div>
+                                        <Separator />
+                                        {/* Interests */}
+                                        <div className="space-y-4">
+                                            <Label className="font-semibold">Interests & Topics</Label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {["Reading", "Gaming", "Yoga", "Coding", "Dancing", "Politics"].map(interest => (
+                                                    <div key={interest} className="flex items-center space-x-2">
+                                                        <Checkbox id={`interest-${interest}`} />
+                                                        <Label htmlFor={`interest-${interest}`}>{interest}</Label>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="p-4 border-t">
-                                    <SheetClose asChild>
-                                        <Button className="w-full">Apply Filters</Button>
-                                    </SheetClose>
-                                </div>
-                            </SheetContent>
-                            </Sheet>
+                                    <div className="p-4 border-t">
+                                        <SheetClose asChild>
+                                            <Button className="w-full">Apply Filters</Button>
+                                        </SheetClose>
+                                    </div>
+                                </SheetContent>
+                                </Sheet>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4">
-                    {filteredAndSortedEvents.map((event, index) => (
-                        <EventTile key={event.id} event={event} index={index} />
-                    ))}
-                </div>
-            </div>
-             <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[calc(100vh-12rem)]", {
-                'translate-x-[110%]': view === 'explore',
-                'translate-x-0': view === 'friends',
-                '-translate-x-[110%]': view === 'chats',
-            })}>
-                <div className="flex justify-between items-center mb-8 flex-shrink-0">
-                    <div>
-                        <h1 className="text-3xl font-bold font-headline mb-2">Discover Friends</h1>
-                        <p className="text-muted-foreground">Connect with new people and find common interests.</p>
-                    </div>
-                </div>
-                 <ScrollArea className="flex-grow min-h-0">
-                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pr-4">
-                         {filteredSuggestions.map(user => (
-                            <UserCard key={user.uid} user={user} onFollow={handleFollow} />
+                    
+                    <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 flex-grow overflow-y-auto">
+                        {filteredAndSortedEvents.map((event, index) => (
+                            <EventTile key={event.id} event={event} index={index} />
                         ))}
                     </div>
-                 </ScrollArea>
-            </div>
-            <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[calc(100vh-12rem)]", {
-                'translate-x-[220%]': view === 'explore' || view === 'friends',
-                'translate-x-0': view === 'chats',
-            })}>
-                 <div className="flex justify-between items-center mb-8 flex-shrink-0">
-                    <div>
-                        <h1 className="text-3xl font-bold font-headline mb-2">Your Chats</h1>
-                        <p className="text-muted-foreground">Continue the conversation with your friends and groups.</p>
+                </div>
+            )}
+            {view === 'friends' && (
+                 <div className="h-full flex flex-col">
+                    <div className="flex justify-between items-center mb-8 flex-shrink-0">
+                        <div>
+                            <h1 className="text-3xl font-bold font-headline mb-2">Discover Friends</h1>
+                            <p className="text-muted-foreground">Connect with new people and find common interests.</p>
+                        </div>
+                    </div>
+                    <ScrollArea className="flex-grow min-h-0">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pr-4">
+                                {filteredSuggestions.map(user => (
+                                <UserCard key={user.uid} user={user} onFollow={handleFollow} />
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </div>
+            )}
+            {view === 'chats' && (
+                <div className="h-full flex flex-col">
+                    <div className="flex justify-between items-center mb-8 flex-shrink-0">
+                        <div>
+                            <h1 className="text-3xl font-bold font-headline mb-2">Your Chats</h1>
+                            <p className="text-muted-foreground">Continue the conversation with your friends and groups.</p>
+                        </div>
+                    </div>
+                    <div className="flex-grow min-h-0">
+                        <ChatList />
                     </div>
                 </div>
-                <div className="h-[calc(100vh-24rem)]">
-                    <ChatList />
-                </div>
-            </div>
+            )}
       </main>
     </div>
   );
 }
 
+
+    
 
     
