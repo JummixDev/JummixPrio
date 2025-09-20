@@ -126,7 +126,6 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
             {/* Right Sidebar (Feeds) */}
             <div className="lg:col-span-4 space-y-8">
                 <UserPostsFeed />
-                <PeopleNearby />
                 <LiveActivityFeed />
                 <NotificationCenter />
             </div>

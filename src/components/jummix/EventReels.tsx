@@ -7,6 +7,8 @@ import { PlusCircle, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "../ui/separator";
+import { PeopleNearby } from "./PeopleNearby";
 
 const mockReels = [
   { user: { name: "Carlos Ray", avatar: "https://placehold.co/100x100.png", hint: "man portrait" }, event: "Summer Music Fest" },
@@ -31,35 +33,46 @@ export function EventReels() {
 
   return (
     <Card>
-        <CardHeader>
-            <CardTitle className="font-headline">Event Stories</CardTitle>
-            <CardDescription>Exclusive highlights from verified hosts. Promote your event here!</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div className="flex items-center gap-4 overflow-x-auto pb-4">
-                 {(isVerifiedHost || isAdmin) && (
-                    <Link href="/story/create" className="flex flex-col items-center gap-2 cursor-pointer text-center text-primary hover:text-primary/80 w-20 flex-shrink-0">
-                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-dashed border-primary">
-                            <PlusCircle className="w-8 h-8" />
+      <div className="grid grid-cols-1 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+           <CardHeader>
+              <CardTitle className="font-headline">Event Stories</CardTitle>
+              <CardDescription>Exclusive highlights from verified hosts. Promote your event here!</CardDescription>
+          </CardHeader>
+          <CardContent>
+              <div className="flex items-center gap-4 overflow-x-auto pb-4">
+                  {(isVerifiedHost || isAdmin) && (
+                      <Link href="/story/create" className="flex flex-col items-center gap-2 cursor-pointer text-center text-primary hover:text-primary/80 w-20 flex-shrink-0">
+                          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-dashed border-primary">
+                              <PlusCircle className="w-8 h-8" />
+                          </div>
+                          <span className="text-xs font-semibold">Add Story</span>
+                      </Link>
+                  )}
+                  {mockReels.map((reel, index) => (
+                      <div key={index} className="flex flex-col items-center gap-2 text-center flex-shrink-0 cursor-pointer group">
+                        <div className="relative w-16 h-16">
+                              <Avatar className="w-full h-full border-2 border-transparent group-hover:border-primary transition-colors">
+                                  <AvatarImage src={reel.user.avatar} alt={reel.user.name} data-ai-hint={reel.user.hint}/>
+                                  <AvatarFallback>{reel.user.name.substring(0,2)}</AvatarFallback>
+                              </Avatar>
+                              <div className="absolute inset-0 rounded-full ring-2 ring-offset-2 ring-offset-card ring-purple-500 group-hover:ring-purple-400 transition-all"/>
                         </div>
-                        <span className="text-xs font-semibold">Add Story</span>
-                        <p className="text-xs text-muted-foreground -mt-1">Promote your event to thousands of users.</p>
-                    </Link>
-                )}
-                {mockReels.map((reel, index) => (
-                    <div key={index} className="flex flex-col items-center gap-2 text-center flex-shrink-0 cursor-pointer group">
-                       <div className="relative w-16 h-16">
-                            <Avatar className="w-full h-full border-2 border-transparent group-hover:border-primary transition-colors">
-                                <AvatarImage src={reel.user.avatar} alt={reel.user.name} data-ai-hint={reel.user.hint}/>
-                                <AvatarFallback>{reel.user.name.substring(0,2)}</AvatarFallback>
-                            </Avatar>
-                            <div className="absolute inset-0 rounded-full ring-2 ring-offset-2 ring-offset-card ring-purple-500 group-hover:ring-purple-400 transition-all"/>
-                       </div>
-                        <span className="text-xs font-medium w-16 truncate">{reel.user.name}</span>
-                    </div>
-                ))}
-            </div>
-        </CardContent>
+                          <span className="text-xs font-medium w-16 truncate">{reel.user.name}</span>
+                      </div>
+                  ))}
+              </div>
+          </CardContent>
+        </div>
+        <div className="hidden lg:block">
+           <div className="flex h-full items-center">
+              <Separator orientation="vertical" className="h-3/4 mx-auto" />
+              <div className="flex-grow p-6">
+                <PeopleNearby />
+              </div>
+           </div>
+        </div>
+      </div>
     </Card>
   );
 }
