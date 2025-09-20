@@ -379,6 +379,50 @@ export async function completeOnboardingProfile(userId: string, data: Onboarding
         return { success: false, error: "Failed to update profile in the database." };
     }
 }
+
+
+// Admin actions
+export async function updateUserStatus(userId: string, status: 'Active' | 'Banned') {
+    if (!userId) return { success: false, error: "User ID is required." };
+    try {
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, { status: status });
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating user status:", error);
+        return { success: false, error: "Failed to update user status." };
+    }
+}
+
+export async function updateHostVerification(userId: string, action: 'approve' | 'deny' | 'revoke') {
+     if (!userId) return { success: false, error: "User ID is required." };
+
+     try {
+        const userRef = doc(db, 'users', userId);
+        let updateData = {};
+
+        switch(action) {
+            case 'approve':
+                updateData = { isVerifiedHost: true, hostApplicationStatus: 'approved' };
+                break;
+            case 'deny':
+                updateData = { isVerifiedHost: false, hostApplicationStatus: 'rejected' };
+                break;
+            case 'revoke':
+                 updateData = { isVerifiedHost: false, hostApplicationStatus: 'none' };
+                break;
+            default:
+                return { success: false, error: "Invalid action." };
+        }
+
+        await updateDoc(userRef, updateData);
+        return { success: true };
+
+     } catch(error) {
+         console.error(`Error during host verification action '${action}':`, error);
+         return { success: false, error: "Failed to update host verification status." };
+     }
+}
     
 
     

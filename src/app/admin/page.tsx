@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart, Users, ShieldAlert, CheckCircle, ArrowLeft, MoreHorizontal, FileText, BadgeHelp, Check, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,40 +10,28 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { updateUserStatus, updateHostVerification } from '../actions';
 
 const ADMIN_EMAIL = 'service@jummix.com';
 
-const mockUsers = [
-    { id: 'user-1', name: 'Carlos Ray', email: 'carlos.ray@example.com', events: 42, status: 'Active', isHost: true },
-    { id: 'user-2', name: 'Jenna Smith', email: 'jenna.smith@example.com', events: 35, status: 'Active', isHost: false },
-    { id: 'user-3', name: 'Alex Doe', email: 'alex.doe@example.com', events: 73, status: 'Banned', isHost: true },
-    { id: 'user-4', name: 'Aisha Khan', email: 'aisha.khan@example.com', events: 50, status: 'Active', isHost: false },
-];
+type UserData = {
+    uid: string;
+    displayName: string;
+    email: string;
+    status: 'Active' | 'Banned';
+    isVerifiedHost: boolean;
+    hostApplicationStatus?: 'pending' | 'approved' | 'rejected' | 'none';
+};
 
 const mockReports = [
     { id: 'rep-1', type: 'Event', item: 'Underground Rave Party', reason: 'Illegal Activity', status: 'Pending Review' },
     { id: 'rep-2', type: 'Profile', item: '@spammer', reason: 'Spam Account', status: 'Resolved' },
     { id: 'rep-3', type: 'Activity', item: 'Hate speech comment', reason: 'Harassment', status: 'Pending Review' },
 ];
-
-const mockVerificationRequests = [
-    { id: 'ver-1', name: 'Aisha Khan', email: 'aisha.khan@example.com', date: '2024-07-20' },
-    { id: 'ver-2', name: 'David Lee', email: 'david.lee@example.com', date: '2024-07-19' },
-]
 
 
 function Statistics() {
@@ -93,27 +81,32 @@ function Statistics() {
     )
 }
 
-function UserManagement() {
+function UserManagement({allUsers, isLoading}: {allUsers: UserData[], isLoading: boolean}) {
     const { toast } = useToast();
-    const [users, setUsers] = useState(mockUsers);
 
-    const handleBan = (userId: string) => {
-        setUsers(users.map(u => u.id === userId ? {...u, status: 'Banned'} : u));
-        toast({ title: 'User Banned', description: `User ${userId} has been banned.`});
+    const handleAction = async (userId: string, action: 'ban' | 'unban' | 'revoke') => {
+        const user = allUsers.find(u => u.uid === userId);
+        if (!user) return;
+
+        let result;
+        if (action === 'ban') {
+            result = await updateUserStatus(userId, 'Banned');
+            if (result.success) toast({ title: 'User Banned', description: `User ${user.displayName} has been banned.`});
+        } else if (action === 'unban') {
+            result = await updateUserStatus(userId, 'Active');
+            if (result.success) toast({ title: 'User Unbanned', description: `User ${user.displayName} has been unbanned.`});
+        } else if (action === 'revoke') {
+            result = await updateHostVerification(userId, 'revoke');
+             if (result.success) toast({ title: 'Host Rights Revoked', description: `User ${user.displayName} is no longer a host.`});
+        }
+        
+        if (result && !result.success) {
+            toast({ variant: 'destructive', title: 'Action Failed', description: result.error});
+        }
     }
 
-    const handleUnban = (userId: string) => {
-        setUsers(users.map(u => u.id === userId ? {...u, status: 'Active'} : u));
-        toast({ title: 'User Unbanned', description: `User ${userId} has been unbanned.`});
-    }
-
-    const handleHostRevoke = (userId: string) => {
-        setUsers(users.map(u => u.id === userId ? {...u, isHost: false} : u));
-        toast({ title: 'Host Rights Revoked', description: `User ${userId} is no longer a host.`});
-    }
-     const handleDelete = (userId: string) => {
-        setUsers(users.filter(u => u.id !== userId));
-        toast({ title: 'User Deleted', description: `User ${userId} has been deleted.`});
+    if (isLoading) {
+        return <Card><CardHeader><CardTitle>User Management</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin" /></CardContent></Card>
     }
 
     return (
@@ -134,14 +127,14 @@ function UserManagement() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {users.map(user => (
-                             <TableRow key={user.id}>
-                                <TableCell className="font-medium">{user.name}</TableCell>
+                        {allUsers.map(user => (
+                             <TableRow key={user.uid}>
+                                <TableCell className="font-medium">{user.displayName}</TableCell>
                                 <TableCell>{user.email}</TableCell>
-                                <TableCell>{user.isHost ? 'Yes' : 'No'}</TableCell>
+                                <TableCell>{user.isVerifiedHost ? 'Yes' : 'No'}</TableCell>
                                 <TableCell className="text-center">
                                     <Badge variant={user.status === 'Active' ? 'secondary' : 'destructive'}>
-                                        {user.status}
+                                        {user.status || 'Active'}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
@@ -154,13 +147,12 @@ function UserManagement() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            {user.status === 'Active' ? (
-                                                <DropdownMenuItem onClick={() => handleBan(user.id)} className="text-destructive">Ban User</DropdownMenuItem>
+                                            {(user.status || 'Active') === 'Active' ? (
+                                                <DropdownMenuItem onClick={() => handleAction(user.uid, 'ban')} className="text-destructive">Ban User</DropdownMenuItem>
                                              ) : (
-                                                 <DropdownMenuItem onClick={() => handleUnban(user.id)}>Unban User</DropdownMenuItem>
+                                                 <DropdownMenuItem onClick={() => handleAction(user.uid, 'unban')}>Unban User</DropdownMenuItem>
                                              )}
-                                             {user.isHost && <DropdownMenuItem onClick={() => handleHostRevoke(user.id)} className="text-destructive">Revoke Host Rights</DropdownMenuItem>}
-                                              <DropdownMenuItem onClick={() => handleDelete(user.id)} className="text-destructive">Delete User</DropdownMenuItem>
+                                             {user.isVerifiedHost && <DropdownMenuItem onClick={() => handleAction(user.uid, 'revoke')} className="text-destructive">Revoke Host Rights</DropdownMenuItem>}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
@@ -212,19 +204,25 @@ function Reports() {
     )
 }
 
-function Verifications() {
+function Verifications({verificationRequests, isLoading}: {verificationRequests: UserData[], isLoading: boolean}) {
     const { toast } = useToast();
-    const [requests, setRequests] = useState(mockVerificationRequests);
 
-    const handleApprove = (reqId: string) => {
-        setRequests(requests.filter(req => req.id !== reqId));
-        toast({ title: 'Host Approved', description: 'The user has been granted host privileges.' });
-    };
+    const handleAction = async (userId: string, action: 'approve' | 'deny') => {
+        const user = verificationRequests.find(u => u.uid === userId);
+        if (!user) return;
 
-    const handleDeny = (reqId: string) => {
-        setRequests(requests.filter(req => req.id !== reqId));
-        toast({ variant: 'destructive', title: 'Host Denied', description: 'The user\'s request has been denied.' });
+        const result = await updateHostVerification(userId, action);
+        
+        if (result.success) {
+            toast({ title: `Host ${action === 'approve' ? 'Approved' : 'Denied'}`, description: `The user ${user.displayName}'s request has been ${action}d.`});
+        } else {
+            toast({ variant: 'destructive', title: 'Action Failed', description: result.error});
+        }
     };
+    
+    if (isLoading) {
+        return <Card><CardHeader><CardTitle>Host Verifications</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin" /></CardContent></Card>
+    }
 
     return (
          <Card>
@@ -238,27 +236,33 @@ function Verifications() {
                         <TableRow>
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
-                             <TableHead>Request Date</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                      <TableBody>
-                        {requests.map(req => (
-                             <TableRow key={req.id}>
-                                <TableCell className="font-medium">{req.name}</TableCell>
-                                <TableCell>{req.email}</TableCell>
-                                <TableCell>{req.date}</TableCell>
-                                <TableCell className="text-right space-x-2">
-                                    <Button onClick={() => handleApprove(req.id)} variant="outline" size="icon" className="text-green-600 hover:bg-green-100 hover:text-green-700">
-                                        <Check className="w-4 h-4"/>
-                                    </Button>
-                                    <Button onClick={() => handleDeny(req.id)} variant="outline" size="icon" className="text-red-600 hover:bg-red-100 hover:text-red-700">
-                                        <X className="w-4 h-4"/>
-                                    </Button>
-                                    <Button variant="outline" size="sm"><FileText className="w-4 h-4 mr-2"/>View Application</Button>
+                        {verificationRequests.length > 0 ? (
+                            verificationRequests.map(req => (
+                                 <TableRow key={req.uid}>
+                                    <TableCell className="font-medium">{req.displayName}</TableCell>
+                                    <TableCell>{req.email}</TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                        <Button onClick={() => handleAction(req.uid, 'approve')} variant="outline" size="icon" className="text-green-600 hover:bg-green-100 hover:text-green-700">
+                                            <Check className="w-4 h-4"/>
+                                        </Button>
+                                        <Button onClick={() => handleAction(req.uid, 'deny')} variant="outline" size="icon" className="text-red-600 hover:bg-red-100 hover:text-red-700">
+                                            <X className="w-4 h-4"/>
+                                        </Button>
+                                        <Button variant="outline" size="sm"><FileText className="w-4 h-4 mr-2"/>View Application</Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                             <TableRow>
+                                <TableCell colSpan={3} className="text-center p-8 text-muted-foreground">
+                                    No pending verification requests.
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )}
                      </TableBody>
                 </Table>
             </CardContent>
@@ -272,22 +276,45 @@ export default function AdminPage() {
     const router = useRouter();
     const [activeSection, setActiveSection] = useState('stats');
     const [isAuthorized, setIsAuthorized] = useState(false);
+    
+    const [allUsers, setAllUsers] = useState<UserData[]>([]);
+    const [verificationRequests, setVerificationRequests] = useState<UserData[]>([]);
+    const [isLoadingData, setIsLoadingData] = useState(true);
 
     useEffect(() => {
-        // Wait until loading is false before we check for user and their role.
+        // Authorization check
         if (!loading) {
             if (!user) {
-                // Not logged in, redirect to home.
                 router.push('/');
             } else if (user.email !== ADMIN_EMAIL) {
-                // Logged in but not an admin, deny access.
                 setIsAuthorized(false);
             } else {
-                 // It's the admin! Authorize access.
                 setIsAuthorized(true);
             }
         }
     }, [user, loading, router]);
+    
+     useEffect(() => {
+        if (!isAuthorized) return;
+
+        setIsLoadingData(true);
+        const usersQuery = query(collection(db, 'users'));
+        
+        const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
+            const fetchedUsers = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserData));
+            setAllUsers(fetchedUsers);
+            
+            const pendingRequests = fetchedUsers.filter(u => u.hostApplicationStatus === 'pending');
+            setVerificationRequests(pendingRequests);
+            
+            setIsLoadingData(false);
+        }, (error) => {
+            console.error("Error fetching admin data:", error);
+            setIsLoadingData(false);
+        });
+
+        return () => unsubscribe();
+    }, [isAuthorized]);
 
     const navItems = [
         { id: 'stats', label: 'Statistics', icon: BarChart },
@@ -351,9 +378,9 @@ export default function AdminPage() {
                     </aside>
                     <section className="lg:col-span-3 space-y-8">
                         {activeSection === 'stats' && <Statistics />}
-                        {activeSection === 'users' && <UserManagement />}
+                        {activeSection === 'users' && <UserManagement allUsers={allUsers} isLoading={isLoadingData} />}
                         {activeSection === 'reports' && <Reports />}
-                        {activeSection === 'verifications' && <Verifications />}
+                        {activeSection === 'verifications' && <Verifications verificationRequests={verificationRequests} isLoading={isLoadingData} />}
                     </section>
                 </div>
             </main>
