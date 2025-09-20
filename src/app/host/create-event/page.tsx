@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createEvent } from '@/app/actions';
@@ -9,7 +9,7 @@ import { createEventSchema, CreateEventInput } from '@/lib/schemas';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar as CalendarIcon, Loader2, TrendingUp, Users, Goal, DollarSign } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, Loader2, TrendingUp, Users, Goal, DollarSign, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
+import NextImage from 'next/image';
 
 function ProfitabilityCalculator({ form }: { form: any }) {
     const [minAttendees, setMinAttendees] = useState(0);
@@ -96,6 +97,8 @@ export default function CreateEventPage() {
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const form = useForm<CreateEventInput>({
         resolver: zodResolver(createEventSchema),
@@ -110,6 +113,19 @@ export default function CreateEventPage() {
             expenses: 500,
         },
     });
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const dataUrl = reader.result as string;
+                setImagePreview(dataUrl);
+                form.setValue('image', dataUrl, { shouldValidate: true });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const onSubmit = async (values: CreateEventInput) => {
         if (!user) {
@@ -240,20 +256,44 @@ export default function CreateEventPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                                      <FormField
                                         control={form.control}
                                         name="image"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Event Image URL</FormLabel>
+                                                <FormLabel>Event Image</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="https://placehold.co/600x400.png" {...field} />
+                                                     <div>
+                                                        <input
+                                                            type="file"
+                                                            ref={fileInputRef}
+                                                            onChange={handleFileChange}
+                                                            className="hidden"
+                                                            accept="image/*"
+                                                        />
+                                                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                                            <ImageIcon className="mr-2 h-4 w-4" />
+                                                            Upload Image
+                                                        </Button>
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
+                                     <div>
+                                        {imagePreview && (
+                                            <div className="mt-2 space-y-2">
+                                                 <Label>Image Preview</Label>
+                                                 <div className="aspect-video relative w-full rounded-md overflow-hidden border">
+                                                    <NextImage src={imagePreview} alt="Event image preview" layout="fill" objectFit="cover" />
+                                                 </div>
+                                            </div>
+                                        )}
+                                     </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                      <FormField
                                         control={form.control}
                                         name="price"
@@ -262,6 +302,19 @@ export default function CreateEventPage() {
                                                 <FormLabel>Ticket Price (€)</FormLabel>
                                                 <FormControl>
                                                     <Input type="number" placeholder="Enter 0 for a free event" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                     <FormField
+                                        control={form.control}
+                                        name="capacity"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Max. Capacity</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" placeholder="e.g., 200" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -282,19 +335,7 @@ export default function CreateEventPage() {
                                             </FormItem>
                                         )}
                                     />
-                                     <FormField
-                                        control={form.control}
-                                        name="capacity"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Max. Capacity</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" placeholder="e.g., 200" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                     
                                 </div>
 
                                 <ProfitabilityCalculator form={form} />

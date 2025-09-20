@@ -23,7 +23,9 @@ export const createEventSchema = z.object({
   location: z.string().min(3, "Location is required."),
   description: z.string().min(10, "Description must be at least 10 characters long."),
   price: numberPreprocessor.default(0),
-  image: z.string().url("Please enter a valid image URL."),
+  image: z.string().refine(val => val.startsWith('data:image/'), {
+    message: 'A valid image upload is required.',
+  }),
   hostUid: z.string(),
   capacity: numberPreprocessor.optional(),
   expenses: numberPreprocessor.optional(),

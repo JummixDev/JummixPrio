@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import "dotenv/config";
@@ -25,8 +24,20 @@ export async function createEvent(eventData: CreateEventInput) {
     }
     
     try {
+        const { image, ...eventDetails } = validation.data;
+
+        // 1. Upload image if it's a data URI
+        const response = await fetch(image);
+        const blob = await response.blob();
+        const file = new File([blob], `event_${Date.now()}.png`, { type: blob.type });
+        const filePath = `events/${eventDetails.hostUid}/${file.name}`;
+        const imageUrl = await uploadFile(file, filePath);
+
+
+        // 2. Create event document in Firestore
         const docRef = await addDoc(collection(db, "events"), {
-            ...validation.data,
+            ...eventDetails,
+            image: imageUrl, // Use the uploaded image URL
             // Convert date to a Firestore-compatible format
             date: validation.data.date.toISOString().split('T')[0],
             isFree: validation.data.price === 0,
