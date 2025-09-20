@@ -1,14 +1,14 @@
 
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
 /**
- * Uploads a file to Firebase Storage and returns the download URL.
- * @param file The file to upload.
+ * Uploads a file (File, Blob, or Buffer) to Firebase Storage and returns the download URL.
+ * @param file The file (as a File, Blob, or Buffer object) to upload.
  * @param path The path where the file should be stored in the bucket (e.g., 'profile-pictures/user123.jpg').
  * @returns A promise that resolves with the public download URL of the uploaded file.
  */
-export async function uploadFile(file: File, path: string): Promise<string> {
+export async function uploadFile(file: File | Blob | Buffer, path: string): Promise<string> {
   const storageRef = ref(storage, path);
   
   try {

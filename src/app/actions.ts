@@ -30,11 +30,17 @@ export async function createEvent(eventData: CreateEventInput) {
         // 1. Upload all images and get their URLs
         const imageUrls = await Promise.all(
             images.map(async (dataUri, index) => {
-                const response = await fetch(dataUri);
-                const blob = await response.blob();
-                const file = new File([blob], `event_${Date.now()}_${index}.png`, { type: blob.type });
-                const filePath = `events/${eventDetails.hostUid}/${file.name}`;
-                return uploadFile(file, filePath);
+                 // Convert data URI to a Buffer
+                const base64Data = dataUri.split(',')[1];
+                const buffer = Buffer.from(base64Data, 'base64');
+                const fileExtension = dataUri.substring(dataUri.indexOf('/') + 1, dataUri.indexOf(';'));
+                
+                const fileName = `event_${Date.now()}_${index}.${fileExtension}`;
+                const filePath = `events/${eventDetails.hostUid}/${fileName}`;
+                
+                // The uploadFile function in this project should be adapted to handle Buffers or Blobs.
+                // Assuming uploadFile is modified to accept a buffer and a file path.
+                return uploadFile(buffer, filePath);
             })
         );
         
@@ -279,17 +285,19 @@ export async function createStory(storyData: StoryInput) {
 
     try {
         const { userId, imageDataUri, caption } = validation.data;
-
-        // Convert data URI to blob
-        const response = await fetch(imageDataUri);
-        const blob = await response.blob();
         
-        // Create a File object from the Blob
-        const file = new File([blob], `story_${userId}_${Date.now()}.png`, { type: blob.type });
+        // Correctly handle the data URI on the server
+        const base64Data = imageDataUri.split(';base64,').pop();
+        if (!base64Data) {
+            return { success: false, errors: ["Invalid image data format."] };
+        }
 
-        // Upload to storage
-        const filePath = `stories/${userId}/${file.name}`;
-        const imageUrl = await uploadFile(file, filePath);
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        const fileType = imageDataUri.substring("data:".length, imageDataUri.indexOf(";"));
+
+        // Upload buffer to storage
+        const filePath = `stories/${userId}/story_${Date.now()}.${fileType.split('/')[1]}`;
+        const imageUrl = await uploadFile(imageBuffer, filePath);
 
         // Save to Firestore
         await addDoc(collection(db, "stories"), {
