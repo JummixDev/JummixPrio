@@ -17,7 +17,7 @@ import { UserPostsFeed } from '@/components/jummix/UserPostsFeed';
 import { NotificationCenter } from '@/components/jummix/NotificationCenter';
 import { Leaderboard } from '@/components/jummix/Leaderboard';
 import { Badges } from '@/components/jummix/Badges';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export type Event = {
   id: string;
