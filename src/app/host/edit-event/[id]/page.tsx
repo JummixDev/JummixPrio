@@ -189,7 +189,7 @@ export default function EditEventPage() {
                         location: data.location,
                         description: data.description,
                         price: data.price,
-                        image: data.image,
+                        images: [data.image, ...(data.gallery || [])], // Combine images
                         capacity: data.capacity,
                         expenses: data.expenses,
                     });
@@ -350,20 +350,21 @@ export default function EditEventPage() {
                                             </FormItem>
                                         )}
                                     />
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <FormField
-                                            control={form.control}
-                                            name="image"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Event Image URL</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="https://placehold.co/600x400.png" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                    {/* Image editing is simplified here. For a full solution, you'd need a multi-image uploader similar to create-event */}
+                                     <FormField
+                                        control={form.control}
+                                        name="images"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Event Image URLs</FormLabel>
+                                                <FormControl>
+                                                     <Input placeholder="https://placehold.co/600x400.png" value={field.value?.[0]} onChange={(e) => field.onChange([e.target.value])} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <FormField
                                             control={form.control}
                                             name="price"
@@ -372,6 +373,19 @@ export default function EditEventPage() {
                                                     <FormLabel>Ticket Price (€)</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" placeholder="Enter 0 for a free event" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="capacity"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Max. Capacity</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" placeholder="e.g., 200" {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -387,19 +401,6 @@ export default function EditEventPage() {
                                                     <FormLabel>Total Expenses (€)</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" placeholder="e.g., 1500" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="capacity"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Max. Capacity</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="number" placeholder="e.g., 200" {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>

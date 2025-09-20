@@ -1,7 +1,9 @@
 
 import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { DashboardClient, Event } from './client';
+import { DashboardClient } from './client';
+import type { Event } from './types';
+
 
 // This is a server component, so we can fetch data directly
 async function getUpcomingEvents(): Promise<Event[]> {
@@ -37,3 +39,4 @@ export default async function DashboardPage() {
     <DashboardClient initialUpcomingEvents={upcomingEvents} />
   );
 }
+

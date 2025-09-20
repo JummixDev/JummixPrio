@@ -85,13 +85,20 @@ export async function updateEvent(eventData: UpdateEventInput) {
     }
     
     try {
-        const { eventId, ...dataToUpdate } = validation.data;
+        const { eventId, images, ...dataToUpdate } = validation.data;
         const eventRef = doc(db, "events", eventId);
+        
+        // This is a simplified update. A real implementation would need to handle
+        // uploading new images, deleting old ones, and merging URLs.
+        const image = images?.[0] || '';
+        const gallery = images?.slice(1) || [];
 
         await updateDoc(eventRef, {
             ...dataToUpdate,
             date: dataToUpdate.date.toISOString().split('T')[0],
             isFree: dataToUpdate.price === 0,
+            image: image,
+            gallery: gallery,
         });
         
         return { success: true, eventId: eventId };
@@ -287,9 +294,9 @@ export async function createStory(storyData: StoryInput) {
         const { userId, imageDataUri, caption } = validation.data;
 
         // Correctly handle the data URI on the server
-        const fileType = imageDataUri.substring(imageDataUri.indexOf('/') + 1, imageDataUri.indexOf(';'));
         const base64Data = imageDataUri.split(',')[1];
         const buffer = Buffer.from(base64Data, 'base64');
+        const fileType = imageDataUri.substring(imageDataUri.indexOf('/') + 1, imageDataUri.indexOf(';'));
 
         // Upload buffer to storage
         const filePath = `stories/${userId}/story_${Date.now()}.${fileType}`;
@@ -306,7 +313,7 @@ export async function createStory(storyData: StoryInput) {
         return { success: true };
     } catch (error) {
         console.error("Error creating story:", error);
-        return { success: false, error: "Failed to create the story." };
+        return { success: false, error: "Could not post your story." };
     }
 }
 
@@ -446,8 +453,6 @@ export async function updateHostVerification(userId: string, action: 'approve' |
          return { success: false, error: "Failed to update host verification status." };
      }
 }
-    
-
     
 
     

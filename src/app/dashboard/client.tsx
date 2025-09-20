@@ -16,7 +16,7 @@ import { NotificationCenter, NotificationCenterExpanded } from '@/components/jum
 import { Leaderboard, LeaderboardExpanded } from '@/components/jummix/Leaderboard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import type { Event } from './page';
+import type { Event } from './types';
 
 type DashboardClientProps = {
   initialUpcomingEvents: Event[];

@@ -4,7 +4,6 @@
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Footer } from '@/components/jummix/Footer';
 import Image from 'next/image';
 
 const mockArchivedStories = [
