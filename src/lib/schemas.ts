@@ -1,4 +1,5 @@
 
+
 import { z } from "zod";
 
 // Helper for parsing numbers from various input types
@@ -23,9 +24,9 @@ export const createEventSchema = z.object({
   location: z.string().min(3, "Location is required."),
   description: z.string().min(10, "Description must be at least 10 characters long."),
   price: numberPreprocessor.default(0),
-  image: z.string().refine(val => val.startsWith('data:image/'), {
-    message: 'A valid image upload is required.',
-  }),
+  images: z.array(z.string().refine(val => val.startsWith('data:image/'), {
+    message: 'Each image must be a valid data URI.',
+  })).min(1, "At least one image is required.").max(5, "You can upload a maximum of 5 images."),
   hostUid: z.string(),
   capacity: numberPreprocessor.optional(),
   expenses: numberPreprocessor.optional(),
@@ -69,6 +70,8 @@ export const onboardingProfileSchema = z.object({
 });
 
 export type OnboardingProfileInput = z.infer<typeof onboardingProfileSchema>;
+    
+
     
 
     

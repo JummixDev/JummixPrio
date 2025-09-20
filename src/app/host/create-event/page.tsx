@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -9,7 +10,7 @@ import { createEventSchema, CreateEventInput } from '@/lib/schemas';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar as CalendarIcon, Loader2, TrendingUp, Users, Goal, DollarSign, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, Loader2, TrendingUp, Users, Goal, DollarSign, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -98,7 +99,7 @@ export default function CreateEventPage() {
     const router = useRouter();
     const { toast } = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
     const form = useForm<CreateEventInput>({
         resolver: zodResolver(createEventSchema),
@@ -107,7 +108,7 @@ export default function CreateEventPage() {
             location: '',
             description: '',
             price: 0,
-            image: '',
+            images: [],
             hostUid: user?.uid,
             capacity: 100,
             expenses: 500,
@@ -115,17 +116,47 @@ export default function CreateEventPage() {
     });
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const dataUrl = reader.result as string;
-                setImagePreview(dataUrl);
-                form.setValue('image', dataUrl, { shouldValidate: true });
-            };
-            reader.readAsDataURL(file);
+        const files = event.target.files;
+        if (files) {
+            const currentCount = imagePreviews.length;
+            const newFiles = Array.from(files);
+            const totalCount = currentCount + newFiles.length;
+
+            if (totalCount > 5) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Upload Limit Exceeded',
+                    description: 'You can upload a maximum of 5 images.',
+                });
+                return;
+            }
+
+            const newPreviews = [...imagePreviews];
+            const newImagesForForm = [...(form.getValues('images') || [])];
+
+            newFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const dataUrl = reader.result as string;
+                    newPreviews.push(dataUrl);
+                    newImagesForForm.push(dataUrl);
+                    
+                    if (newPreviews.length === totalCount) {
+                        setImagePreviews(newPreviews);
+                        form.setValue('images', newImagesForForm, { shouldValidate: true });
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
         }
     };
+    
+    const removeImage = (index: number) => {
+        const newPreviews = imagePreviews.filter((_, i) => i !== index);
+        setImagePreviews(newPreviews);
+        form.setValue('images', newPreviews, { shouldValidate: true });
+    };
+
 
     const onSubmit = async (values: CreateEventInput) => {
         if (!user) {
@@ -256,43 +287,54 @@ export default function CreateEventPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                     <FormField
-                                        control={form.control}
-                                        name="image"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Event Image</FormLabel>
-                                                <FormControl>
-                                                     <div>
-                                                        <input
-                                                            type="file"
-                                                            ref={fileInputRef}
-                                                            onChange={handleFileChange}
-                                                            className="hidden"
-                                                            accept="image/*"
-                                                        />
-                                                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                                                            <ImageIcon className="mr-2 h-4 w-4" />
-                                                            Upload Image
-                                                        </Button>
-                                                    </div>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                     <div>
-                                        {imagePreview && (
-                                            <div className="mt-2 space-y-2">
-                                                 <Label>Image Preview</Label>
-                                                 <div className="aspect-video relative w-full rounded-md overflow-hidden border">
-                                                    <NextImage src={imagePreview} alt="Event image preview" layout="fill" objectFit="cover" />
-                                                 </div>
+                                <FormField
+                                    control={form.control}
+                                    name="images"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Event Images (up to 5)</FormLabel>
+                                            <FormDescription>The first image will be used as the cover photo.</FormDescription>
+                                            <FormControl>
+                                                    <div>
+                                                    <input
+                                                        type="file"
+                                                        ref={fileInputRef}
+                                                        onChange={handleFileChange}
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        multiple
+                                                    />
+                                                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={imagePreviews.length >= 5}>
+                                                        <ImageIcon className="mr-2 h-4 w-4" />
+                                                        Upload Images
+                                                    </Button>
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {imagePreviews.length > 0 && (
+                                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                                        {imagePreviews.map((src, index) => (
+                                            <div key={index} className="relative aspect-square rounded-md overflow-hidden border group">
+                                                <NextImage src={src} alt={`Event image preview ${index + 1}`} layout="fill" objectFit="cover" />
+                                                <Button 
+                                                    type="button" 
+                                                    variant="destructive" 
+                                                    size="icon" 
+                                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => removeImage(index)}
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                                {index === 0 && (
+                                                     <div className="absolute bottom-0 w-full bg-black/50 text-white text-xs text-center p-1">Cover</div>
+                                                )}
                                             </div>
-                                        )}
-                                     </div>
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                      <FormField
                                         control={form.control}
@@ -356,3 +398,5 @@ export default function CreateEventPage() {
         </div>
     );
 }
+
+    

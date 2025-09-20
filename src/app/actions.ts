@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import "dotenv/config";
@@ -24,20 +25,28 @@ export async function createEvent(eventData: CreateEventInput) {
     }
     
     try {
-        const { image, ...eventDetails } = validation.data;
+        const { images, ...eventDetails } = validation.data;
 
-        // 1. Upload image if it's a data URI
-        const response = await fetch(image);
-        const blob = await response.blob();
-        const file = new File([blob], `event_${Date.now()}.png`, { type: blob.type });
-        const filePath = `events/${eventDetails.hostUid}/${file.name}`;
-        const imageUrl = await uploadFile(file, filePath);
+        // 1. Upload all images and get their URLs
+        const imageUrls = await Promise.all(
+            images.map(async (dataUri, index) => {
+                const response = await fetch(dataUri);
+                const blob = await response.blob();
+                const file = new File([blob], `event_${Date.now()}_${index}.png`, { type: blob.type });
+                const filePath = `events/${eventDetails.hostUid}/${file.name}`;
+                return uploadFile(file, filePath);
+            })
+        );
+        
+        const coverImage = imageUrls[0];
+        const galleryImages = imageUrls.slice(1);
 
 
         // 2. Create event document in Firestore
         const docRef = await addDoc(collection(db, "events"), {
             ...eventDetails,
-            image: imageUrl, // Use the uploaded image URL
+            image: coverImage, // Use the first uploaded image URL as the main image
+            gallery: galleryImages, // Use the rest for the gallery
             // Convert date to a Firestore-compatible format
             date: validation.data.date.toISOString().split('T')[0],
             isFree: validation.data.price === 0,
@@ -50,7 +59,6 @@ export async function createEvent(eventData: CreateEventInput) {
               username: 'placeholderhost',
             },
             attendees: [],
-            gallery: [],
         });
         
         return { success: true, eventId: docRef.id };
@@ -434,6 +442,8 @@ export async function updateHostVerification(userId: string, action: 'approve' |
          return { success: false, error: "Failed to update host verification status." };
      }
 }
+    
+
     
 
     
