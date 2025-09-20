@@ -47,27 +47,32 @@ function AuthForm() {
   const onSignInSubmit = async (data: any) => {
     try {
       const userCredential = await signIn(data.email, data.password);
-      // After successful sign in, check onboarding status and redirect
       if (userCredential.userData?.onboardingComplete) {
         router.push('/dashboard');
       } else {
         router.push('/onboarding');
       }
     } catch (error) {
-      // Handle sign in errors
-      console.error(error);
-      toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
-      });
+      if (error instanceof FirebaseError && ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found'].includes(error.code)) {
+          toast({
+              variant: "destructive",
+              title: "Login Failed",
+              description: "Invalid email or password. Please try again.",
+          });
+      } else {
+        console.error(error);
+        toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: "An unexpected error occurred. Please try again later.",
+        });
+      }
     }
   };
 
   const onSignUpSubmit = async (data: any) => {
     try {
       await signUp(data.email, data.password);
-      // After sign up, always redirect to onboarding
       router.push('/onboarding');
     } catch (error) {
       if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
@@ -272,3 +277,5 @@ function LandingPageContent() {
 export default function LandingPage() {
     return <LandingPageContent />;
 }
+
+    
