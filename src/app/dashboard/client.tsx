@@ -220,28 +220,29 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
 
   return (
     <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24 pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-                <EventReels />
-            </div>
-            <div className="hidden lg:block">
-                 {shuffledWidgets.topWidget?.compact}
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Top Row: Event Reels and a compact widget */}
+        <div className="lg:col-span-8">
+          <EventReels />
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-6">
-            <div className="lg:col-span-8">
-                {mainWidget?.expanded}
-            </div>
-
-             <aside className="lg:col-span-4 space-y-6">
-                {shuffledWidgets.sidebarWidgets.map(widget => (
-                    <React.Fragment key={widget.id}>
-                        {widget.compact}
-                    </React.Fragment>
-                ))}
-            </aside>
+        <div className="hidden lg:col-span-4 lg:block">
+          {shuffledWidgets.topWidget?.compact}
         </div>
+        
+        {/* Main Content Area */}
+        <div className="lg:col-span-8">
+          {mainWidget?.expanded}
+        </div>
+        
+        {/* Sidebar */}
+        <aside className="lg:col-span-4 space-y-6">
+          {shuffledWidgets.sidebarWidgets.map(widget => (
+            <React.Fragment key={widget.id}>
+              {widget.compact}
+            </React.Fragment>
+          ))}
+        </aside>
+      </div>
     </main>
   );
 }
