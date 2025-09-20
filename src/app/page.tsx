@@ -18,7 +18,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { FirebaseError } from 'firebase/app';
-import { Footer } from '@/components/jummix/Footer';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -216,7 +215,6 @@ function LandingPageContent() {
 
   return (
     <div className="bg-background text-foreground font-body">
-      <main>
         {/* Hero Section */}
         <section className="relative min-h-[90vh] flex items-center justify-center text-center p-4 overflow-hidden">
             <div className="absolute inset-0 z-0">
@@ -278,9 +276,6 @@ function LandingPageContent() {
                 </Link>
             </div>
         </section>
-      </main>
-
-      <Footer />
     </div>
   );
 }

@@ -155,7 +155,7 @@ export default function MyTicketsPage() {
           <h1 className="text-xl font-bold ml-4">My Bookings</h1>
         </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16 pb-24">
         {bookings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {bookings.map(booking => (

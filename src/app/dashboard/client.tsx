@@ -219,7 +219,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   }
 
   return (
-    <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24">
+    <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-24 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
                 <EventReels />
@@ -229,7 +229,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
             </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-6">
             <div className="lg:col-span-8">
                 {mainWidget?.expanded}
             </div>

@@ -83,10 +83,9 @@ export default function EventDetailPage() {
               <h1 className="text-xl font-bold ml-4 truncate">{event.name || "Event"}</h1>
           </div>
       </header>
-      <main className="pt-16">
+      <main className="pt-16 pb-24">
         <EventDetailClient event={event} />
       </main>
-      <Footer />
     </div>
   );
 }

@@ -22,8 +22,8 @@ export default function ChatsPage() {
               <h1 className="text-xl font-bold ml-4">Chats</h1>
           </div>
       </header>
-       <main className="container mx-auto p-0 md:p-4 pt-16 flex-grow">
-            <div className="h-[calc(100vh-10.5rem)]">
+       <main className="container mx-auto p-0 md:p-4 pt-16 pb-24 flex-grow">
+            <div className="h-[calc(100vh-16rem)]">
                 <ChatList/>
             </div>
       </main>

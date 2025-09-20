@@ -18,7 +18,7 @@ export default function AboutPage() {
               <h1 className="text-xl font-bold ml-4">About Jummix</h1>
           </div>
       </header>
-      <main className="flex-grow pt-16">
+      <main className="flex-grow pt-16 pb-24">
         <section className="relative py-20 sm:py-32 flex items-center justify-center text-center">
             <div className="absolute inset-0 z-0">
                 <Image src="https://picsum.photos/seed/jummix-about/1920/1080" alt="People at an event" layout="fill" objectFit="cover" className="opacity-20" data-ai-hint="people community event" />
@@ -136,7 +136,6 @@ export default function AboutPage() {
         </section>
 
       </main>
-      <Footer />
     </div>
   );
 }

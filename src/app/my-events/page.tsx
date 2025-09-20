@@ -99,7 +99,7 @@ export default function MyEventsPage() {
               <h1 className="text-xl font-bold ml-4">My Event Library</h1>
           </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16 flex-grow">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16 pb-24 flex-grow">
         {loading ? (
             <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
         ) : (
@@ -140,7 +140,6 @@ export default function MyEventsPage() {
             </Tabs>
         )}
       </main>
-      <Footer />
     </div>
   );
 }

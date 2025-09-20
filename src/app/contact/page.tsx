@@ -35,7 +35,7 @@ export default function ContactPage() {
               <h1 className="text-xl font-bold ml-4">Contact</h1>
           </div>
       </header>
-      <main className="flex-grow flex items-center justify-center container mx-auto p-4 pt-16">
+      <main className="flex-grow flex items-center justify-center container mx-auto p-4 pt-16 pb-24">
         <Card className="w-full max-w-lg">
             <CardHeader>
                 <CardTitle className="font-headline text-2xl">Write to us</CardTitle>
@@ -66,7 +66,6 @@ export default function ContactPage() {
             </CardContent>
         </Card>
       </main>
-      <Footer />
     </div>
   );
 }

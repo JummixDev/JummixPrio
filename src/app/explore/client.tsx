@@ -202,7 +202,7 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
 
   return (
     <div className="bg-secondary/20 min-h-screen flex flex-col">
-       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-24 h-full flex flex-col">
+       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow overflow-hidden pt-24 pb-24 h-full flex flex-col">
             <div className={cn("transition-transform duration-500 ease-in-out h-full", {
                 'translate-x-0': view === 'explore',
                 '-translate-x-[110%]': view === 'friends' || view === 'chats',

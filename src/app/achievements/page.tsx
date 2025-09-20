@@ -66,7 +66,7 @@ export default function AchievementsPage() {
               <h1 className="text-xl font-bold ml-4">Achievements</h1>
           </div>
       </header>
-       <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16 flex-grow">
+       <main className="container mx-auto p-4 sm:p-6 lg:p-8 pt-16 pb-24 flex-grow">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* Leaderboard Column */}
                 <div className="lg:col-span-2">
@@ -154,7 +154,6 @@ export default function AchievementsPage() {
                 </div>
             </div>
       </main>
-      <Footer/>
     </div>
   );
 }

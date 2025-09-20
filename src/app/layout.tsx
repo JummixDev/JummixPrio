@@ -1,11 +1,11 @@
 
-
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
 import { GlobalHeader } from "@/components/jummix/GlobalHeader";
+import { Footer } from "@/components/jummix/Footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -21,11 +21,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full scroll-smooth">
-      <body className={`${inter.variable} font-sans antialiased h-full`}>
+      <body className={`${inter.variable} font-sans antialiased h-full flex flex-col`}>
         <AuthProvider>
             <GlobalHeader />
-            {/* The pt-16 is removed from here and will be applied to the main content of each page individually */}
-            {children}
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
         </AuthProvider>
         <Toaster />
       </body>
