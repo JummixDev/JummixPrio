@@ -27,6 +27,12 @@ export function GlobalHeader() {
   const userProfileLink = `/profile/me`;
 
   useEffect(() => {
+    // Disable hide-on-scroll for event detail pages
+    if (pathname.startsWith('/event/')) {
+      setIsHidden(false);
+      return;
+    }
+
     const controlHeader = () => {
       if (typeof window !== 'undefined') {
         if (window.scrollY > lastScrollY && window.scrollY > 80) { // if scroll down hide the header
@@ -42,7 +48,7 @@ export function GlobalHeader() {
     return () => {
       window.removeEventListener('scroll', controlHeader);
     };
-  }, [lastScrollY]);
+  }, [lastScrollY, pathname]);
 
 
   if (loading) {
@@ -87,7 +93,7 @@ export function GlobalHeader() {
   return (
       <header className={cn(
           "bg-card/80 backdrop-blur-lg border-b sticky top-0 z-50 transition-transform duration-300",
-          isHidden && "-translate-y-full"
+          isHidden && !pathname.startsWith('/event/') && "-translate-y-full"
         )}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
