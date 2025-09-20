@@ -286,15 +286,13 @@ export async function createStory(storyData: StoryInput) {
     try {
         const { userId, imageDataUri, caption } = validation.data;
 
-        // Use fetch to handle the data URI
-        const response = await fetch(imageDataUri);
-        const blob = await response.blob();
-        const buffer = Buffer.from(await blob.arrayBuffer());
-
-        const fileExtension = blob.type.split('/')[1] || 'jpg';
+        // Correctly handle the data URI on the server
+        const fileType = imageDataUri.substring(imageDataUri.indexOf('/') + 1, imageDataUri.indexOf(';'));
+        const base64Data = imageDataUri.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
 
         // Upload buffer to storage
-        const filePath = `stories/${userId}/story_${Date.now()}.${fileExtension}`;
+        const filePath = `stories/${userId}/story_${Date.now()}.${fileType}`;
         const imageUrl = await uploadFile(buffer, filePath);
 
         // Save to Firestore
@@ -308,7 +306,7 @@ export async function createStory(storyData: StoryInput) {
         return { success: true };
     } catch (error) {
         console.error("Error creating story:", error);
-        return { success: false, errors: ["Failed to create the story."] };
+        return { success: false, error: "Failed to create the story." };
     }
 }
 
@@ -454,3 +452,4 @@ export async function updateHostVerification(userId: string, action: 'approve' |
 
     
 
+    
