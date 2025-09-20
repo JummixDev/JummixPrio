@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventCard } from '@/components/jummix/EventCard';
 import { LiveActivityFeed, LiveActivityFeedExpanded } from '@/components/jummix/LiveActivityFeed';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { ArrowUpRight, Calendar, Loader2 } from 'lucide-react';
 import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PeopleNearby, PeopleNearbyExpanded } from '@/components/jummix/PeopleNearby';
@@ -16,6 +16,10 @@ import { UserPostsFeed, UserPostsFeedExpanded } from '@/components/jummix/UserPo
 import { NotificationCenter, NotificationCenterExpanded } from '@/components/jummix/NotificationCenter';
 import { Leaderboard, LeaderboardExpanded } from '@/components/jummix/Leaderboard';
 import { Badges, BadgesExpanded } from '@/components/jummix/Badges';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { format } from 'date-fns';
 
 export type Event = {
   id: string;
@@ -65,6 +69,44 @@ const EventListWidget = ({ initialUpcomingEvents, savedEvents, likedEvents, load
     </div>
 );
 
+
+const EventsCompact = ({ events }: { events: Event[] }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle className="font-headline">Upcoming Events</CardTitle>
+                <CardDescription className="text-xs">Your next adventures.</CardDescription>
+            </div>
+            {/* This button should ideally trigger the main widget to switch to 'events' */}
+            <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0">
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+            </Button>
+        </CardHeader>
+        <CardContent>
+            {events.length > 0 ? (
+                 <ul className="space-y-4">
+                    {events.slice(0, 2).map(event => (
+                        <li key={event.id}>
+                             <Link href={`/event/${event.id}`} className="flex items-center gap-4 group">
+                                <div className="bg-secondary p-3 rounded-lg flex flex-col items-center justify-center">
+                                    <span className="text-xs uppercase font-bold text-primary">{format(new Date(event.date), 'MMM')}</span>
+                                    <span className="text-lg font-bold">{format(new Date(event.date), 'dd')}</span>
+                                </div>
+                                <div className="flex-grow">
+                                    <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">{event.name}</p>
+                                    <p className="text-xs text-muted-foreground">{event.location}</p>
+                                </div>
+                            </Link>
+                        </li>
+                    ))}
+                 </ul>
+            ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No upcoming events.</p>
+            )}
+        </CardContent>
+    </Card>
+);
+
 // Helper function to shuffle an array
 const shuffleArray = (array: any[]) => {
     let currentIndex = array.length, randomIndex;
@@ -89,11 +131,7 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
   // Define all possible widgets for the dynamic sections
   const allWidgets = useMemo(() => [
       { id: 'events', 
-        compact: (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {initialUpcomingEvents.slice(0,3).map(event => <EventCard key={event.id} event={event} />)}
-            </div>
-        ), 
+        compact: <EventsCompact events={initialUpcomingEvents} />,
         expanded: (
             <EventListWidget 
                 initialUpcomingEvents={initialUpcomingEvents}
