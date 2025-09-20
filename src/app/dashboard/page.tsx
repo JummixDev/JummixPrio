@@ -2,8 +2,6 @@
 import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { DashboardClient, Event } from './client';
-import { getAuth } from 'firebase/auth'; // We need to get the current user on the server
-import { app } from '@/lib/firebase';
 
 // This is a server component, so we can fetch data directly
 async function getUpcomingEvents(): Promise<Event[]> {
