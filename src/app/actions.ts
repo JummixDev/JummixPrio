@@ -354,7 +354,7 @@ export async function completeOnboardingProfile(userId: string, data: Onboarding
     if (!validation.success) {
         return {
             success: false,
-            errors: validation.error.errors.map((e) => e.message),
+            error: validation.error.errors.map((e) => e.message).join(", "),
         };
     }
     
@@ -362,7 +362,7 @@ export async function completeOnboardingProfile(userId: string, data: Onboarding
     const usernameQuery = query(collection(db, "users"), where("username", "==", validation.data.username));
     const usernameSnapshot = await getDocs(usernameQuery);
     if (!usernameSnapshot.empty && usernameSnapshot.docs[0].id !== userId) {
-        return { success: false, errors: ["This username is already taken. Please choose another one."] };
+        return { success: false, error: "This username is already taken. Please choose another one." };
     }
 
 
