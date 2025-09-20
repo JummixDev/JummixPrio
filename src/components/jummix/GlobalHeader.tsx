@@ -102,10 +102,13 @@ export function GlobalHeader() {
               <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
             </Link>
             
+            <div className="flex-1 flex justify-center px-8">
+                 <GlobalSearch />
+            </div>
+            
             <div className="flex items-center gap-2">
-               <GlobalSearch />
                <Button asChild variant="ghost" className="hidden sm:inline-flex">
-                <Link href="/explore">
+                <Link href="/dashboard">
                   <Compass/>
                   Explore
                 </Link>
@@ -228,3 +231,5 @@ export function GlobalHeader() {
       </header>
   )
 }
+
+    
