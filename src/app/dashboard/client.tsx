@@ -8,14 +8,13 @@ import { EventCard } from '@/components/jummix/EventCard';
 import { LiveActivityFeed, LiveActivityFeedExpanded } from '@/components/jummix/LiveActivityFeed';
 import { useRouter } from 'next/navigation';
 import { ArrowUpRight, Calendar, Loader2 } from 'lucide-react';
-import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
+import { collection, getDocs, query, where, documentId, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PeopleNearby, PeopleNearbyExpanded } from '@/components/jummix/PeopleNearby';
 import { EventReels } from '@/components/jummix/EventReels';
 import { UserPostsFeed, UserPostsFeedExpanded } from '@/components/jummix/UserPostsFeed';
 import { NotificationCenter, NotificationCenterExpanded } from '@/components/jummix/NotificationCenter';
 import { Leaderboard, LeaderboardExpanded } from '@/components/jummix/Leaderboard';
-import { Badges, BadgesExpanded } from '@/components/jummix/Badges';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -146,7 +145,6 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
         ) 
       },
       { id: 'leaderboard', compact: <Leaderboard onZoom={() => handleWidgetZoom('leaderboard')} />, expanded: <LeaderboardExpanded /> },
-      { id: 'badges', compact: <Badges onZoom={() => handleWidgetZoom('badges')} />, expanded: <BadgesExpanded /> },
       { id: 'people-nearby', compact: <PeopleNearby onZoom={() => handleWidgetZoom('people-nearby')} />, expanded: <PeopleNearbyExpanded /> },
       { id: 'activity', compact: <LiveActivityFeed onZoom={() => handleWidgetZoom('activity')} />, expanded: <LiveActivityFeedExpanded /> },
       { id: 'posts', compact: <UserPostsFeed onZoom={() => handleWidgetZoom('posts')} />, expanded: <UserPostsFeedExpanded /> },
