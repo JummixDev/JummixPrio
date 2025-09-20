@@ -103,7 +103,7 @@ export function GlobalHeader() {
             </Link>
             
             <div className="flex items-center gap-2">
-               <div className="w-full max-w-xs hidden sm:block">
+               <div className="w-full max-w-xs">
                   <GlobalSearch />
                 </div>
                <Button asChild variant="ghost" className="hidden sm:inline-flex">
