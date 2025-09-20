@@ -79,7 +79,6 @@ const UserCard = ({ user, onFollow }: { user: UserProfile, onFollow: (uid: strin
 
 
 export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: Event[], initialUsers: UserProfile[] }) {
-  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('relevance');
   const [priceFilter, setPriceFilter] = useState({ free: false, paid: false });
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
@@ -103,13 +102,6 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
 
   const filteredAndSortedEvents = useMemo(() => {
     let filtered = [...initialEvents];
-
-    if (searchTerm) {
-      filtered = filtered.filter(event => 
-        (event.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (event.location || '').toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
 
     if (priceFilter.free && !priceFilter.paid) {
       filtered = filtered.filter(event => event.isFree);
@@ -147,7 +139,7 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
 
 
     return filtered;
-  }, [searchTerm, sortBy, priceFilter, dateFilter, initialEvents]);
+  }, [sortBy, priceFilter, dateFilter, initialEvents]);
   
     const filteredSuggestions = useMemo(() => {
         if (!user || allUsers.length === 0) return [];
@@ -230,15 +222,6 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                             </Button>
                         )}
                         <div className="flex gap-2">
-                            <div className="relative w-full">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                <Input 
-                                    placeholder="Search events..." 
-                                    className="pl-10" 
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
                             <Sheet>
                             <SheetTrigger asChild>
                                 <Button variant="outline">
