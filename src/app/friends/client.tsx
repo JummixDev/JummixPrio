@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { UserPlus, Search, Loader2, SlidersHorizontal, ArrowLeft, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
@@ -191,5 +191,6 @@ export function FriendsClient({ initialUsers }: { initialUsers: UserProfile[] })
     </div>
   );
 }
+
 
 
