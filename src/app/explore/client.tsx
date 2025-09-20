@@ -337,7 +337,7 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
              <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[calc(100vh-12rem)]", {
                 'translate-x-[110%]': view === 'explore',
                 'translate-x-0': view === 'friends',
-                '-translatex-[110%]': view === 'chats',
+                '-translate-x-[110%]': view === 'chats',
             })}>
                 <div className="flex justify-between items-center mb-8 flex-shrink-0">
                     <div>
@@ -353,17 +353,17 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
                     </div>
                  </ScrollArea>
             </div>
-            <div className={cn("transition-transform duration-500 ease-in-out h-full -mt-[calc(100vh-12rem)]", {
+            <div className={cn("transition-transform duration-500 ease-in-out h-full flex flex-col -mt-[calc(100vh-12rem)]", {
                 'translate-x-[220%]': view === 'explore' || view === 'friends',
                 'translate-x-0': view === 'chats',
             })}>
-                 <div className="flex justify-between items-center mb-8">
+                 <div className="flex justify-between items-center mb-8 flex-shrink-0">
                     <div>
                         <h1 className="text-3xl font-bold font-headline mb-2">Your Chats</h1>
                         <p className="text-muted-foreground">Continue the conversation with your friends and groups.</p>
                     </div>
                 </div>
-                <div className="h-[calc(100vh-22rem)]">
+                <div className="h-[calc(100vh-24rem)]">
                     <ChatList />
                 </div>
             </div>
@@ -372,3 +372,5 @@ export function ExploreClient({ initialEvents, initialUsers }: { initialEvents: 
   );
 }
 
+
+    
