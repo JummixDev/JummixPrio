@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,7 +29,7 @@ export function Leaderboard() {
                 <Trophy className="text-primary" /> Leaderboard
             </CardTitle>
             <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
-                <Link href="/leaderboard">
+                <Link href="/achievements">
                     <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
                 </Link>
             </Button>

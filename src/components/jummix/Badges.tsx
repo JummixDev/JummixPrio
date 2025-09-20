@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +23,7 @@ export function Badges() {
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline">My Badges</CardTitle>
             <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
-                <Link href="/badges">
+                <Link href="/achievements">
                     <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
                 </Link>
             </Button>

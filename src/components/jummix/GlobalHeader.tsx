@@ -162,15 +162,8 @@ export function GlobalHeader() {
                         </SheetClose>
                         <SheetClose asChild>
                             <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
-                                <Link href="/leaderboard">
-                                    <Trophy className="mr-2 h-5 w-5" /> Leaderboard
-                                </Link>
-                            </Button>
-                        </SheetClose>
-                        <SheetClose asChild>
-                            <Button asChild variant="ghost" className="w-full justify-start text-base py-6">
-                                <Link href="/badges">
-                                    <Award className="mr-2 h-5 w-5" /> Badges
+                                <Link href="/achievements">
+                                    <Trophy className="mr-2 h-5 w-5" /> Achievements
                                 </Link>
                             </Button>
                         </SheetClose>
