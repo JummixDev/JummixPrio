@@ -2,73 +2,77 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper Functions
+    
+    // --- Helper Functions ---
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-    
+
+    function getUserData(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+
     function isVerifiedHost() {
-    	return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerifiedHost == true;
+      return isSignedIn() && getUserData(request.auth.uid).isVerifiedHost == true;
     }
-
+    
     function isAdmin() {
-      return request.auth.token.email == 'service@jummix.com';
+        return isSignedIn() && request.auth.token.email == 'service@jummix.com';
     }
+    
+    // --- Collection Rules ---
 
-    // USER PROFILES
+    // Users: Publicly readable, but only the owner can write.
     match /users/{userId} {
       allow read: if true;
       allow create: if isSignedIn() && isOwner(userId);
-      // Allow update only if the user is the owner.
-      // Disallow changing protected fields like email or host status.
-      allow update: if isSignedIn() && isOwner(userId)
-                    && request.resource.data.isVerifiedHost == resource.data.isVerifiedHost
-                    && request.resource.data.hostApplicationStatus == resource.data.hostApplicationStatus;
+      allow update: if isSignedIn() && isOwner(userId) && request.resource.data.keys().hasAll(['displayName', 'bio']);
       allow delete: if isSignedIn() && isOwner(userId);
-      
-      // Reviews sub-collection
-      match /reviews/{reviewId} {
-        allow read: if true;
-        allow create: if isSignedIn() && request.resource.data.reviewerId == request.auth.uid;
-      }
     }
-
-    // EVENTS
+    
+    // Events: Publicly readable. Only verified hosts or admins can create. Only owner can update/delete.
     match /events/{eventId} {
       allow read: if true;
-      allow create: if isSignedIn() && (isVerifiedHost() || isAdmin()) && request.resource.data.hostUid == request.auth.uid;
-      allow update: if isSignedIn() && get(/databases/$(database)/documents/events/$(eventId)).data.hostUid == request.auth.uid;
-      allow delete: if isSignedIn() && get(/databases/$(database)/documents/events/$(eventId)).data.hostUid == request.auth.uid;
+      allow create: if (isVerifiedHost() || isAdmin()) && request.resource.data.hostUid == request.auth.uid;
+      allow update, delete: if isSignedIn() && request.resource.data.hostUid == request.auth.uid;
     }
-    
-    // BOOKINGS
+
+    // Bookings: Only involved parties can read/write.
     match /bookings/{bookingId} {
-    	allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.hostId);
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isSignedIn() && get(/databases/$(database)/documents/bookings/$(bookingId)).data.hostId == request.auth.uid;
-      allow delete: if isSignedIn() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.hostId);
+      allow read: if isSignedIn() && (isOwner(request.resource.data.userId) || isOwner(request.resource.data.hostId));
+      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+      allow update: if isSignedIn() && isOwner(request.resource.data.hostId); // Only host can approve/reject
+      allow delete: if false; // Disallow deleting bookings
     }
     
-    // CHATS & MESSAGES
+    // Chats: Only participants can access.
     match /chats/{chatId} {
-    	allow read, write: if isSignedIn() && request.auth.uid in resource.data.participantUids;
-    	
+      allow get: if isSignedIn() && request.auth.uid in resource.data.participantUids;
+      allow list: if isSignedIn() && request.auth.uid in resource.data.participantUids;
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.participantUids;
+      allow update: if isSignedIn() && request.auth.uid in resource.data.participantUids;
+
+      // Messages: Subcollection of a chat
       match /messages/{messageId} {
-      	allow read, create: if isSignedIn() && get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids.hasAny([request.auth.uid]);
-        allow update, delete: if false; // Messages are immutable
+        allow read, write: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
       }
     }
     
-    // STORIES
+    // Stories: Publicly readable, only owner can create/delete.
     match /stories/{storyId} {
       allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+      allow delete: if isSignedIn() && isOwner(resource.data.userId);
+    }
+
+    // Reviews: Publicly readable, only signed-in users can write.
+    match /users/{hostId}/reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isOwner(request.resource.data.reviewerId);
     }
   }
 }
