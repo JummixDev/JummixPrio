@@ -145,7 +145,7 @@ export function GlobalSearch() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search events, people..."
-            className="h-10 w-full rounded-md border bg-background pl-10 pr-10 text-sm outline-none placeholder:text-muted-foreground sm:w-64"
+            className="h-10 w-full rounded-md border bg-background pl-10 pr-10 text-sm outline-none placeholder:text-muted-foreground sm:w-80"
           />
           {searchTerm && (
             <Button
