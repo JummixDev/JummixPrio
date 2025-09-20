@@ -40,200 +40,175 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-
-function SignInForm({ form }: { form: UseFormReturn<any> }) {
-  const { signIn, signInWithGoogle, signInWithApple, userData } = useAuth();
-  const { register, handleSubmit, formState: { isSubmitting } } = form;
+function AuthForm() {
+  const [activeTab, setActiveTab] = useState('signin');
+  const { register: registerSignIn, handleSubmit: handleSignIn, setValue: setSignInValue, formState: { isSubmitting: isSigningIn } } = useForm();
+  const { register: registerSignUp, handleSubmit: handleSignUp, getValues: getSignUpValues, formState: { isSubmitting: isSigningUp } } = useForm();
+  const { signIn, signUp, signInWithGoogle, signInWithApple } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
-  const onSubmit = async (data: any) => {
+  const onSignInSubmit = async (data: any) => {
     try {
-      await signIn(data.email, data.password);
-      // Let the useEffect on the parent page handle the redirect
-      // based on the updated auth state.
+      const userCredential = await signIn(data.email, data.password);
+      // After successful sign in, check onboarding status and redirect
+      if (userCredential.userData?.onboardingComplete) {
+        router.push('/dashboard');
+      } else {
+        router.push('/onboarding');
+      }
     } catch (error) {
-        if (error instanceof FirebaseError) {
-            switch (error.code) {
-                case 'auth/user-not-found':
-                case 'auth/wrong-password':
-                case 'auth/invalid-credential':
-                    toast({
-                        variant: "destructive",
-                        title: "Login Failed",
-                        description: "Invalid email or password. Please try again.",
-                    });
-                    break;
-                default:
-                    toast({
-                        variant: "destructive",
-                        title: "An error occurred.",
-                        description: "Something went wrong. Please try again later.",
-                    });
-            }
-        }
+      // Handle sign in errors
       console.error(error);
+      toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Invalid email or password. Please try again.",
+      });
+    }
+  };
+
+  const onSignUpSubmit = async (data: any) => {
+    try {
+      await signUp(data.email, data.password);
+      // After sign up, always redirect to onboarding
+      router.push('/onboarding');
+    } catch (error) {
+      if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
+        toast({
+          variant: "destructive",
+          title: "Sign-up failed.",
+          description: "This email is already in use. Please sign in instead.",
+        });
+        setActiveTab('signin');
+        setSignInValue('email', getSignUpValues('email'));
+      } else {
+        console.error(error);
+        toast({
+            variant: "destructive",
+            title: "An error occurred.",
+            description: "Something went wrong. Please try again later.",
+        });
+      }
     }
   };
   
+  const handleSocialAuth = async (authProvider: 'google' | 'apple') => {
+      try {
+          const socialSignIn = authProvider === 'google' ? signInWithGoogle : signInWithApple;
+          const result = await socialSignIn();
+          if (result.userData?.onboardingComplete) {
+              router.push('/dashboard');
+          } else {
+              router.push('/onboarding');
+          }
+      } catch (error) {
+          console.error(`${authProvider} sign in error:`, error);
+           toast({
+              variant: "destructive",
+              title: "Authentication Failed",
+              description: `Could not sign in with ${authProvider}. Please try again.`,
+          });
+      }
+  }
+
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="alex@example.com"
-            required
-            {...register('email')}
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center">
-            <Label htmlFor="password">Password</Label>
-            <Link href="/reset-password" prefetch={false} className="ml-auto inline-block text-sm underline">
-              Forgot your password?
-            </Link>
-          </div>
-          <Input id="password" type="password" required {...register('password')} />
-        </div>
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Sign In
-        </Button>
-        <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
-                </span>
-            </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-5 w-5 fill-black dark:fill-white"/> Apple</Button>
-        </div>
-      </div>
-    </form>
+    <Card className="w-full max-w-md mx-auto shadow-2xl">
+      <CardHeader className="text-center">
+        <Link href="/">
+          <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
+        </Link>
+        <CardTitle className="text-2xl font-headline mt-4">
+          Join the Fun!
+        </CardTitle>
+        <CardDescription>
+          Sign in or create an account to start your Jummix journey.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
+          <TabsContent value="signin">
+            <form onSubmit={handleSignIn(onSignInSubmit)} className="p-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="alex@example.com" required {...registerSignIn('email')} />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <Link href="/reset-password" prefetch={false} className="ml-auto inline-block text-sm underline">
+                    Forgot your password?
+                  </Link>
+                </div>
+                <Input id="password" type="password" required {...registerSignIn('password')} />
+              </div>
+              <Button type="submit" className="w-full" disabled={isSigningIn}>
+                {isSigningIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sign In
+              </Button>
+               <div className="relative">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">Or continue with</span></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                  <Button variant="outline" type="button" onClick={() => handleSocialAuth('google')}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
+                  <Button variant="outline" type="button" onClick={() => handleSocialAuth('apple')}><AppleIcon className="mr-2 h-5 w-5 fill-black dark:fill-white"/> Apple</Button>
+              </div>
+            </form>
+          </TabsContent>
+          <TabsContent value="signup">
+            <form onSubmit={handleSignUp(onSignUpSubmit)} className="p-4 space-y-4">
+               <div className="space-y-2">
+                <Label htmlFor="signup-email">Email</Label>
+                <Input id="signup-email" type="email" placeholder="alex@example.com" required {...registerSignUp('email')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signup-password">Password</Label>
+                <Input id="signup-password" type="password" required {...registerSignUp('password')} />
+              </div>
+              <Button type="submit" className="w-full" disabled={isSigningUp}>
+                 {isSigningUp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sign Up
+              </Button>
+               <div className="relative">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">Or continue with</span></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 <Button variant="outline" type="button" onClick={() => handleSocialAuth('google')}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
+                  <Button variant="outline" type="button" onClick={() => handleSocialAuth('apple')}><AppleIcon className="mr-2 h-5 w-5 fill-black dark:fill-white"/> Apple</Button>
+              </div>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 }
 
-interface SignUpFormProps {
-  onEmailInUse: (email: string) => void;
-}
-
-function SignUpForm({ onEmailInUse }: SignUpFormProps) {
-  const { signUp, signInWithGoogle, signInWithApple } = useAuth();
-  const { register, handleSubmit, getValues, formState: { isSubmitting } } = useForm();
-  const { toast } = useToast();
-  const router = useRouter();
-
-  const onSubmit = async (data: any) => {
-    try {
-      await signUp(data.email, data.password);
-      // After sign-up, the useAuth hook will detect the new user
-      // and our useEffect on the main page will redirect to onboarding.
-      router.push('/onboarding');
-    } catch (error) {
-        if (error instanceof FirebaseError && error.code === 'auth/email-already-in-use') {
-            toast({
-                variant: "destructive",
-                title: "Sign-up failed.",
-                description: "This email is already in use. Please sign in instead.",
-            });
-            onEmailInUse(getValues('email'));
-        } else {
-            toast({
-                variant: "destructive",
-                title: "An error occurred.",
-                description: "Something went wrong. Please try again later.",
-            });
-        }
-      console.error(error);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="signup-email">Email</Label>
-          <Input
-            id="signup-email"
-            type="email"
-            placeholder="alex@example.com"
-            required
-            {...register('email')}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="signup-password">Password</Label>
-          <Input
-            id="signup-password"
-            type="password"
-            required
-            {...register('password')}
-          />
-        </div>
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Sign Up
-        </Button>
-        <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
-                </span>
-            </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" type="button" onClick={signInWithGoogle}><GoogleIcon className="mr-2 h-5 w-5"/> Google</Button>
-            <Button variant="outline" type="button" onClick={signInWithApple}><AppleIcon className="mr-2 h-5 w-5 fill-black dark:fill-white"/> Apple</Button>
-        </div>
-      </div>
-    </form>
-  );
-}
 
 function LandingPageContent() {
   const signupCardRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState('signin');
-  const signInForm = useForm();
-  const { user, userData, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
+  // This effect will run ONCE after the initial render,
+  // and redirect a logged-in user to their dashboard.
   useEffect(() => {
-    // Wait until loading is false to get a definitive state
-    if (!loading) {
-      if (user) {
-        if (userData?.onboardingComplete) {
-          router.push('/dashboard');
-        } else {
-          // If logged in but not onboarded, stay on this page
-          // so they can see the landing page, but the forms will be hidden.
-          // The next step is to click 'Get Started' which scrolls down.
-          // We can also just redirect them to onboarding from here.
-          router.push('/onboarding');
-        }
-      }
+    if (!loading && user) {
+      router.push('/dashboard');
     }
-  }, [user, userData, loading, router]);
+  }, [user, loading, router]);
 
 
   const scrollToSignup = () => {
     signupCardRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
-  const handleEmailInUse = (email: string) => {
-    setActiveTab('signin');
-    signInForm.setValue('email', email);
-  }
   
     // Show a loading indicator while auth state is being determined
   if (loading) {
@@ -245,13 +220,13 @@ function LandingPageContent() {
     );
   }
 
-  // If not loading and user is logged in, show a redirecting message
-  // This prevents the landing page from flashing for an already logged-in user.
+  // If the user is already logged in, show a redirecting message or nothing
+  // to avoid flashing the landing page.
   if (user) {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center p-4">
             <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-            <h1 className="text-2xl font-bold font-headline text-primary">Redirecting...</h1>
+            <h1 className="text-2xl font-bold font-headline text-primary">Redirecting to your dashboard...</h1>
         </div>
     );
   }
@@ -316,38 +291,8 @@ function LandingPageContent() {
 
         {/* Sign-up Section */}
         <section className="bg-secondary/40 py-20">
-            <div className="container mx-auto" ref={signupCardRef}>
-                <Card className="w-full max-w-md mx-auto shadow-2xl">
-                    <CardHeader className="text-center">
-                    <Link href="/">
-                      <h1 className="text-2xl font-bold font-headline text-primary">Jummix</h1>
-                    </Link>
-                    <CardTitle className="text-2xl font-headline mt-4">
-                        Join the Fun!
-                    </CardTitle>
-                    <CardDescription>
-                        Sign in or create an account to start your Jummix journey.
-                    </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                    <Tabs value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="signin">Sign In</TabsTrigger>
-                        <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="signin">
-                            <div className="p-4">
-                                <SignInForm form={signInForm} />
-                            </div>
-                        </TabsContent>
-                        <TabsContent value="signup">
-                            <div className="p-4">
-                                <SignUpForm onEmailInUse={handleEmailInUse} />
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                    </CardContent>
-                </Card>
+            <div ref={signupCardRef}>
+                <AuthForm />
             </div>
         </section>
       </main>

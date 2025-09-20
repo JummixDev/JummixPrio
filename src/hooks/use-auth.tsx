@@ -46,15 +46,20 @@ interface UserProfileData {
   createdAt: any;
 }
 
+interface AuthResult {
+    user: User;
+    userData: UserProfileData | null;
+}
+
 interface AuthContextType {
   user: User | null;
   userData: UserProfileData | null;
   loading: boolean;
-  signUp: (email: string, pass: string) => Promise<any>;
-  signIn: (email: string, pass: string) => Promise<any>;
+  signUp: (email: string, pass: string) => Promise<AuthResult>;
+  signIn: (email: string, pass: string) => Promise<AuthResult>;
   signOut: () => void;
-  signInWithGoogle: () => Promise<any>;
-  signInWithApple: () => Promise<any>;
+  signInWithGoogle: () => Promise<AuthResult>;
+  signInWithApple: () => Promise<AuthResult>;
   sendPasswordReset: (email: string) => Promise<void>;
   updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>;
   updateUserHostApplicationStatus: (status: 'pending' | 'approved' | 'rejected') => Promise<void>;
@@ -70,40 +75,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      setLoading(true);
-      if (user) {
-        setUser(user);
-        const userDocRef = doc(db, "users", user.uid);
-        try {
-          const userDocSnap = await getDoc(userDocRef);
-          if (!userDocSnap.exists()) {
-            await createUserDocument(user);
-          }
-        } catch (error) {
-            console.error("Error checking or creating user document:", error);
-        }
-      } else {
-        setUser(null);
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      if (!user) {
         setUserData(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
-
     return () => unsubscribeAuth();
   }, []);
 
   useEffect(() => {
     if (user) {
+        setLoading(true);
         const userDocRef = doc(db, "users", user.uid);
         const unsubscribeSnapshot = onSnapshot(userDocRef, (doc) => {
             if (doc.exists()) {
                 setUserData(doc.data() as UserProfileData);
             } else {
+                 // This might happen briefly if the document hasn't been created yet.
+                 // The createUserDocument function handles creation.
                 setUserData(null);
             }
+            setLoading(false);
         }, (error) => {
             console.error("Error with onSnapshot listener:", error);
+            setLoading(false);
         });
         return () => unsubscribeSnapshot();
     }
@@ -112,10 +109,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const createUserDocument = async (user: User): Promise<UserProfileData> => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
-    const username = user.email!.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
-    if (!userDocSnap.exists()) {
-       const newUserData: UserProfileData = {
+    if (userDocSnap.exists()) {
+        return userDocSnap.data() as UserProfileData;
+    }
+
+    const username = user.email!.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const newUserData: UserProfileData = {
         uid: user.uid,
         email: user.email,
         username: username,
@@ -134,40 +134,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         likedEvents: [],
         savedEvents: [],
         createdAt: serverTimestamp()
-      };
-      await setDoc(userDocRef, newUserData);
-      return newUserData;
-    }
-    return userDocSnap.data() as UserProfileData;
+    };
+    await setDoc(userDocRef, newUserData);
+    return newUserData;
   };
 
 
-  const signUp = async (email: string, pass: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    await createUserDocument(userCredential.user);
-    return userCredential;
+  const performAuthAction = async (authPromise: Promise<any>): Promise<AuthResult> => {
+    const userCredential = await authPromise;
+    const userData = await createUserDocument(userCredential.user);
+    return { user: userCredential.user, userData };
   }
 
-  const signIn = async (email: string, pass: string) => {
-      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-      await createUserDocument(userCredential.user);
-      return userCredential;
+  const signUp = (email: string, pass: string) => {
+    return performAuthAction(createUserWithEmailAndPassword(auth, email, pass));
+  }
+
+  const signIn = (email: string, pass: string) => {
+    return performAuthAction(signInWithEmailAndPassword(auth, email, pass));
   }
 
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider).then(async (result) => {
-        await createUserDocument(result.user);
-        return result;
-    });
+    return performAuthAction(signInWithPopup(auth, provider));
   };
 
   const signInWithApple = () => {
     const provider = new OAuthProvider('apple.com');
-    return signInWithPopup(auth, provider).then(async (result) => {
-        await createUserDocument(result.user);
-        return result;
-    });
+    return performAuthAction(signInWithPopup(auth, provider));
   };
   
   const sendPasswordReset = (email: string) => {
