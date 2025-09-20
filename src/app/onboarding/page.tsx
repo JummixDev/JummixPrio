@@ -105,7 +105,7 @@ export default function OnboardingPage() {
             });
 
             if (!result.success) {
-                throw new Error(result.error || result.errors?.join('\n') || "An unknown error occurred.");
+                throw new Error(result.error || "An unknown error occurred.");
             }
 
             toast({
@@ -122,6 +122,7 @@ export default function OnboardingPage() {
                 title: 'Onboarding Failed',
                 description: error.message || 'Could not save your profile. Please try again.',
             });
+        } finally {
              setIsSubmitting(false);
         }
     };
@@ -251,7 +252,3 @@ export default function OnboardingPage() {
         </div>
     );
 }
-
-    
-
-    
