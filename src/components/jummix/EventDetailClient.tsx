@@ -195,7 +195,6 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
         } else {
             if (result.error === 'onboarding_required') {
                 toast({
-                    variant: 'destructive',
                     title: "Profile Incomplete",
                     description: "Please complete your profile before booking events.",
                     action: <Button onClick={() => router.push('/onboarding')}>Complete Profile</Button>,
@@ -431,5 +430,3 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     </div>
   );
 }
-
-    
