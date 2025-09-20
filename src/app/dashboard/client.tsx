@@ -16,8 +16,6 @@ import { PeopleNearby } from '@/components/jummix/PeopleNearby';
 import { EventReels } from '@/components/jummix/EventReels';
 import { UserPostsFeed } from '@/components/jummix/UserPostsFeed';
 import { NotificationCenter } from '@/components/jummix/NotificationCenter';
-import { Leaderboard } from '@/components/jummix/Leaderboard';
-import { Badges } from '@/components/jummix/Badges';
 
 export type Event = {
   id: string;
@@ -134,8 +132,6 @@ export function DashboardClient({ initialUpcomingEvents }: DashboardClientProps)
           <LiveActivityFeed />
           <EventReels />
           <NotificationCenter />
-          <Leaderboard />
-          <Badges />
         </div>
       </div>
     </main>
