@@ -49,7 +49,12 @@ const EventList = ({ eventIds, emptyText }: { eventIds: string[], emptyText: str
                 const eventsRef = collection(db, "events");
                 const q = query(eventsRef, where(documentId(), "in", eventIds.slice(0, 30)));
                 const querySnapshot = await getDocs(q);
-                const fetchedEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Event[];
+                const fetchedEvents = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // Convert Firestore Timestamp to Date object if needed, then to string for the EventCard
+                    const date = data.date?.toDate ? data.date.toDate().toISOString() : data.date;
+                    return { id: doc.id, ...data, date };
+                }) as Event[];
                 setEvents(fetchedEvents);
             } catch (error) {
                 console.error("Error fetching event list:", error);
@@ -165,9 +170,8 @@ export function DashboardClient({ initialUpcomingEvents }: { initialUpcomingEven
                           ))}
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <Skeleton className="h-96 w-full" />
-                          <Skeleton className="h-96 w-full" />
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>No upcoming events right now. Check back soon!</p>
                       </div>
                     )}
                   </TabsContent>
